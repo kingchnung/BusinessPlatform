@@ -1,0 +1,40 @@
+package com.bizmate.project.domain;
+
+import com.bizmate.project.domain.enums.AssignStatus;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.time.LocalDateTime;
+
+@Entity
+@Table(name = "assign")
+@Setter
+@Getter
+@AllArgsConstructor
+@NoArgsConstructor
+@SequenceGenerator(name = "assign_generator",
+        sequenceName = "assign_seq",
+        initialValue = 1,
+        allocationSize = 1)
+public class Assign {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE , generator = "assign_generator")
+    private Integer taskId;
+
+    @Column(nullable = false)
+    private String taskName;
+
+    @Enumerated
+    @Column(nullable = false)
+    private AssignStatus taskPriority = AssignStatus.BEFORE_START;
+
+    @Column
+    private LocalDateTime taskStartDate;
+
+    @Column
+    private LocalDateTime taskEndDate;
+}
