@@ -1,0 +1,43 @@
+package com.bizmate.groupware.approval.domain;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
+public enum DocumentType {
+    REQUEST("REQUEST", "품의서"),        // 품의서
+    RESIGN("RESIGN", "퇴직서"),    // 퇴직서
+    REPORT("REPORT", "보고서"),         // 보고서
+    HR_MOVE("HR_MOVE", "인사발령");     // 인사발령/이동 신청서
+
+    private final String code;
+    private final String label;
+
+    DocumentType(String code, String label) {
+        this.code = code;
+        this.label = label;
+    }
+
+    @JsonValue
+    public String getCode() {
+        return code;
+    }
+
+    public String getLabel() {
+        return label;
+    }
+
+    @JsonCreator
+    public static  DocumentType from(String value) {
+        if (value == null) return null;
+        String v = value.trim().toUpperCase();
+
+        for(DocumentType t : values()) {
+            if(t.code.equalsIgnoreCase(v) || t.label.equalsIgnoreCase(value.trim())) {
+                return t;
+            }
+        }
+
+        throw new IllegalArgumentException("유효하지 않은 문서유형: " + value);
+    }
+
+}

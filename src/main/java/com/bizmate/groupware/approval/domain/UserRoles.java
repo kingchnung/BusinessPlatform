@@ -1,4 +1,4 @@
-package com.bizmate.groupware.domain;
+package com.bizmate.groupware.approval.domain;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

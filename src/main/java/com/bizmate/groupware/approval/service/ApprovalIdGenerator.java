@@ -1,4 +1,4 @@
-package com.bizmate.groupware.service;
+package com.bizmate.groupware.approval.service;
 
 import org.springframework.stereotype.Service;
 
