@@ -2,6 +2,7 @@ package com.bizmate.project.repository;
 
 
 import com.bizmate.project.domain.Project;
+import com.bizmate.project.domain.enums.ProjectImportance;
 import com.bizmate.project.domain.enums.ProjectStatus;
 import com.bizmate.project.domain.hr.Employees;
 import com.bizmate.project.domain.hr.Users;
@@ -69,22 +70,35 @@ public class ProjectTest {
 
         Project projectTest = Project.builder()
                 .projectNo(projectService.getProjectNo(user1))
-                .projectName("test1")
+                .projectName("test2")
                 .projectStartDate(LocalDateTime.now())
                 .projectStatus(ProjectStatus.IN_PROGRESS)
-                .projectImportance("보통")
+                .projectImportance(ProjectImportance.LOW)
                 .clientId(client)
                 .userId(user1).build();
 
         projectRepository.save(projectTest);
-
-
-
-
-
-
-
         //project.setProjectId(projectService.getProjectNo(User user));
+    }
+
+    public void projectMemberInsert(){
+        Client client  = clientRepository.findById("20240001A")
+                .orElseThrow(() -> new RuntimeException("거래처를 찿을 수 없습니다"));
+
+        Users user1 = usersRepository.findById(1010)
+                .orElseThrow(() -> new RuntimeException("유저를 찿을 수 없습니다"));
+
+        String projectStatus = ProjectStatus.BEFORE_START.getStatus();
+
+        Project projectTest = Project.builder()
+                .projectNo(projectService.getProjectNo(user1))
+                .projectName("test3")
+                .projectStartDate(LocalDateTime.now())
+                .projectStatus(ProjectStatus.IN_PROGRESS)
+                .projectImportance(ProjectImportance.LOW)
+                .clientId(client)
+                .userId(user1).build();
+
     }
 
 

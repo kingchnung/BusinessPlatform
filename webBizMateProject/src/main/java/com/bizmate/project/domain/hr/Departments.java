@@ -15,7 +15,7 @@ public class Departments {
 
     @Id
     @Column(name = "dept_id")
-    private int deptId;
+    private Long deptId;
 
     @Column
     private String deptCode;

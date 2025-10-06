@@ -24,7 +24,7 @@ public class FileAttachment extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE,  generator = "file_attachment_generator")
-    private Integer fileId;
+    private Long fileId;
 
     @Column(nullable = false)
     private String filePath;
@@ -36,4 +36,13 @@ public class FileAttachment extends BaseTimeEntity {
     @ManyToOne
     @JoinColumn(name = "file_post_id")
     private FilePost filePost;
+
+    @PrePersist
+    public void PrePersist() {
+
+        if(getRegDate() != null){
+            setRegDate(getRegDate().withNano(0));
+        }
+
+    }
 }

@@ -2,6 +2,7 @@ package com.bizmate.project.domain;
 
 
 import com.bizmate.project.domain.auditings.BaseTimeEntity;
+import com.bizmate.project.domain.enums.ProjectImportance;
 import com.bizmate.project.domain.enums.ProjectStatus;
 import com.bizmate.project.domain.hr.Users;
 import com.bizmate.project.domain.sails.Client;
@@ -26,10 +27,10 @@ public class Project extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "project_id_generator")
-    private Integer projectId;
+    private Long projectId;
 
 
-    @Column
+    @Column(nullable = false)
     private String projectNo;
     // 팀번호+일련번호 4자리 (330001) < 형식으로 만들어 보자
 
@@ -45,13 +46,7 @@ public class Project extends BaseTimeEntity {
     @ColumnDefault(value = "sysdate")
     private LocalDateTime projectEndDate;
 
-    @PrePersist
-    public void setProjectStartDate() {
-        if (projectStartDate == null) {
-            projectStartDate = LocalDateTime.now(); // 저장 순간의 당일
-        }
 
-    }
 
 
 
@@ -60,8 +55,9 @@ public class Project extends BaseTimeEntity {
     @Builder.Default
     private ProjectStatus projectStatus = ProjectStatus.BEFORE_START;
 
+    @Enumerated(EnumType.STRING)
     @Column
-    private String projectImportance;
+    private ProjectImportance projectImportance;
 
     @ManyToOne
     @JoinColumn(name = "user_id" , nullable = false)
@@ -71,5 +67,26 @@ public class Project extends BaseTimeEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "client_id", nullable = false)
     private Client clientId;
+
+    @Column
+    private String managerName;
+
+    @PrePersist
+    public void PrePersist() {
+        if (projectStartDate == null) {
+            projectStartDate = LocalDateTime.now();
+            setProjectStartDate(getProjectStartDate().withNano(0));// 저장 순간의 당일
+        }
+        if(projectEndDate != null){
+            setProjectEndDate(getProjectEndDate().withNano(0));
+        }
+        if(getRegDate() != null){
+            setRegDate(getRegDate().withNano(0));
+        }
+        if(getModDate() != null){
+            setRegDate(getModDate().withNano(0));
+        }
+
+    }
 
 }

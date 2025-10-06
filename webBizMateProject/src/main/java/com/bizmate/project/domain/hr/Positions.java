@@ -19,7 +19,7 @@ import lombok.Setter;
 public class Positions {
 
     @Id
-    private Integer positionCode;
+    private Long positionCode;
 
 
     @Column

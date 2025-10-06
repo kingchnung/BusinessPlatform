@@ -18,7 +18,7 @@ public class Employees {
 
     @Id
     @Column(name = "emp_id")
-    private Integer empId;
+    private Long empId;
 
     @Column
     private String empName;

@@ -28,6 +28,10 @@ public class IssuePost extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "issue_post_generator")
     private Integer issuePostId;
 
+
+    @Column(nullable = false)
+    private String ipTitle;
+
     @Lob
     @Column(nullable = false)
     private String ipContent;
@@ -50,6 +54,19 @@ public class IssuePost extends BaseTimeEntity {
             @JoinColumn(name = "project_id", referencedColumnName = "project_id")
     })
     private ProjectMember projectMember;
+
+    @PrePersist
+    public void PrePersist() {
+
+        if(getRegDate() != null){
+            setRegDate(getRegDate().withNano(0));
+        }
+
+        if(getModDate() != null){
+            setRegDate(getModDate().withNano(0));
+        }
+
+    }
 
 
 

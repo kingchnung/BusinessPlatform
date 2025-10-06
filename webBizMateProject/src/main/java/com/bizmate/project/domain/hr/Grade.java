@@ -18,7 +18,7 @@ import lombok.Setter;
 public class Grade {
 
     @Id
-    private Integer gradeCode;
+    private Long gradeCode;
 
     @Column
     private String gradeName;

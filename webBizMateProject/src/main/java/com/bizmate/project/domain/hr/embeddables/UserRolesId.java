@@ -15,11 +15,11 @@ import java.io.Serializable;
 @EqualsAndHashCode
 public class UserRolesId implements Serializable {
 
-    private int userId;
+    private Long userId;
 
-    private int roleId;
+    private Long roleId;
 
-    public UserRolesId(int roleId, int userId) {
+    public UserRolesId(Long roleId, Long userId) {
         this.roleId = roleId;
         this.userId = userId;
     }

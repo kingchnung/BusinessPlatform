@@ -23,7 +23,7 @@ public class Assign {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE , generator = "assign_generator")
-    private Integer taskId;
+    private Long taskId;
 
     @Column(nullable = false)
     private String taskName;
@@ -37,4 +37,17 @@ public class Assign {
 
     @Column
     private LocalDateTime taskEndDate;
+
+    @PrePersist
+    public void PrePersist() {
+        if(taskStartDate != null){
+            setTaskStartDate(getTaskStartDate().withNano(0));
+        }
+        if(taskEndDate != null){
+            setTaskEndDate(getTaskEndDate().withNano(0));
+        }
+
+    }
+
+
 }

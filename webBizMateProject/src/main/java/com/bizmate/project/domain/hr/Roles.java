@@ -17,7 +17,7 @@ public class Roles {
 
     @Id
     @Column(name = "role_id")
-    private int roleId;
+    private Long roleId;
 
     @Column
     private String roleName;

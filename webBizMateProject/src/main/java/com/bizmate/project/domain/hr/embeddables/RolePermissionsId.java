@@ -12,11 +12,11 @@ import lombok.*;
 public class RolePermissionsId {
 
 
-    private Integer roleId;
+    private Long roleId;
 
-    private Integer permiId;
+    private Long permiId;
 
-    public RolePermissionsId(Integer roleId, Integer permiId){
+    public RolePermissionsId(Long roleId, Long permiId){
         this.permiId = permiId;
         this.roleId = roleId;
     }

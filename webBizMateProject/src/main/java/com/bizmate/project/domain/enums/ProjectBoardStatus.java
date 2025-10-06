@@ -1,5 +1,8 @@
 package com.bizmate.project.domain.enums;
 
+import lombok.Getter;
+
+@Getter
 public enum ProjectBoardStatus {
     FILE_BOARD("파일게시판"),
     ISSUE_BOARD("이슈게시판");
@@ -10,7 +13,4 @@ public enum ProjectBoardStatus {
         this.status = status;
     }
 
-    public String getStatus(){
-        return this.status;
-    }
 }

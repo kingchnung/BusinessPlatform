@@ -19,7 +19,7 @@ import lombok.Setter;
 public class Permissions {
 
     @Id
-    private Integer permiId;
+    private Long permiId;
 
     @Column
     private String permiName;

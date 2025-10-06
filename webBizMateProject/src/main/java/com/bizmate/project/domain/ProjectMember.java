@@ -49,6 +49,15 @@ public class ProjectMember extends BaseTimeEntity {
     @Column(name = "pm_role_name")
     private ProjectMemberStatus pmRoleName;
 
+    @PrePersist
+    public void PrePersist() {
+
+        if(getRegDate() != null){
+            setRegDate(getRegDate().withNano(0));
+        }
+
+
+    }
 
 
 

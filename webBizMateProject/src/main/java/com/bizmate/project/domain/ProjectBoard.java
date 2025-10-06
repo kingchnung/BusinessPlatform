@@ -22,7 +22,7 @@ public class ProjectBoard extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE ,generator = "project_board_generator")
-    private Integer projectBoardId;
+    private Long projectBoardId;
 
     @Column(nullable = false)
     private String boardTitle;

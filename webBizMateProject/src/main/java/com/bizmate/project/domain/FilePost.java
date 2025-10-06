@@ -23,7 +23,10 @@ public class FilePost extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "file_post_seq")
-    private Integer filePostId;
+    private Long filePostId;
+
+    @Column(nullable = false)
+    private String fpTitle;
 
 //    @Column
 //    private LocalDateTime fpCreateDate;
@@ -45,6 +48,18 @@ public class FilePost extends BaseTimeEntity {
             @JoinColumn(name = "project_id", referencedColumnName = "project_id")
     })
     private ProjectMember projectMember;
+
+    @PrePersist
+    public void PrePersist() {
+
+        if(getRegDate() != null){
+            setRegDate(getRegDate().withNano(0));
+        }
+
+        if(getModDate() != null){
+            setRegDate(getModDate().withNano(0));
+        }
+    }
 
 
 }
