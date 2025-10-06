@@ -33,6 +33,9 @@ public class Project extends BaseTimeEntity {
     private String projectNo;
     // 팀번호+일련번호 4자리 (330001) < 형식으로 만들어 보자
 
+    @Column(nullable = false)
+    private String projectName;
+
     @Column(name = "project_start_date", nullable = false)
     private LocalDateTime projectStartDate;
 
@@ -54,10 +57,14 @@ public class Project extends BaseTimeEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private ProjectStatus projectImportance = ProjectStatus.BEFORE_START;
+    @Builder.Default
+    private ProjectStatus projectStatus = ProjectStatus.BEFORE_START;
+
+    @Column
+    private String projectImportance;
 
     @ManyToOne
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_id" , nullable = false)
     private Users userId;
 
 
