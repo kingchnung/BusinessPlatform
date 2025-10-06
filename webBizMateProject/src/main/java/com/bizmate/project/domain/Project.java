@@ -4,15 +4,14 @@ package com.bizmate.project.domain;
 import com.bizmate.project.domain.auditings.BaseTimeEntity;
 import com.bizmate.project.domain.enums.ProjectStatus;
 import com.bizmate.project.domain.hr.Users;
+import com.bizmate.project.domain.sails.Client;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 
 import java.time.LocalDateTime;
 
+@Builder
 @Getter
 @Setter
 @NoArgsConstructor
@@ -49,9 +48,6 @@ public class Project extends BaseTimeEntity {
             projectStartDate = LocalDateTime.now(); // 저장 순간의 당일
         }
 
-        if (projectEndDate == null) {
-            projectEndDate = LocalDateTime.now(); // 저장 순간의 당일
-        }
     }
 
 
@@ -63,5 +59,10 @@ public class Project extends BaseTimeEntity {
     @ManyToOne
     @JoinColumn(name = "user_id")
     private Users userId;
+
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "client_id", nullable = false)
+    private Client clientId;
 
 }
