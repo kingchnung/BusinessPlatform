@@ -46,7 +46,7 @@ public class ApprovalDocumentsController {
             @PathVariable String docId,
             @RequestBody @Valid ApproveRejectRequest req
             ) {
-        return ResponseEntity.ok(approvalDocumentsService.reject(docId, req.actorUserId(), req.comment()));
+        return ResponseEntity.ok(approvalDocumentsService.approve(docId, req.actorUserId(), req.comment()));
     }
 
     //반려

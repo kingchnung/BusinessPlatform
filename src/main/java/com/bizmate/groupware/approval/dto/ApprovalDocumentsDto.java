@@ -28,7 +28,11 @@ public class ApprovalDocumentsDto {
     private DocumentType docType;
     
     private String status;          //반환용 문자열(예 : PENDING)
+
+    @NotNull(message = "부서 ID는 필수입니다.")
+    private Long departmentId;
     private String departmentCode;  //커스텀 ID 생성에 사용
+    private String departmentName;
     private String finalDocNumber;
 
     // 2. 기안자 정보 (DB FK와 매핑되는 필드)

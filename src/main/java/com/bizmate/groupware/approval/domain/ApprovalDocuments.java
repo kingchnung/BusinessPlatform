@@ -33,6 +33,10 @@ public class ApprovalDocuments extends BaseEntity {
     @Column(name = "doc_status", nullable = false, length = 20)
     private DocumentStatus status;
 
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "department_id")
+    private Department department;
+
     @Column(name = "final_doc_number", unique = true)
     @Comment("최종 승인 시 발급되는 문서번호(연속 시퀀스)")
     private String finalDocNumber;  //최종 채번
@@ -50,13 +54,13 @@ public class ApprovalDocuments extends BaseEntity {
     private int currentApproverIndex;
 
     @Lob
-    @Convert(converter = ApproverLineJsonConverter.class)
     @Column(name = "approval_line")
+    @Convert(converter = ApproverLineJsonConverter.class)
     private List<ApproverStep> approvalLine;
 
     @Lob
-    @Convert(converter = JsonMapConverter.class)
     @Column(name = "doc_data")
+    @Convert(converter = JsonMapConverter.class)
     private Map<String, Object> docContent;
 
     @ElementCollection

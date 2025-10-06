@@ -1,8 +1,8 @@
 package com.bizmate.groupware.approval.service;
 
+import com.bizmate.groupware.approval.repository.DepartmentRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.bizmate.common.exception.VerificationFailedException;
 import com.bizmate.groupware.approval.domain.*;
 import com.bizmate.groupware.approval.dto.ApprovalDocumentsDto;
@@ -27,10 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Random;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -44,6 +41,7 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
     private final ApprovalIdGenerator idGenerator;
     private final ObjectMapper objectMapper;
     private final NotificationPort notificationPort;
+    private final DepartmentRepository departmentRepository;
 
 
 
@@ -53,8 +51,10 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
     @Override
     @Transactional
     public ApprovalDocumentsDto draft(ApprovalDocumentsDto dto) throws JsonProcessingException {
+
         validateDraft(dto);
-        String customId = idGenerator.generateNewId(dto.getDepartmentCode()); //HR-YYYYMMDD-001
+        String departmentCode = lookupDepartmentCode(dto.getDepartmentId());
+        String customId = idGenerator.generateNewId(departmentCode); //HR-YYYYMMDD-001
         ApprovalDocuments saved = approvalDocumentsRepository.save(
                 mapDtoToEntity(dto, customId, DocumentStatus.DRAFT)
         );
@@ -68,7 +68,8 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
     public ApprovalDocumentsDto submit(ApprovalDocumentsDto dto) throws JsonProcessingException {
 
         validateDraft(dto);
-        String customId = idGenerator.generateNewId(dto.getDepartmentCode());
+        String departmentCode = lookupDepartmentCode(dto.getDepartmentId());
+        String customId = idGenerator.generateNewId(departmentCode);
         ApprovalDocuments saved = approvalDocumentsRepository.save(
                 mapDtoToEntity(dto, customId, DocumentStatus.IN_PROGRESS)
         );
@@ -224,7 +225,7 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
                 : null;
 
         DocumentType docTypeEnum = (req.getDocType() != null && !req.getDocType().isBlank())
-                ? DocumentType.valueOf(req.getDocType())
+                ? DocumentType.from(req.getDocType())
                 : null;
 
         LocalDateTime from = parseStart(req.getFromDate());
@@ -244,6 +245,20 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
     }
 
     /* ---------------------------------- 내부 유틸 ----------------------------------------*/
+
+    private String lookupDepartmentCode(Long departmentId) {
+        log.info("lookupDepartmentCode() 호출됨 - departmentId={}", departmentId);
+        //나중에 HR 모듈 연동 시 Repository or API 호출로 대체
+//        return switch (departmentId.intValue()) {
+//            case 100 -> "01";
+//            case 200 -> "02";
+//            case 300 -> "03";
+//            case 400 -> "04";
+//            default -> String.format("%02d", departmentId % 100);
+//        };
+        return departmentRepository.findDepartmentCodeById(departmentId)
+                .orElseThrow(() -> new VerificationFailedException("존재하지 않는 부서입니다."));
+    }
 
     private List<ApproverStep> normalizeSteps(List<ApproverStep> steps) {
         if (steps == null) return List.of();
@@ -295,10 +310,12 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
 
 
     private void validateDraft(ApprovalDocumentsDto dto) {
-        if (dto.getDepartmentCode() == null || dto.getDepartmentCode().isBlank())
-            throw new VerificationFailedException("부서코드가 필요합니다.");
-        if (dto.getApprovalLine() == null)
+        if (dto.getDepartmentId() == null) {
+            throw new VerificationFailedException("부서 ID는 필수입니다.");
+        }
+        if (dto.getApprovalLine() == null || dto.getApprovalLine().isEmpty()) {
             throw new VerificationFailedException("결재선이 필요합니다.");
+        }
         if (dto.getDocType() == null) {
             throw new VerificationFailedException("문서 유형이 필요합니다.");
         }
@@ -307,12 +324,17 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
     // DTO -> Entity
     private ApprovalDocuments mapDtoToEntity(ApprovalDocumentsDto dto, String id, DocumentStatus status) {
 
+        Department dept = departmentRepository.findById(dto.getDepartmentId())
+                .orElseThrow(() -> new VerificationFailedException("존재하지 않는 부서입니다."));
+
         ApprovalDocuments documents = new ApprovalDocuments();
         documents.setDocId(id);
         documents.setTitle(dto.getTitle());
         documents.setDocType(dto.getDocType()); //enum
         documents.setStatus(status);
         documents.setCurrentApproverIndex(0);
+
+        documents.setDepartment(dept);
 
         documents.setAuthorUserId(dto.getUserId());
         documents.setAuthorRoleId(dto.getRoleId());
@@ -336,6 +358,12 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
                 .empId(entity.getAuthorEmpId())
                 .createdAt(entity.getCreatedAt())
                 .updatedAt(entity.getUpdatedAt());
+
+        if(entity.getDepartment() != null) {
+            b.departmentId(entity.getDepartment().getId());
+            b.departmentCode(entity.getDepartment().getDepartmentCode());
+            b.departmentName(entity.getDepartment().getDepartmentName());
+        }
 
         List<ApproverStep> approvers = entity.getApprovalLine() == null
                 ? List.of()
@@ -397,7 +425,7 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
 
     private LocalDateTime parseStart(String from) {
         return (from == null || from.isBlank())
-                ? LocalDate.MIN.atStartOfDay()
+                ? LocalDate.of(2000, 1, 1).atStartOfDay()
                 : LocalDate.parse(from).atStartOfDay();
     }
 
