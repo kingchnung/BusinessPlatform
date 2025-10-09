@@ -18,12 +18,10 @@ public enum DocumentType {
         this.label = label;
     }
 
-    @JsonValue
     public String getCode() {
         return code;
     }
 
-    @JsonProperty("label")
     public String getLabel() {
         return label;
     }
@@ -34,7 +32,7 @@ public enum DocumentType {
         String v = value.trim().toUpperCase();
 
         for(DocumentType t : values()) {
-            if(t.code.equalsIgnoreCase(v) || t.label.equalsIgnoreCase(value.trim())) {
+            if(t.code.equalsIgnoreCase(v) || t.label.equalsIgnoreCase(v)) {
                 return t;
             }
         }

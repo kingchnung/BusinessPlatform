@@ -3,6 +3,8 @@ package com.bizmate.groupware.approval.domain;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import lombok.Getter;
 
 import java.time.LocalDateTime;
 
@@ -11,8 +13,11 @@ public record ApproverStep(
         @JsonProperty("order")
         int order,              // 결재 순서(1..n)
         @JsonProperty("approverId")
+        @NotNull
+        Long approverId,      // 결재자 사용자ID
+        @JsonProperty("approverName")
         @NotBlank
-        String approverId,      // 결재자 사용자ID
+        String approverName,
         @JsonProperty("decision")
         Decision decision,      // PENDING/APPROVED/REJECTED
         @JsonProperty("comment")
