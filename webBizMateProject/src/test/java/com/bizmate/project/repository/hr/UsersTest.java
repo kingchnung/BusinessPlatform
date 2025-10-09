@@ -43,6 +43,13 @@ public class UsersTest {
         Employees employees = employeesRepository.findById(2001)
                 .orElseThrow(() -> new RuntimeException("없는 사원번호 입니다."));
 
+        Employees employees1 = employeesRepository.findById(2002)
+                .orElseThrow(() -> new RuntimeException("없는 사원 번호 입니다."));
+
+        Employees employees2 = employeesRepository.findById(2003)
+                .orElseThrow(() -> new RuntimeException("없는 사원 번호 입니다."));
+
+
 
         Users newUser = new Users();
         System.out.println("---------------------------------------------newUser.toString() = " + employees.getDepartments().getDeptId());
@@ -52,7 +59,7 @@ public class UsersTest {
 
 
 
-        newUser.setUserId(1010);
+        newUser.setUserId(1010L);
         newUser.setEmployees(employees);
         newUser.setUsername(employees.getEmpName());
         newUser.setPasswordHash("12341234");
@@ -65,12 +72,31 @@ public class UsersTest {
 
         System.out.println("projectNo = " + projectNo);
 
+        Users user2 = Users.builder()
+                .employees(employees1)
+                .username(employees1.getEmpName())
+                .passwordHash("12341234")
+                .isActiove("Y")
+                .isLocked("N")
+                .build();
+
+        Users user3 = Users.builder()
+                .employees(employees2)
+                .username(employees2.getEmpName())
+                .passwordHash("12341234")
+                .isActiove("Y")
+                .isLocked("N")
+                .build();
+
+        usersRepository.save(user2);
+        usersRepository.save(user3);
+
 
     }
 
     @Transactional
    public String generateProjectNo(Users user){
-        int deptId = user.getEmployees().getDepartments().getDeptId();
+        Long deptId = user.getEmployees().getDepartments().getDeptId();
 
         Long seq = projectRepository.getNextProjectSeq();
 

@@ -1,8 +1,13 @@
 package com.bizmate.project.repository;
 
 
+import com.bizmate.project.domain.Assign;
 import com.bizmate.project.domain.Project;
+import com.bizmate.project.domain.ProjectMember;
+import com.bizmate.project.domain.embeddables.ProjectMemberId;
+import com.bizmate.project.domain.enums.AssignStatus;
 import com.bizmate.project.domain.enums.ProjectImportance;
+import com.bizmate.project.domain.enums.ProjectMemberStatus;
 import com.bizmate.project.domain.enums.ProjectStatus;
 import com.bizmate.project.domain.hr.Employees;
 import com.bizmate.project.domain.hr.Users;
@@ -42,6 +47,23 @@ public class ProjectTest {
     @Autowired
     private ProjectService projectService;
 
+    @Autowired
+    private AssignRepository assignRepository;
+
+    @Autowired
+    private ProjectMemberRepository projectMemberRepository;
+
+
+    @Test
+    public void insertAssign(){
+        Assign assign = Assign.builder()
+                .taskName("test업무")
+                .taskPriority(AssignStatus.BEFORE_START)
+                .build();
+
+        assignRepository.save(assign);
+    }
+
 
     @Test
     public void readEmployees() {
@@ -64,9 +86,6 @@ public class ProjectTest {
 
 
 
-        System.out.println("client,toString() = " + client.getClientCeo());
-        System.out.println("users = " + user1.getUsername());
-
 
         Project projectTest = Project.builder()
                 .projectNo(projectService.getProjectNo(user1))
@@ -81,6 +100,7 @@ public class ProjectTest {
         //project.setProjectId(projectService.getProjectNo(User user));
     }
 
+    @Test
     public void projectMemberInsert(){
         Client client  = clientRepository.findById("20240001A")
                 .orElseThrow(() -> new RuntimeException("거래처를 찿을 수 없습니다"));
@@ -92,16 +112,42 @@ public class ProjectTest {
 
         Project projectTest = Project.builder()
                 .projectNo(projectService.getProjectNo(user1))
-                .projectName("test3")
+                .projectName("test6")
                 .projectStartDate(LocalDateTime.now())
                 .projectStatus(ProjectStatus.IN_PROGRESS)
                 .projectImportance(ProjectImportance.LOW)
                 .clientId(client)
-                .userId(user1).build();
+                .userId(user1)
+                .managerName(user1.getUsername())
+                .build();
+
+        projectRepository.save(projectTest);
+
+        Users user2 = usersRepository.findById(1010)
+                .orElseThrow(() -> new RuntimeException("users를 찿을 수 없습니다"));
+
+        ProjectMemberId projectMemberId = ProjectMemberId
+                .builder()
+                .projectId(projectTest.getProjectId())
+                .userId(user2.getUserId())
+                .build();
+
+        Assign assign1 = assignRepository.findById(6)
+                .orElseThrow(() -> new RuntimeException("업무를 찿을 수 없습니다."));
+
+        ProjectMember projectMember = ProjectMember
+                .builder()
+                .id(projectMemberId)
+                .projectId(projectTest)
+                .userId(user2)
+                .assign(assign1)
+                .pmRoleName(ProjectMemberStatus.PRODUCT_OWNER)
+                .build();
+
+        projectMemberRepository.save(projectMember);
+
 
     }
-
-
 
 }
 

@@ -23,7 +23,7 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     public String getProjectNo(Users user) {
-        int deptId = user.getEmployees().getDepartments().getDeptId();
+        Long deptId = user.getEmployees().getDepartments().getDeptId();
         Long seqNo = projectRepository.getNextProjectSeq();
         String projectNo = String.format("%d-%04d",deptId,seqNo);
         return projectNo;

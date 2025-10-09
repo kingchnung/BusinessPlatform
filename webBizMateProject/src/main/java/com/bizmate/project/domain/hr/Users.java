@@ -10,10 +10,14 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "users")
+@SequenceGenerator(name = "users_id_generator",
+        sequenceName = "users_id_seq",
+        initialValue = 1011,
+        allocationSize = 1)
 public class Users {
 
     @Id
-    @Column(name = "user_id")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "users_id_generator")
     private Long userId;
 
     @Column

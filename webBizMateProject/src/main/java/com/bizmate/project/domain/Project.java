@@ -80,12 +80,6 @@ public class Project extends BaseTimeEntity {
         if(projectEndDate != null){
             setProjectEndDate(getProjectEndDate().withNano(0));
         }
-        if(getRegDate() != null){
-            setRegDate(getRegDate().withNano(0));
-        }
-        if(getModDate() != null){
-            setRegDate(getModDate().withNano(0));
-        }
 
     }
 

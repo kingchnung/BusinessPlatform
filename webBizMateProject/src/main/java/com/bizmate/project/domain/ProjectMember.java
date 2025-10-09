@@ -6,10 +6,7 @@ import com.bizmate.project.domain.enums.ProjectMemberStatus;
 import com.bizmate.project.domain.hr.UserRoles;
 import com.bizmate.project.domain.hr.Users;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -18,6 +15,7 @@ import java.util.List;
 @Entity
 @Getter
 @Setter
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "project_member")
@@ -47,14 +45,13 @@ public class ProjectMember extends BaseTimeEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "pm_role_name")
+    @Builder.Default
     private ProjectMemberStatus pmRoleName;
 
     @PrePersist
     public void PrePersist() {
 
-        if(getRegDate() != null){
-            setRegDate(getRegDate().withNano(0));
-        }
+
 
 
     }

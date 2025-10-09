@@ -1,10 +1,7 @@
 package com.bizmate.project.domain.embeddables;
 
 import jakarta.persistence.Embeddable;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.io.Serializable;
 
@@ -13,12 +10,13 @@ import java.io.Serializable;
 @Setter
 @EqualsAndHashCode
 @NoArgsConstructor
+@Builder
 public class ProjectMemberId  implements Serializable {
 
-    private int projectId;
-    private int userId;
+    private Long projectId;
+    private Long userId;
 
-    public ProjectMemberId(int projectId, int userId){
+    public ProjectMemberId(Long projectId, Long userId){
         this.projectId = projectId;
         this.userId = userId;
     }

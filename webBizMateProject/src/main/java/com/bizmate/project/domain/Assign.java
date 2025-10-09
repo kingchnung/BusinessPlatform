@@ -2,10 +2,7 @@ package com.bizmate.project.domain;
 
 import com.bizmate.project.domain.enums.AssignStatus;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
@@ -13,6 +10,7 @@ import java.time.LocalDateTime;
 @Table(name = "assign")
 @Setter
 @Getter
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @SequenceGenerator(name = "assign_generator",
@@ -28,9 +26,12 @@ public class Assign {
     @Column(nullable = false)
     private String taskName;
 
-    @Enumerated
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
+    @Builder.Default
     private AssignStatus taskPriority = AssignStatus.BEFORE_START;
+
+
 
     @Column
     private LocalDateTime taskStartDate;

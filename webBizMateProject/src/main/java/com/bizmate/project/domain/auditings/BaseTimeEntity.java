@@ -1,8 +1,7 @@
 package com.bizmate.project.domain.auditings;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.EntityListeners;
-import jakarta.persistence.MappedSuperclass;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.CreatedBy;
@@ -26,6 +25,7 @@ public abstract class BaseTimeEntity {
     // 특정 필드를 데이터베이스에서 업데이트 할 수 없도록 설정하는 역할
 
     @CreatedDate
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     @Column(name = "reg_date", updatable = false)
     private LocalDateTime regDate;
 
@@ -42,4 +42,17 @@ public abstract class BaseTimeEntity {
     // 엔티티가 수정될때 MOD_ID 컬럼에 마지막 수정자의 식별자를 자동으로 기록
     @Column(name = "mod_id")
     private String modId;
+
+    @PrePersist
+    public void onPrePersist() {
+        // 최초 저장 시 수정시간, 수정자 필드를 null 또는 기본값으로 명시적으로 설정
+        this.modDate = null;
+        this.modId = null;
+    }
+
+    @PreUpdate
+    public void onPreUpdate() {
+        this.modDate = LocalDateTime.now();
+        // 수정자 정보를 설정하는 로직 추가
+    }
 }
