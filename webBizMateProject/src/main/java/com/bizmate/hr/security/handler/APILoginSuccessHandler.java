@@ -40,8 +40,8 @@ public class APILoginSuccessHandler implements AuthenticationSuccessHandler {
         Map<String, Object> claims = userDTO.getClaims();
 
         // ★ 변경점 3: JWTProvider를 사용하여 토큰 생성 (JWTUtil.generateToken 대체)
-        String accessToken = jwtProvider.generateAccessToken(userDTO);
-        String refreshToken = jwtProvider.generateRefreshToken(userDTO);
+        String accessToken = jwtProvider.createAccessToken(userDTO,userDTO.getRoleNames(),userDTO.getPermissionNames());
+        String refreshToken = jwtProvider.createRefreshToken(userDTO);
 
         claims.put("accessToken", accessToken);
         claims.put("refreshToken", refreshToken);

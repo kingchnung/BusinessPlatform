@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Transactional
-public class EmployeeServiceImpl implements EmployeeService { // 구현체명 일관성 유지를 위해 수정
+public class EmployeeServiceImpl implements EmployeeService {
 
     private final EmployeeRepository employeeRepository;
     private final DepartmentRepository departmentRepository;// FK 처리를 위해 필요
@@ -33,8 +33,8 @@ public class EmployeeServiceImpl implements EmployeeService { // 구현체명 �
     @Override
     @Transactional(readOnly = true) // 읽기 전용으로 설정
     public List<EmployeeDTO> getAllEmployees() {
-        // ★ 변경: findAllWithDepartment() (Fetch Join 메서드) 사용
-        return employeeRepository.findAllWithDepartment().stream()
+        // ★★★ 변경: findAllWithDepartmentAndPosition() (새로운 Fetch Join 메서드) 사용 ★★★
+        return employeeRepository.findAllWithDepartmentAndPosition().stream()
                 .map(EmployeeDTO::fromEntity)
                 .collect(Collectors.toList());
     }
@@ -42,8 +42,8 @@ public class EmployeeServiceImpl implements EmployeeService { // 구현체명 �
     @Override
     @Transactional(readOnly = true)
     public EmployeeDTO getEmployee(Long empId) {
-        // ★ 변경: findByIdWithDepartment() (Fetch Join 메서드) 사용
-        Employee employee = employeeRepository.findByIdWithDepartment(empId)
+        // ★★★ 변경: findByIdWithDepartmentAndPosition() (새로운 Fetch Join 메서드) 사용 ★★★
+        Employee employee = employeeRepository.findByIdWithDepartmentAndPosition(empId)
                 .orElseThrow(() -> new EntityNotFoundException("사원 ID " + empId + "를 찾을 수 없습니다."));
 
         return EmployeeDTO.fromEntity(employee);
@@ -64,7 +64,7 @@ public class EmployeeServiceImpl implements EmployeeService { // 구현체명 �
         Department department = departmentRepository.findById(requestDTO.getDeptId())
                 .orElseThrow(() -> new EntityNotFoundException("부서 ID " + requestDTO.getDeptId() + "를 찾을 수 없습니다."));
 
-        Position position = positionRepository.findById(requestDTO.getPositionCode()) // ★ requestDTO의 positionId 필드를 사용해야 함
+        Position position = positionRepository.findById(requestDTO.getPositionCode()) // requestDTO의 positionId 필드를 사용해야 함
                 .orElseThrow(() -> new EntityNotFoundException("직위 ID " + requestDTO.getPositionCode() + "를 찾을 수 없습니다."));
 
         Grade grade = gradeRepository.findById(requestDTO.getGradeCode()) //
@@ -76,7 +76,7 @@ public class EmployeeServiceImpl implements EmployeeService { // 구현체명 �
         employee.setEmail(requestDTO.getEmail());
         employee.setStartDate(requestDTO.getStartDate());
 
-        employee.setDepartment(department); // ★ FK 설정 (엔티티 필드명에 맞게 setDepartment() 호출)
+        employee.setDepartment(department); // FK 설정 (엔티티 필드명에 맞게 setDepartment() 호출)
         employee.setPosition(position);
         employee.setGrade(grade);
         employee.setStatus(requestDTO.getStatus());

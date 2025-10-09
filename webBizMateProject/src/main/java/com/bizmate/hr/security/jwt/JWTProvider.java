@@ -1,5 +1,6 @@
 package com.bizmate.hr.security.jwt;
 
+import com.bizmate.hr.domain.UserEntity;
 import com.bizmate.hr.dto.user.UserDTO;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
@@ -8,6 +9,7 @@ import org.springframework.stereotype.Component;
 import javax.crypto.SecretKey;
 import java.time.ZonedDateTime;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.nio.charset.StandardCharsets;
 
@@ -41,12 +43,19 @@ public class JWTProvider {
     /**
      * Access Token을 생성합니다.
      */
-    public String generateAccessToken(UserDTO userDTO) {
-        Map<String, Object> claims = userDTO.getClaims();
-        claims.put("type", "access");
+    public String createAccessToken(UserDTO userDTO, List<String> roles, List<String> perms) { // ★ 시그니처 수정
+        // 클레임 구성: UserEntity와 roles/perms를 사용
+        Map<String, Object> claims = Map.of(
+                "userId", userDTO.getUserId(),
+                "username", userDTO.getUsername(),
+                "empId", userDTO.getEmpId(), // UserEntity에서 Employee 정보를 가져와야 함
+                "empName", userDTO.getEmpName(),
+                "roles", roles,
+                "perms", perms,
+                "type", "access"
+        );
 
         ZonedDateTime now = ZonedDateTime.now();
-        // Access Token 유효 시간 적용 (분)
         ZonedDateTime expiryDate = now.plusMinutes(ACCESS_EXP_TIME);
 
         return Jwts.builder()
@@ -61,7 +70,7 @@ public class JWTProvider {
     /**
      * Refresh Token을 생성합니다.
      */
-    public String generateRefreshToken(UserDTO userDTO) {
+    public String createRefreshToken(UserDTO userDTO) { // ★ 시그니처 수정 및 이름 통일 (선택적)
         // Refresh Token은 최소한의 정보만 담습니다.
         Map<String, Object> claims = Map.of(
                 "userId", userDTO.getUserId(),

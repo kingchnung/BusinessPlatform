@@ -4,13 +4,19 @@ import com.bizmate.hr.security.filter.JWTCheckFilter;
 import com.bizmate.hr.security.handler.APILoginFailHandler;
 import com.bizmate.hr.security.handler.APILoginSuccessHandler;
 import com.bizmate.hr.security.handler.CustomAccessDeniedHandler;
+import com.bizmate.hr.security.handler.CustomAuthenticationEntryPoint;
 import com.bizmate.hr.security.jwt.JWTProvider;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -42,60 +48,49 @@ public class CustomSecurityConfig {
     // --- 1. Security Filter Chain 설정 ---
 
     @Bean
+    public JWTCheckFilter jwtCheckFilter() {
+        // 주입받은 jwtProvider를 사용하여 필터 인스턴스를 생성합니다.
+        return new JWTCheckFilter(jwtProvider);
+    }
+
+    @Bean
     SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         log.info("▶▶▶ CustomSecurityConfig FilterChain 설정 시작");
 
-        // 1. CORS 설정: 모든 출처 허용 (개발 환경 기준)
-        http.cors(cors -> cors.configurationSource(corsConfigurationSource()));
+                // 1. 세션 기반 인증/폼 로그인/CSRF/HTTP Basic 모두 비활성화
+        return http
+                .csrf(AbstractHttpConfigurer::disable)         // CSRF 보호 비활성화 (API 서버이므로)
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .httpBasic(AbstractHttpConfigurer::disable)      // HTTP Basic 인증 비활성화
+                .formLogin(AbstractHttpConfigurer::disable)      // 폼 로그인 비활성화 (HTML 로그인 페이지 방지)
 
-        // 2. CSRF 비활성화: API 서버는 세션을 사용하지 않으므로 CSRF를 비활성화합니다. (학원 예제와 동일)
-        http.csrf(csrf -> csrf.disable());
+                // 2. 세션 관리를 STATELESS로 설정 (JWT 토큰으로만 인증하겠다는 의미)
+                .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
-        // 3. 세션 관리: STATELESS 설정 (JWT 기반 무상태 서버) (학원 예제와 동일)
-        http.sessionManagement(s ->
-                s.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-        );
-        // ★★★ [수정] 4. 권한 설정 블록 추가 (필수) ★★★
-        http.authorizeHttpRequests(config -> {
-            // 로그인 및 로그아웃 경로는 인증 없이 접근 가능하도록 설정
-            config.requestMatchers("/api/member/login", "/api/member/logout").permitAll();
+                // 3. 인가 규칙 설정 (어떤 경로에 인증이 필요한지 정의)
 
-            // DataInitializer에서 설정한 코드를 조회하는 API도 임시로 허용할 수 있습니다.
-            // config.requestMatchers("/api/codes/**", "/api/departments").permitAll();
+                .authorizeHttpRequests(auth -> auth
+                        // 인증 없이 접근 허용 엔드포인트
+                        .requestMatchers("/api/member/login", "/h2-console/**").permitAll() // 로그인 경로는 permitAll
 
-            // 그 외 모든 요청은 인증 필요
-            config.anyRequest().authenticated();
-        });
+                        // 그 외 모든 /api/ 요청에 대해 인증(토큰) 필요
+                        .requestMatchers("/api/**").authenticated()
 
-        // 4. Form 로그인 설정: API 서버 로그인 URL 및 핸들러 설정
-        http.formLogin(config -> {
-            config.loginProcessingUrl("/api/member/login"); // 로그인 엔드포인트 지정 (실제 로그인 처리는 Spring이 수행)
-            // JWTProvider를 인수로 전달하여 SuccessHandler Bean 생성
-            config.successHandler(new APILoginSuccessHandler(jwtProvider));
-            // 주입받은 FailHandler Bean 사용
-            config.failureHandler(apiLoginFailHandler);
-        });
+                        // 나머지 요청 허용 (선택적)
+                        .anyRequest().permitAll()
+                )
 
-        // 5. JWT 필터 추가: UsernamePasswordAuthenticationFilter 이전에 JWTCheckFilter를 실행
-        // JWTProvider를 인수로 전달하여 필터 Bean 생성
-        http.addFilterBefore(
-                new JWTCheckFilter(jwtProvider),
-                UsernamePasswordAuthenticationFilter.class
-        );
+                // 4. JWT 검증 필터 추가 (Bean 메서드 호출)
+                // jwtCheckFilter()를 호출하여 Bean 인스턴스를 가져옵니다.
+                .addFilterBefore(jwtCheckFilter(), UsernamePasswordAuthenticationFilter.class)
 
-        // 6. 예외 처리 핸들러 설정
-        http.exceptionHandling(e -> {
-            // 권한 부족 예외 (403 Forbidden) 처리
-            e.accessDeniedHandler(customAccessDeniedHandler);
-            // 인증되지 않은 접근 (401 Unauthorized) 처리를 위한 EntryPoint는
-            // JWTCheckFilter에서 토큰 오류 시 직접 처리하거나, 별도 Filter를 통해 처리할 수 있습니다.
-            // 여기서는 학원 예제 구조를 따라 AccessDeniedHandler만 명시합니다.
-        });
+                // 5. 예외 처리 (인증 실패 시 401 응답을 반환하도록 설정)
+                // .exceptionHandling()은 체이닝의 일부이므로 http.exceptionHandling() 대신 .exceptionHandling()으로 시작
+                .exceptionHandling(handler -> handler
+                .authenticationEntryPoint(new CustomAuthenticationEntryPoint()))
 
-        // 7. 로그아웃 설정: API 서버에서는 클라이언트가 토큰을 삭제하므로, 서버의 로그아웃 로직은 단순하게 설정
-        http.logout(logout -> logout.logoutUrl("/api/member/logout").permitAll());
-
-        return http.build();
+                // 6. 모든 설정이 끝났으므로 .build()를 호출하고 그 결과를 return 합니다.
+                .build(); // ★ 수정 완료: return http.build();가 아닌 return http.build();
     }
 
     // --- 2. CORS 설정 Bean ---
@@ -121,4 +116,36 @@ public class CustomSecurityConfig {
 
         return source;
     }
+    @Bean
+    public RoleHierarchy roleHierarchy() {
+        RoleHierarchyImpl roleHierarchy = new RoleHierarchyImpl();
+
+        // 권한 계층 정의 문자열
+        String hierarchy = """
+            # 1. 최상위 역할 (CEO는 모든 권한을 가집니다)
+            ROLE_CEO > sys:admin
+            
+            # 2. 시스템 관리 권한 계층
+            sys:admin > sys:manage         # sys:admin은 sys:manage를 포함
+            sys:manage > data:write:all    # 시스템 관리 권한은 모든 쓰기 권한을 포함
+            sys:manage > data:read:all     # 시스템 관리 권한은 모든 읽기 권한을 포함
+            
+            # 3. 역할 계층 (Manager는 Employee를 포함)
+            ROLE_MANAGER > ROLE_EMPLOYEE
+            
+            # 4. 데이터 권한 상속 관계 (data:read:all이 모든 조회 권한을 포함)
+            data:read:all > data:read:self
+            data:read:all > emp:read
+            data:read:all > dept:read
+            data:read:all > pos:read
+            data:read:all > grade:read
+            
+            # 5. 기타 개별 쓰기 권한
+            data:write:all > data:write:self
+            """;
+
+        roleHierarchy.setHierarchy(hierarchy);
+        return roleHierarchy;
+    }
+
 }
