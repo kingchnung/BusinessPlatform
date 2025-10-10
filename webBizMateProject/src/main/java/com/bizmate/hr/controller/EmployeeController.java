@@ -36,7 +36,7 @@ public class EmployeeController {
     }
 
     // ★ 권한 설정: 'emp:create' 권한이 있는 사용자만 접근 가능
-    @PostMapping
+    @PostMapping("/add")
     @PreAuthorize("hasAuthority('emp:create')")
     public ResponseEntity<EmployeeDTO> createEmployee(@RequestBody @Valid EmployeeRequestDTO requestDTO){
         // ★ 변경: RequestDTO를 받고 DTO를 반환

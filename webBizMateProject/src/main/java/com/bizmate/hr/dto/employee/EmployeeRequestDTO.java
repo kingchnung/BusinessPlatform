@@ -3,6 +3,7 @@ package com.bizmate.hr.dto.employee;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;
 
@@ -45,7 +46,9 @@ public class EmployeeRequestDTO {
     private LocalDate startDate; // ★ 추가됨 (NOT NULL)
 
     @NotBlank(message = "상태는 필수 항목입니다.")
-    private String status; // 'active', 'retire', 'break' 중 하나
+    @Pattern(regexp = "ACTIVE|RETIRED|BREAK", message="상태는 ACTIVE/RETIRED/BREAK 만 허용")
+    private String status;
+     // 'active', 'retire', 'break' 중 하나
 
     // 참고: empId (PK)는 등록 시에는 필요 없고 수정 시에만 PathVariable로 사용됩니다.
 }

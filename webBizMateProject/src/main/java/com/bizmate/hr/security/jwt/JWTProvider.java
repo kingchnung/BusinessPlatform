@@ -1,17 +1,21 @@
 package com.bizmate.hr.security.jwt;
 
-import com.bizmate.hr.domain.UserEntity;
-import com.bizmate.hr.dto.user.UserDTO;
+import com.bizmate.hr.security.UserPrincipal;
 import io.jsonwebtoken.*;
+
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
-import javax.crypto.SecretKey;
-import java.time.ZonedDateTime;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+
 import java.nio.charset.StandardCharsets;
+import java.security.Key;
+import java.util.*;
+
+import java.util.stream.Collectors;
 
 /**
  * [JWTProvider]
@@ -25,69 +29,58 @@ public class JWTProvider {
     // ★★★ 1. 설정값 (코드 내장) ★★★
     // 비밀 키: 보안상 32바이트 이상 권장. (테스트용)
     private static final String SECRET_KEY = "1234567890123456789012345678901234567890";
-    private static final long ACCESS_EXP_TIME = 10; // Access Token 유효 시간 (분)
-    private static final long REFRESH_EXP_TIME_DAYS = 1; // Refresh Token 유효 시간 (일)
+    private static final Key ks = Keys.hmacShaKeyFor(SECRET_KEY.getBytes(StandardCharsets.UTF_8));
+    private final long accessTokenValidityMillis = 1000L * 60 * 60;    // 1시간
+    private final long refreshTokenValidityMillis = 1000L * 60 * 60 * 24 * 7; // 7일
     // ★★★ --------------------- ★★★
-
-    private final SecretKey key;
-
-    public JWTProvider() {
-        // 비밀 키 초기화 및 Base64 디코딩 (HMAC SHA-256 서명 키 생성)
-        this.key = Keys.hmacShaKeyFor(SECRET_KEY.getBytes(StandardCharsets.UTF_8));
-        log.info("JWTProvider 초기화 완료. Access Exp: {}분, Refresh Exp: {}일",
-                ACCESS_EXP_TIME, REFRESH_EXP_TIME_DAYS);
-    }
 
     // --- 1. 토큰 생성 메서드 ---
 
     /**
      * Access Token을 생성합니다.
      */
-    public String createAccessToken(UserDTO userDTO, List<String> roles, List<String> perms) { // ★ 시그니처 수정
-        // 클레임 구성: UserEntity와 roles/perms를 사용
-        Map<String, Object> claims = Map.of(
-                "userId", userDTO.getUserId(),
-                "username", userDTO.getUsername(),
-                "empId", userDTO.getEmpId(), // UserEntity에서 Employee 정보를 가져와야 함
-                "empName", userDTO.getEmpName(),
-                "roles", roles,
-                "perms", perms,
-                "type", "access"
-        );
-
-        ZonedDateTime now = ZonedDateTime.now();
-        ZonedDateTime expiryDate = now.plusMinutes(ACCESS_EXP_TIME);
-
-        return Jwts.builder()
-                .setHeaderParam("typ", "JWT")
-                .setClaims(claims)
-                .setIssuedAt(Date.from(now.toInstant()))
-                .setExpiration(Date.from(expiryDate.toInstant()))
-                .signWith(key, SignatureAlgorithm.HS256)
-                .compact();
+    public String createAccessToken(UserPrincipal principal) {
+        return createToken(principal, accessTokenValidityMillis);
     }
 
     /**
      * Refresh Token을 생성합니다.
      */
-    public String createRefreshToken(UserDTO userDTO) { // ★ 시그니처 수정 및 이름 통일 (선택적)
-        // Refresh Token은 최소한의 정보만 담습니다.
-        Map<String, Object> claims = Map.of(
-                "userId", userDTO.getUserId(),
-                "username", userDTO.getUsername(),
-                "type", "refresh"
-        );
+    // --- Refresh Token 생성 (재발급용) ---
+    public String createRefreshToken(UserPrincipal principal) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("uid", principal.getUserId());
+        claims.put("type", "refresh");
 
-        ZonedDateTime now = ZonedDateTime.now();
-        // Refresh Token 유효 시간 적용 (일)
-        ZonedDateTime expiryDate = now.plusDays(REFRESH_EXP_TIME_DAYS);
+        Date now = new Date();
+        Date expiry = new Date(now.getTime() + refreshTokenValidityMillis);
 
         return Jwts.builder()
-                .setHeaderParam("typ", "JWT")
+                .setSubject(principal.getUsername())
                 .setClaims(claims)
-                .setIssuedAt(Date.from(now.toInstant()))
-                .setExpiration(Date.from(expiryDate.toInstant()))
-                .signWith(key, SignatureAlgorithm.HS256)
+                .setIssuedAt(now)
+                .setExpiration(expiry)
+                .signWith(ks, SignatureAlgorithm.HS256 )
+                .compact();
+    }
+
+    private String createToken(UserPrincipal principal, long validityMillis) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("uid", principal.getUserId());
+        claims.put("roles", principal.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.toList()));
+        claims.put("type", "access");
+
+        Date now = new Date();
+        Date expiry = new Date(now.getTime() + validityMillis);
+
+        return Jwts.builder()
+                .setSubject(principal.getUsername())
+                .setClaims(claims)
+                .setIssuedAt(now)
+                .setExpiration(expiry)
+                .signWith(ks,SignatureAlgorithm.HS256)
                 .compact();
     }
 
@@ -96,17 +89,41 @@ public class JWTProvider {
     /**
      * 주어진 토큰이 유효한지 검증하고 Claims(Payload)를 반환합니다.
      */
-    public Claims validateToken(String token) {
+    public boolean validateToken(String token) {
         try {
-            return Jwts.parserBuilder()
-                    .setSigningKey(key)
-                    .build()
-                    .parseClaimsJws(token)
-                    .getBody();
-        } catch (JwtException e) {
-            // 모든 JWT 관련 예외를 잡아 JwtException으로 통일하여 던지거나, 로그 기록 후 특정 오류 코드를 반환합니다.
-            log.warn("JWT 검증 실패: {} - {}", e.getClass().getSimpleName(), e.getMessage());
-            throw e; // Custom Exception으로 래핑하여 던지는 것이 일반적입니다. (여기서는 JwtException을 그대로 던집니다.)
+            Jwts.parser().setSigningKey(ks).parseClaimsJws(token);
+            return true;
+        } catch (JwtException | IllegalArgumentException e) {
+            return false;
         }
+    }
+
+    public Claims parseClaims(String token) {
+        return Jwts.parser().setSigningKey(ks).parseClaimsJws(token).getBody();
+    }
+
+    public Authentication getAuthentication(String token) {
+        Claims claims = parseClaims(token);
+
+        String username = claims.getSubject();
+        Long userId = claims.get("uid", Long.class);
+
+        @SuppressWarnings("unchecked")
+        List<String> roles = (List<String>) claims.getOrDefault("roles", Collections.emptyList());
+
+        List<GrantedAuthority> authorities = roles.stream()
+                .map(SimpleGrantedAuthority::new)
+                .collect(Collectors.toList());
+
+        UserPrincipal principal = new UserPrincipal(
+                userId,
+                username,
+                "",  // 비밀번호는 JWT 안에 없음
+                true,
+                false,
+                authorities
+        );
+
+        return new UsernamePasswordAuthenticationToken(principal, null, authorities);
     }
 }

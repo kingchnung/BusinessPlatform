@@ -1,6 +1,7 @@
 package com.bizmate.hr.dto.assignment;
 
-import com.bizmate.hr.domain.assignment.AssignmentsHistory;
+import com.bizmate.hr.domain.AssignmentsHistory;
+
 import com.bizmate.hr.domain.Department;
 import com.bizmate.hr.domain.code.Position;
 import com.bizmate.hr.domain.code.Grade;
@@ -17,7 +18,7 @@ import java.time.LocalDateTime;
  */
 @Getter
 @Builder
-public class AssignmentHistoryResponseDTO {
+public class AssignmentHistoryDTO {
 
     private final Long assId;
     private final Long empId;
@@ -48,7 +49,7 @@ public class AssignmentHistoryResponseDTO {
     /**
      * Entity -> DTO 변환 메서드
      */
-    public static AssignmentHistoryResponseDTO fromEntity(AssignmentsHistory history) {
+    public static AssignmentHistoryDTO fromEntity(AssignmentsHistory history) {
 
         // 직원 정보는 필수 체크
         if (history.getEmployee() == null) {
@@ -58,7 +59,7 @@ public class AssignmentHistoryResponseDTO {
         // 등록자 이름 추출 (User 엔티티의 empName 필드 사용)
         String createdByName = history.getCreatedBy() != null ? history.getCreatedBy().getEmpName() : "시스템";
 
-        return AssignmentHistoryResponseDTO.builder()
+        return AssignmentHistoryDTO.builder()
                 .assId(history.getAssId())
                 .empId(history.getEmployee().getEmpId())
                 .empName(history.getEmployee().getEmpName())
