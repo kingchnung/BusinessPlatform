@@ -1,152 +1,136 @@
 package com.bizmate.config;
 
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import com.bizmate.hr.security.filter.JWTCheckFilter;
+import com.bizmate.hr.security.handler.APILoginFailHandler;
+import com.bizmate.hr.security.handler.CustomAccessDeniedHandler;
+import com.bizmate.hr.security.handler.CustomAuthenticationEntryPoint;
+import com.bizmate.hr.security.jwt.JWTProvider;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.web.filter.OncePerRequestFilter;
 
-import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 
 @Configuration
+@EnableMethodSecurity
 @RequiredArgsConstructor
+@Slf4j
 public class SecurityConfig {
 
-    private final JwtTokenProvider jwtTokenProvider;
+    private final JWTProvider jwtProvider;
+    private final APILoginFailHandler apiLoginFailHandler;
+    private final CustomAccessDeniedHandler customAccessDeniedHandler;
 
     /**
-     * ✅ 개발/테스트용 Security 설정
-     * - JWT 없을 때 Mock 사용자("tester")를 자동 로그인 처리
-     * ⚠️ 운영 시 MockAuthFilter 부분 반드시 제거
+     * ✅ PasswordEncoder
      */
     @Bean
-    SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-
-        http
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .csrf(csrf -> csrf.disable())
-
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(
-                                "/api/approvals/**",
-                                "/api/mock/**",
-                                "/api/departments/**",
-                                "/swagger-ui/**",
-                                "/v3/api-docs/**",
-                                "/error"
-                        ).permitAll()
-                        .anyRequest().permitAll()
-                )
-
-                // ✅ JwtAuthFilter 추가 (JWT 인증 시도)
-                .addFilterBefore(new JwtAuthFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class)
-
-                // ✅ MockAuthFilter 추가 (JWT 없을 때 tester 자동 로그인)
-                .addFilterBefore(new MockAuthFilter(), JwtAuthFilter.class)
-
-                .httpBasic(httpBasic -> httpBasic.disable())
-                .formLogin(form -> form.disable());
-
-        return http.build();
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
     }
 
     /**
-     * ✅ CORS 허용 설정 (React localhost)
+     * ✅ JWT 인증 필터 (토큰 유효성 + SecurityContext 등록)
+     */
+    @Bean
+    public JWTCheckFilter jwtCheckFilter() {
+        return new JWTCheckFilter(jwtProvider);
+    }
+
+    /**
+     * ✅ SecurityFilterChain - 통합 설정
+     */
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        log.info("▶▶▶ SecurityConfig: 필터 체인 초기화 시작");
+
+        return http
+                // 1️⃣ 기본 인증 관련 기능 비활성화
+                .csrf(AbstractHttpConfigurer::disable)
+                .httpBasic(AbstractHttpConfigurer::disable)
+                .formLogin(AbstractHttpConfigurer::disable)
+                .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+
+                // 2️⃣ CORS 설정
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+
+                // 3️⃣ 인가 규칙
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(
+                                "/api/member/login",   // 로그인 엔드포인트
+                                "/api/mock/login",
+                                "/swagger-ui/**",
+                                "/v3/api-docs/**",
+                                "/error"
+                        ).permitAll() // 인증 불필요
+                        .requestMatchers("/api/**").authenticated() // JWT 인증 필요
+                        .anyRequest().permitAll()
+                )
+
+                // 4️⃣ JWT 검증 필터 등록 (UsernamePasswordAuthenticationFilter 전에 실행)
+                .addFilterBefore(jwtCheckFilter(), UsernamePasswordAuthenticationFilter.class)
+
+                // 5️⃣ 인증 및 인가 예외 처리
+                .exceptionHandling(handler -> handler
+                        .authenticationEntryPoint(new CustomAuthenticationEntryPoint())
+                        .accessDeniedHandler(customAccessDeniedHandler)
+                )
+
+                .build();
+    }
+
+    /**
+     * ✅ CORS 설정 (React와 통신 허용)
      */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration config = new CorsConfiguration();
-        config.setAllowCredentials(true);
-        config.setAllowedOrigins(List.of("http://localhost:5173"));
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        config.setAllowedHeaders(List.of("*"));
-        config.setExposedHeaders(List.of("Authorization"));
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOriginPatterns(List.of("*")); // React Localhost 등 모든 Origin 허용
+        configuration.setAllowCredentials(true); // 쿠키 / 인증정보 허용
+        configuration.setAllowedMethods(Arrays.asList("HEAD", "GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(List.of("*"));
+        configuration.setExposedHeaders(List.of("Authorization")); // JWT 토큰 헤더 노출 허용
+
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", config);
+        source.registerCorsConfiguration("/**", configuration);
         return source;
     }
 
     /**
-     * ✅ InMemory 사용자 등록 (테스트용)
+     * ✅ 권한 계층 설정 (상위 권한 → 하위 권한 자동 상속)
      */
     @Bean
-    UserDetailsService userDetailsService() {
-        return new InMemoryUserDetailsManager(
-                User.withUsername("1000")
-                        .password("{noop}pass1234")
-                        .roles("USER")
-                        .build()
-        );
-    }
-
-    /**
-     * ✅ JWT 인증 필터
-     */
-    static class JwtAuthFilter extends OncePerRequestFilter {
-
-        private final JwtTokenProvider jwtTokenProvider;
-
-        JwtAuthFilter(JwtTokenProvider jwtTokenProvider) {
-            this.jwtTokenProvider = jwtTokenProvider;
-        }
-
-        @Override
-        protected void doFilterInternal(HttpServletRequest request,
-                                        HttpServletResponse response,
-                                        FilterChain filterChain)
-                throws ServletException, IOException {
-
-            String authHeader = request.getHeader("Authorization");
-            if (authHeader != null && authHeader.startsWith("Bearer ")) {
-                String token = authHeader.substring(7);
-                if (jwtTokenProvider.validateToken(token)) {
-                    String username = jwtTokenProvider.getUsername(token);
-                    var auth = new UsernamePasswordAuthenticationToken(
-                            new User(username, "", List.of()), null, List.of()
-                    );
-                    SecurityContextHolder.getContext().setAuthentication(auth);
-                }
-            }
-            filterChain.doFilter(request, response);
-        }
-    }
-
-    /**
-     * ✅ [개발/테스트 전용] JWT가 없을 때 mock 사용자 자동 로그인 필터
-     * ⚠️ 운영 배포 시 반드시 제거
-     */
-    static class MockAuthFilter extends OncePerRequestFilter {
-
-        @Override
-        protected void doFilterInternal(HttpServletRequest request,
-                                        HttpServletResponse response,
-                                        FilterChain filterChain)
-                throws ServletException, IOException {
-
-            // JWT 헤더가 없을 경우 tester 사용자로 인증 처리
-            if (SecurityContextHolder.getContext().getAuthentication() == null) {
-                var auth = new UsernamePasswordAuthenticationToken(
-                        new User("1000", "", List.of()), null, List.of()
-                );
-                SecurityContextHolder.getContext().setAuthentication(auth);
-            }
-
-            filterChain.doFilter(request, response);
-        }
+    public RoleHierarchy roleHierarchy() {
+        RoleHierarchyImpl roleHierarchy = new RoleHierarchyImpl();
+        String hierarchy = """
+            ROLE_CEO > sys:admin
+            sys:admin > sys:manage
+            sys:manage > data:write:all
+            sys:manage > data:read:all
+            ROLE_MANAGER > ROLE_EMPLOYEE
+            data:read:all > data:read:self
+            data:read:all > emp:read
+            data:read:all > dept:read
+            data:read:all > pos:read
+            data:read:all > grade:read
+            data:write:all > data:write:self
+            """;
+        roleHierarchy.setHierarchy(hierarchy);
+        return roleHierarchy;
     }
 }

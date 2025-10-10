@@ -1,5 +1,6 @@
 package com.bizmate.groupware.approval.dto;
 
+import com.bizmate.groupware.approval.domain.FileAttachment;
 import lombok.*;
 
 @Getter
@@ -14,4 +15,15 @@ public class FileAttachmentDto {
     private String filePath;
     private Long fileSize;
     private String contentType;
+
+    public static FileAttachmentDto fromEntity(FileAttachment entity) {
+        return FileAttachmentDto.builder()
+                .id(entity.getId())
+                .originalName(entity.getOriginalName())
+                .storedName(entity.getStoredName())
+                .filePath(entity.getFilePath())
+                .fileSize(entity.getFileSize())
+                .contentType(entity.getContentType())
+                .build();
+    }
 }

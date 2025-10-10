@@ -4,22 +4,25 @@ import com.bizmate.common.domain.BaseEntity;
 import com.bizmate.groupware.approval.infrastructure.ApproverLineJsonConverter;
 import com.bizmate.groupware.approval.infrastructure.JsonMapConverter;
 import com.bizmate.groupware.approval.infrastructure.DocumentTypeConverter;
-
-// ✅ HR 모듈의 엔티티 import
-import com.bizmate.hr.domain.Departments;
-import com.bizmate.hr.domain.Employees;
-import com.bizmate.hr.domain.Roles;
-import com.bizmate.hr.domain.Users;
-
+import com.bizmate.hr.domain.Department;
+import com.bizmate.hr.domain.Employee;
+import com.bizmate.hr.domain.Role;
+import com.bizmate.hr.domain.UserEntity;
+import com.bizmate.hr.dto.user.UserDTO;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.Comment;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.time.LocalDateTime;
+import java.util.*;
 
+/**
+ * ✅ ApprovalDocuments (전자결재 문서)
+ * - 문서 생성, 상신, 승인, 반려, 삭제 상태 관리
+ * - HR 모듈 (User, Employee, Role, Department) 참조
+ * - markApproved(), markRejected(), markDeleted() 포함
+ */
 @Entity
 @Getter
 @Setter
@@ -29,11 +32,12 @@ import java.util.Map;
 @AllArgsConstructor
 public class ApprovalDocuments extends BaseEntity {
 
+    /* ----------------------------- 기본 필드 ------------------------------ */
+
     @Id
     @Column(name = "DOC_ID", length = 40, nullable = false)
     private String docId;
 
-    // ✅ Enum ↔ String 변환 컨버터 사용
     @Convert(converter = DocumentTypeConverter.class)
     @Column(name = "DOC_TYPE", nullable = false, length = 255)
     private DocumentType docType;
@@ -45,33 +49,30 @@ public class ApprovalDocuments extends BaseEntity {
     @Column(name = "DOC_STATUS", nullable = false, length = 20)
     private DocumentStatus status;
 
-    // ✅ HR 모듈 Departments 참조
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "DEPARTMENT_ID", nullable = false)
-    private Departments department;
-
     @Column(name = "FINAL_DOC_NUMBER", unique = true)
     @Comment("최종 승인 시 발급되는 문서번호(연속 시퀀스)")
     private String finalDocNumber;
 
-    // ✅ HR Users 참조 (기안자)
+    /* ----------------------------- HR 참조 ------------------------------ */
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "USER_ID", nullable = false)
-    private Users authorUser;
+    @JoinColumn(name = "DEPARTMENT_ID", nullable = false)
+    private Department department;
 
-    // ✅ HR Roles 참조
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ROLE_ID")
-    private Roles authorRole;
+    @JoinColumn(name = "USER_REF_ID")
+    private UserEntity authorUser;
 
-    // ✅ HR Employees 참조
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "EMP_ID")
-    private Employees authorEmployee;
+    @JoinColumn(name = "ROLE_REF_ID")
+    private Role authorRole;
 
-    @Column(name = "CURRENT_APPROVER_INDEX")
-    @ColumnDefault("0")
-    private int currentApproverIndex;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "EMP_REF_ID")
+    private Employee authorEmployee;
+
+
+    /* ----------------------------- 결재 내용 ------------------------------ */
 
     @Lob
     @Column(name = "APPROVAL_LINE")
@@ -83,21 +84,129 @@ public class ApprovalDocuments extends BaseEntity {
     @Convert(converter = JsonMapConverter.class)
     private Map<String, Object> docContent;
 
+    @Column(name = "CURRENT_APPROVER_INDEX")
+    @ColumnDefault("0")
+    private int currentApproverIndex;
+
     @Builder.Default
     @ElementCollection
     @CollectionTable(name = "APPROVAL_DOC_VIEWERS", joinColumns = @JoinColumn(name = "DOC_ID"))
     @Column(name = "VIEWER_ID", length = 40)
     private List<String> viewerIds = new ArrayList<>();
 
-    @Version
-    @Column(name = "VERSION")
-    private Long version;
+    /* ----------------------------- 첨부파일 ------------------------------ */
 
     @Builder.Default
     @OneToMany(mappedBy = "document", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<FileAttachment> attachments = new ArrayList<>();
 
+    /* ----------------------------- 결재 이력 필드 ------------------------------ */
+
+    @Column(name = "APPROVED_BY")
+    private String approvedBy;
+
+    @Column(name = "APPROVED_EMP_ID")
+    private Long approvedEmpId;
+
+    @Column(name = "APPROVED_DATE")
+    private LocalDateTime approvedDate;
+
+    @Column(name = "REJECTED_BY")
+    private String rejectedBy;
+
+    @Column(name = "REJECTED_EMP_ID")
+    private Long rejectedEmpId;
+
+    @Column(name = "REJECTED_REASON")
+    private String rejectedReason;
+
+    @Column(name = "REJECTED_DATE")
+    private LocalDateTime rejectedDate;
+
+    @Column(name = "DELETED_BY")
+    private String deletedBy;
+
+    @Column(name = "DELETED_EMP_ID")
+    private Long deletedEmpId;
+
+    @Column(name = "DELETED_REASON")
+    private String deletedReason;
+
+    @Column(name = "DELETED_DATE")
+    private LocalDateTime deletedDate;
+
+    @Version
+    @Column(name = "VERSION")
+    private Long version;
+
+    /* ----------------------------- 상태 검증 ------------------------------ */
+
+    public boolean canApprove() {
+        return this.status == DocumentStatus.IN_PROGRESS;
+    }
+
+    public boolean canReject() {
+        return this.status == DocumentStatus.IN_PROGRESS;
+    }
+
     public boolean isDeletable() {
-        return status == DocumentStatus.DRAFT || status == DocumentStatus.REJECTED;
+        return this.status == DocumentStatus.DRAFT || this.status == DocumentStatus.REJECTED;
+    }
+
+    /* ----------------------------- Auditing 래퍼 ------------------------------ */
+
+    public void markCreated(UserDTO user) {
+        super.setCreatedBy(user.getUsername());
+        super.setUpdatedBy(user.getUsername());
+        super.setCreatedAt(LocalDateTime.now());
+        super.setUpdatedAt(LocalDateTime.now());
+    }
+
+    public void markUpdated(UserDTO user) {
+        super.setUpdatedBy(user.getEmpName());
+        super.setUpdatedAt(LocalDateTime.now());
+    }
+
+    /* ----------------------------- 비즈니스 로직 ------------------------------ */
+
+    /** ✅ 승인 처리 */
+    public void markApproved(UserDTO user) {
+        if (!canApprove())
+            throw new IllegalStateException("진행 중(IN_PROGRESS) 상태의 문서만 승인할 수 있습니다.");
+
+        this.status = DocumentStatus.APPROVED;
+        this.approvedBy = user.getEmpName();
+        this.approvedEmpId = user.getEmpId();
+        this.approvedDate = LocalDateTime.now();
+
+        markUpdated(user);
+    }
+
+    /** ✅ 반려 처리 */
+    public void markRejected(UserDTO user, String reason) {
+        if (!canReject())
+            throw new IllegalStateException("진행 중(IN_PROGRESS) 상태의 문서만 반려할 수 있습니다.");
+
+        this.status = DocumentStatus.REJECTED;
+        this.rejectedBy = user.getEmpName();
+        this.rejectedEmpId = user.getEmpId();
+        this.rejectedReason = reason;
+        this.rejectedDate = LocalDateTime.now();
+
+        markUpdated(user);
+    }
+
+    /** ✅ 논리삭제 처리 */
+    public void markDeleted(UserDTO user, String reason) {
+        if (!isDeletable())
+            throw new IllegalStateException("DRAFT 또는 REJECTED 상태의 문서만 삭제할 수 있습니다.");
+
+        this.status = DocumentStatus.DELETED;
+        this.deletedBy = user.getEmpName();
+        this.deletedEmpId = user.getEmpId();
+        this.deletedReason = reason;
+        this.deletedDate = LocalDateTime.now();
+
+        markUpdated(user);
     }
 }

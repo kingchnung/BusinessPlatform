@@ -4,8 +4,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
-@Configuration
-@EnableJpaAuditing // ✅ BaseEntity의 @CreatedDate, @LastModifiedDate 활성화
+@Configuration // ✅ BaseEntity의 @CreatedDate, @LastModifiedDate 활성화
 @ComponentScan(basePackages = {
         "com.bizmate.common.exception",
         "com.bizmate.common.logging",

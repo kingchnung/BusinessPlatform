@@ -6,20 +6,20 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.context.annotation.ComponentScan;
 
 @Configuration
-// ✅ 전자결재 도메인 + 공통 도메인만 스캔
 @EntityScan(basePackages = {
-        "com.bizmate.common.domain",                // BaseEntity 등 공통 엔티티
-        "com.bizmate.groupware.approval.domain",     // 전자결재 엔티티
-        "com.bizmate.hr"
+        "com.bizmate.common.domain",
+        "com.bizmate.groupware.approval.domain",
+        "com.bizmate.hr.domain"                     // ✅ hr 엔티티 명시
 })
 @EnableJpaRepositories(basePackages = {
-        "com.bizmate.groupware.approval.repository" // 전자결재 Repository
+        "com.bizmate.groupware.approval.repository",
+        "com.bizmate.hr.repository"                 // ✅ hr 리포지토리 추가
 })
 @ComponentScan(basePackages = {
-        "com.bizmate.groupware.approval.service",   // 결재 서비스 로직
-        "com.bizmate.groupware.approval.api"        // 결재 컨트롤러
+        "com.bizmate.groupware.approval.service",
+        "com.bizmate.groupware.approval.api",
+        "com.bizmate.hr"                            // ✅ hr 서비스/설정까지 포함 시 안전
 })
 public class GroupwareJpaConfig {
-    // ✅ 전자결재 전용 설정
-    // ⚠️ HR 영역 클래스는 스캔하지 않음 (중복 방지)
+    // 전자결재 전용 + HR repository 접근 가능
 }

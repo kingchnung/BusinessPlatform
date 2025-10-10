@@ -1,18 +1,14 @@
 package com.bizmate.groupware.approval.dto;
 
-import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
-@Builder
+@Getter
+@Setter
 public class DocumentSearchRequestDto {
-    private String keyword;
-    private String status;
-    private String fromDate;
-    private String toDate;
-    private String docType;
-    @Builder.Default
+    private String keyword;      // 제목, 내용 검색
+    private String status;       // 상태별 필터
+    private Long departmentId;   // 부서 필터
     private int page = 0;
-    @Builder.Default
     private int size = 10;
 }
