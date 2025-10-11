@@ -3,6 +3,7 @@ package com.bizmate.hr.config;
 import com.bizmate.hr.security.filter.JWTCheckFilter;
 import com.bizmate.hr.security.handler.CustomAccessDeniedHandler;
 import com.bizmate.hr.security.handler.CustomAuthenticationEntryPoint;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
@@ -90,9 +91,23 @@ public class CustomSecurityConfig {
                 .addFilterBefore(jwtCheckFilter, UsernamePasswordAuthenticationFilter.class)
 
                 // 5️⃣ 예외 처리 (JWT 인증 예외 대응)
-                .exceptionHandling(ex -> ex
-                        .authenticationEntryPoint(authenticationEntryPoint) // 인증 실패 (401)
-                        .accessDeniedHandler(accessDeniedHandler)           // 권한 부족 (403)
+                .exceptionHandling(exception -> exception
+                        // 인증 실패 (토큰 없음/잘못됨)
+                        .authenticationEntryPoint((req, res, ex) -> {
+                            res.setStatus(HttpServletResponse.SC_UNAUTHORIZED); // 401
+                            res.setContentType("application/json;charset=UTF-8");
+                            res.getWriter().write("""
+                    {"error": "UNAUTHORIZED", "message": "인증이 필요합니다."}
+                    """);
+                        })
+                        // 인가 실패 (권한 부족)
+                        .accessDeniedHandler((req, res, ex) -> {
+                            res.setStatus(HttpServletResponse.SC_FORBIDDEN); // 403
+                            res.setContentType("application/json;charset=UTF-8");
+                            res.getWriter().write("""
+                    {"error": "ACCESS_DENIED", "message": "접근 권한이 없습니다."}
+                    """);
+                        })
                 );
 
         return http.build();
@@ -145,6 +160,9 @@ public class CustomSecurityConfig {
 
             # 5. 쓰기 권한 계층
             data:write:all > data:write:self
+            data:write:all > emp:create
+            data:write:all > emp:update
+            data:write:all > emp:delete
             """;
         roleHierarchy.setHierarchy(hierarchy);
         return roleHierarchy;
