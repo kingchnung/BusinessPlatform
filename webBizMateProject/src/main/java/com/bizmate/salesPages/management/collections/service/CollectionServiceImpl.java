@@ -7,6 +7,8 @@ import com.bizmate.salesPages.common.dto.PageResponseDTO;
 import com.bizmate.salesPages.management.collections.domain.Collection;
 import com.bizmate.salesPages.management.collections.dto.CollectionDTO;
 import com.bizmate.salesPages.management.collections.repository.CollectionRepository;
+import com.bizmate.salesPages.management.sales.sales.repository.SalesRepository;
+import com.bizmate.salesPages.report.salesReport.dto.*;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
@@ -16,12 +18,12 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
+
 
 @RequiredArgsConstructor
 @Service
@@ -29,6 +31,7 @@ import java.util.stream.Collectors;
 public class CollectionServiceImpl implements CollectionService{
     private final CollectionRepository collectionRepository;
     private final ClientRepository clientRepository;
+    private final SalesRepository salesRepository;
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyyMMdd");
     private final ModelMapper modelMapper;
 
@@ -44,7 +47,6 @@ public class CollectionServiceImpl implements CollectionService{
                 .collectionDate(collection.getCollectionDate())
                 .collectionMoney(collection.getCollectionMoney())
                 .collectionNote(collection.getCollectionNote())
-                // Client 엔티티에서 필요한 필드들을 직접 추출하여 DTO에 매핑
                 .clientId(client.getClientId())
                 .clientCompany(client.getClientCompany())
                 .build();
@@ -108,7 +110,6 @@ public class CollectionServiceImpl implements CollectionService{
 
         if(!collection.getClient().getClientId().equals(collectionDTO.getClientId())) {
             String newClientId = collectionDTO.getClientId();
-
             Client newClient = clientRepository.findByClientId(newClientId).orElseThrow(() -> new NoSuchElementException("New Client with ID " + newClientId + " not found."));
             collection.changeClient(newClient);
         }
@@ -140,5 +141,71 @@ public class CollectionServiceImpl implements CollectionService{
         PageResponseDTO<CollectionDTO> responseDTO = PageResponseDTO.<CollectionDTO>withAll().dtoList(dtoList).pageRequestDTO(pageRequestDTO).totalCount(totalCount).build();
 
         return responseDTO;
+    }
+
+    @Override
+    public List<CollectionSummary> getClientTotalCollectionSummary() {
+        return collectionRepository.findTotalCollectionAmountGroupByClient();
+    }
+
+    @Override
+    public List<ClientSalesSummary> getClientTotalSalesSummary() {
+        return salesRepository.findTotalSalesAmountGroupByClient();
+    }
+
+    @Override
+    public List<ProjectSalesSummary> getProjectTotalSalesSummary() {
+        return salesRepository.findTotalSalesAmountGroupByProject();
+    }
+
+    @Override
+    public List<QuarterlySalesSummary> getQuarterlyTotalSalesSummary() {
+        return salesRepository.findTotalSalesAmountGroupByQuarter();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ClientReceivablesDTO> getClientReceivablesSummary() {
+        List<ClientSalesSummary> salesSummaries = salesRepository.findTotalSalesAmountGroupByClient();
+        List<CollectionSummary> collectionSummaries = collectionRepository.findTotalCollectionAmountGroupByClient();
+
+        Map<String, ClientReceivablesDTO> receivablesMap = new HashMap<>();
+
+        // 매출액 데이터 집계
+        for(ClientSalesSummary sale : salesSummaries){
+            ClientReceivablesDTO dto = ClientReceivablesDTO.builder()
+                    .clientId(sale.getClientId())
+                    .clientCompany(sale.getClientCompany())
+                    .totalSalesAmount(sale.getTotalSalesAmount())
+                    .totalCollectionAmount(BigDecimal.ZERO)
+                    .build();
+            receivablesMap.put(sale.getClientId(),dto);
+        }
+
+        // 수금액 데이터 맵에 업뎃
+        for(CollectionSummary collection : collectionSummaries){
+            String clientId = collection.getClientId();
+
+            if(receivablesMap.containsKey(clientId)){
+                ClientReceivablesDTO dto = receivablesMap.get(clientId);
+                dto.setTotalCollectionAmount(collection.getTotalCollectionAmount());
+            } else {
+                ClientReceivablesDTO dto = ClientReceivablesDTO.builder()
+                        .clientId(clientId)
+                        .clientCompany(collection.getClientCompany())
+                        .totalSalesAmount(BigDecimal.ZERO)
+                        .totalCollectionAmount(collection.getTotalCollectionAmount())
+                        .build();
+                receivablesMap.put(clientId, dto);
+            }
+        }
+
+        return receivablesMap.values().stream()
+                .peek(dto -> {
+                    BigDecimal outstanding = dto.getTotalSalesAmount().subtract(dto.getTotalCollectionAmount());
+                    dto.setOutstandingBalance(outstanding);
+                })
+                .sorted(Comparator.comparing(ClientReceivablesDTO::getClientCompany))
+                .collect(Collectors.toList());
     }
 }

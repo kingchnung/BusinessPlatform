@@ -4,9 +4,11 @@ import com.bizmate.salesPages.common.dto.PageRequestDTO;
 import com.bizmate.salesPages.common.dto.PageResponseDTO;
 import com.bizmate.salesPages.management.collections.dto.CollectionDTO;
 import com.bizmate.salesPages.management.collections.service.CollectionService;
+import com.bizmate.salesPages.report.salesReport.dto.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -42,5 +44,30 @@ public class CollectionController {
     public Map<String, String> remove(@PathVariable(name = "collectionId")String collectionId){
         collectionService.remove(collectionId);
         return Map.of("RESULT", "SUCCESS");
+    }
+
+    @GetMapping("/report/receivables/client")
+    public List<ClientReceivablesDTO> getClientReceivablesSummary(){
+        return collectionService.getClientReceivablesSummary();
+    }
+
+    @GetMapping("/report/collection/client")
+    public List<CollectionSummary> getClientCollectionSummary(){
+        return collectionService.getClientTotalCollectionSummary();
+    }
+
+    @GetMapping("/report/sales/client")
+    public List<ClientSalesSummary> getClientSalesSummary(){
+        return collectionService.getClientTotalSalesSummary();
+    }
+
+    @GetMapping("/report/sales/project")
+    public List<ProjectSalesSummary> getProjectSalesSummary(){
+        return collectionService.getProjectTotalSalesSummary();
+    }
+
+    @GetMapping("/report/sales/quarter")
+    public List<QuarterlySalesSummary> getQuarterlySalesSummary(){
+        return collectionService.getQuarterlyTotalSalesSummary();
     }
 }

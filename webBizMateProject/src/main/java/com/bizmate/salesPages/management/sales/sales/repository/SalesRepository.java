@@ -24,7 +24,9 @@ public interface SalesRepository extends JpaRepository<Sales, String> {
         SELECT new com.bizmate.salesPages.report.salesReport.dto.ClientSalesSummary(
             s.clientId, s.clientCompany, SUM(s.salesAmount)
         ) 
-        FROM Sales s GROUP BY s.clientId, s.clientCompany 
+        FROM Sales s 
+        WHERE s.invoiceIssued = true 
+        GROUP BY s.clientId, s.clientCompany 
         ORDER BY SUM(s.salesAmount) DESC
         """
     )
@@ -35,6 +37,7 @@ public interface SalesRepository extends JpaRepository<Sales, String> {
                 s.projectId, s.projectName, SUM(s.salesAmount)
             ) 
             FROM Sales s 
+            WHERE s.invoiceIssued = true 
             GROUP BY s.projectId, s.projectName 
             ORDER BY SUM(s.salesAmount) DESC
             """)
@@ -47,6 +50,7 @@ public interface SalesRepository extends JpaRepository<Sales, String> {
             SUM(s.salesAmount)
         ) 
         FROM Sales s 
+        WHERE s.invoiceIssued = true 
         GROUP BY FUNCTION('TO_CHAR', s.salesDate, 'YYYY'), FUNCTION('TO_CHAR', s.salesDate, 'Q') 
         ORDER BY FUNCTION('TO_CHAR', s.salesDate, 'YYYY') DESC, FUNCTION('TO_CHAR', s.salesDate, 'Q') DESC
         """)
