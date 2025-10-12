@@ -8,6 +8,7 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -56,7 +57,8 @@ public class ApprovalDocumentsDto {
     @NotEmpty(message = "결재선은 1명 이상이어야 합니다.")
     private List<ApproverStep> approvalLine;
 
-    private List<FileAttachmentDto> attachments;
+    @Builder.Default
+    private List<FileAttachmentDto> attachments = new ArrayList<>();
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

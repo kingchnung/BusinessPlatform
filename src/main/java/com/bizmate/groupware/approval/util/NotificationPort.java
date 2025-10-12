@@ -1,4 +1,4 @@
-package com.bizmate.groupware.approval.service;
+package com.bizmate.groupware.approval.util;
 
 import java.util.List;
 

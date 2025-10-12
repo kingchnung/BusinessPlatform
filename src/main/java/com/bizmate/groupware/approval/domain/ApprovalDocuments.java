@@ -209,4 +209,10 @@ public class ApprovalDocuments extends BaseEntity {
 
         markUpdated(user);
     }
+
+    public void moveToNextApprover() {
+        if (this.currentApproverIndex + 1 < this.approvalLine.size()) {
+            this.currentApproverIndex++;
+        }
+    }
 }

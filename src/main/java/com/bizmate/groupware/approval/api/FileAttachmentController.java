@@ -1,161 +1,161 @@
 package com.bizmate.groupware.approval.api;
 
-import com.bizmate.common.dto.PageRequestDTO;
-import com.bizmate.common.dto.PageResponseDTO;
 import com.bizmate.common.exception.VerificationFailedException;
-import com.bizmate.groupware.approval.domain.*;
+import com.bizmate.groupware.approval.domain.ApprovalDocuments;
+import com.bizmate.groupware.approval.domain.FileAttachment;
 import com.bizmate.groupware.approval.dto.FileAttachmentDto;
-import com.bizmate.groupware.approval.repository.*;
+import com.bizmate.groupware.approval.repository.ApprovalDocumentsRepository;
+import com.bizmate.groupware.approval.repository.FileAttachmentRepository;
 import com.bizmate.hr.domain.UserEntity;
 import com.bizmate.hr.repository.UserRepository;
+import io.jsonwebtoken.io.IOException;
+import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.core.io.*;
-import org.springframework.data.domain.*;
-import org.springframework.http.*;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.FileNotFoundException;
+import java.net.MalformedURLException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Slf4j
 @RestController
-@RequestMapping("/api/upload")
+@RequestMapping("/api/attachments")
 @RequiredArgsConstructor
+@Slf4j
 public class FileAttachmentController {
 
+    private final EntityManager entityManager;
     private final FileAttachmentRepository fileAttachmentRepository;
     private final ApprovalDocumentsRepository approvalDocumentsRepository;
     private final UserRepository userRepository;
 
-    /* ===========================================================
-     * ✅ 1️⃣ 파일 목록 조회 (PageRequestDTO / PageResponseDTO 적용)
-     * =========================================================== */
-    @GetMapping("/list/{docId}")
-    public PageResponseDTO<FileAttachmentDto> getFileList(
-            @PathVariable String docId,
-            PageRequestDTO pageRequestDTO,
+    private static final String BASE_UPLOAD_DIR = "C:/bizmate/uploads";
+
+    /**
+     * ✅ 1️⃣ 파일 업로드 (문서 ID 포함)
+     */
+    @PostMapping
+    public ResponseEntity<FileAttachmentDto> uploadFile(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam(value = "docId", required = false) String docId,
             @AuthenticationPrincipal UserDetails userDetails
-    ) {
+    ) throws Exception {
 
-        log.info("📂 첨부파일 목록 요청: 문서ID={}, page={}, size={}",
-                docId, pageRequestDTO.getPage(), pageRequestDTO.getSize());
+        log.info("📩 파일 업로드 요청: 파일명={}, 문서ID={}", file.getOriginalFilename(), docId);
 
-        ApprovalDocuments document = approvalDocumentsRepository.findById(docId)
-                .orElseThrow(() -> new VerificationFailedException("문서를 찾을 수 없습니다."));
-
-        Long userId = Long.valueOf(userDetails.getUsername());
-        UserEntity currentUser = userRepository.findById(userId)
+        // 업로더 조회
+        UserEntity uploader = userRepository.findByUsername(userDetails.getUsername())
                 .orElseThrow(() -> new VerificationFailedException("사용자 정보를 찾을 수 없습니다."));
 
-        // ✅ 접근 권한 확인
-        boolean isAuthor = document.getAuthorUser().getUserId().equals(userId);
-        boolean isViewer = document.getViewerIds().contains(String.valueOf(userId));
-        boolean isApprover = document.getApprovalLine() != null &&
-                document.getApprovalLine().stream()
-                        .anyMatch(step -> step.approverId() != null && step.approverId().equals(userId));
-
-        if (!(isAuthor || isViewer || isApprover)) {
-            log.warn("🚫 첨부파일 목록 접근 차단 - 사용자 {} 문서 {} 접근 불가", userId, docId);
-            throw new VerificationFailedException("이 문서의 첨부파일을 조회할 권한이 없습니다.");
+        ApprovalDocuments document = null;
+        if (docId != null && !docId.isBlank()) {
+            document = entityManager.getReference(ApprovalDocuments.class, docId);
         }
 
-        // ✅ 페이징 처리
-        Pageable pageable = PageRequest.of(pageRequestDTO.getPage() - 1, pageRequestDTO.getSize(),
-                Sort.by(Sort.Direction.DESC, "createdAt"));
+        // 실제 저장 경로 생성
+        Path uploadDir = Paths.get(BASE_UPLOAD_DIR, LocalDate.now().toString());
+        Files.createDirectories(uploadDir);
 
-        Page<FileAttachment> resultPage =
-                fileAttachmentRepository.findByDocument_DocId(docId, pageable);
+        String storedName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+        Path filePath = uploadDir.resolve(storedName);
 
-        List<FileAttachmentDto> dtoList = resultPage.getContent().stream()
-                .map(a -> FileAttachmentDto.builder()
-                        .id(a.getId())
-                        .originalName(a.getOriginalName())
-                        .storedName(a.getStoredName())
-                        .filePath(a.getFilePath())
-                        .fileSize(a.getFileSize())
-                        .contentType(a.getContentType())
-                        .build())
-                .collect(Collectors.toList());
+        //실제 파일 저장
+        file.transferTo(filePath.toFile());
 
-        log.info("📎 첨부파일 {}건 반환 (page {} of {})", dtoList.size(),
-                pageRequestDTO.getPage(), resultPage.getTotalPages());
-
-        return PageResponseDTO.<FileAttachmentDto>withAll()
-                .dtoList(dtoList)
-                .pageRequestDTO(pageRequestDTO)
-                .totalCount(resultPage.getTotalElements())
+        // DB 저장
+        FileAttachment entity = FileAttachment.builder()
+                .document(document)               // ✅ 문서가 없으면 null로 저장
+                .uploader(uploader)
+                .originalName(file.getOriginalFilename())
+                .storedName(storedName)
+                .filePath(filePath.toString())
+                .fileSize(file.getSize())
+                .contentType(file.getContentType())
+                .uploadedAt(LocalDateTime.now())
                 .build();
+
+        FileAttachment saved = fileAttachmentRepository.saveAndFlush(entity);
+        FileAttachmentDto dto = FileAttachmentDto.fromEntity(saved);
+
+        log.info("✅ 업로드 완료: {} (문서ID: {})", saved.getOriginalName(), document != null ? document.getDocId() : "임시");
+        return ResponseEntity.ok(dto);
     }
 
-    /* ===========================================================
-     * ✅ 2️⃣ 파일 미리보기
-     * =========================================================== */
+    /**
+     * ✅ 2️⃣ 문서별 첨부파일 목록 조회
+     */
+    @GetMapping("/list/{docId}")
+    public ResponseEntity<List<FileAttachmentDto>> getFileList(@PathVariable String docId) {
+        List<FileAttachmentDto> dtoList = fileAttachmentRepository.findByDocument_DocId(docId)
+                .stream()
+                .map(FileAttachmentDto::fromEntity)
+                .collect(Collectors.toList());
+
+        log.info("📎 문서 [{}] 첨부파일 {}건 반환", docId, dtoList.size());
+        return ResponseEntity.ok(dtoList);
+    }
+
+    // ✅ 미리보기
     @GetMapping("/preview/{id}")
-    public ResponseEntity<Resource> previewFile(
-            @PathVariable Long id,
-            @AuthenticationPrincipal UserDetails userDetails) throws Exception {
-
+    public ResponseEntity<Resource> preview(@PathVariable Long id) throws IOException {
         FileAttachment file = fileAttachmentRepository.findById(id)
-                .orElseThrow(() -> new VerificationFailedException("첨부파일을 찾을 수 없습니다."));
-
-        checkViewerPermission(file, userDetails);
+                .orElseThrow(() -> new IllegalStateException("파일을 찾을 수 없습니다."));
 
         Path path = Paths.get(file.getFilePath());
-        Resource resource = new UrlResource(path.toUri());
+        Resource resource;
+
+        try {
+            resource = new UrlResource(path.toUri());
+        } catch (MalformedURLException e) {
+            throw new IOException("잘못된 파일 경로 형식입니다: " + file.getFilePath(), e);
+        }
+
+        if (!resource.exists()) {
+            throw new IllegalStateException("요청한 파일이 존재하지 않습니다: " + file.getFilePath());
+        }
 
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType(file.getContentType()))
                 .body(resource);
     }
 
-    /* ===========================================================
-     * ✅ 3️⃣ 파일 다운로드
-     * =========================================================== */
+    // ✅ 다운로드
     @GetMapping("/download/{id}")
-    public ResponseEntity<Resource> downloadFile(
-            @PathVariable Long id,
-            @AuthenticationPrincipal UserDetails userDetails) throws Exception {
-
+    public ResponseEntity<Resource> download(@PathVariable Long id) throws IOException {
         FileAttachment file = fileAttachmentRepository.findById(id)
-                .orElseThrow(() -> new VerificationFailedException("첨부파일을 찾을 수 없습니다."));
-
-        checkViewerPermission(file, userDetails);
+                .orElseThrow(() -> new IllegalStateException("파일을 찾을 수 없습니다."));
 
         Path path = Paths.get(file.getFilePath());
-        Resource resource = new UrlResource(path.toUri());
-        String encodedFileName = new String(file.getOriginalName().getBytes("UTF-8"), "ISO-8859-1");
+        Resource resource;
+
+        try {
+            resource = new UrlResource(path.toUri());
+        } catch (MalformedURLException e) {
+            throw new IOException("잘못된 파일 경로 형식입니다: " + file.getFilePath(), e);
+        }
+
+        if (!resource.exists()) {
+            throw new IllegalStateException("요청한 파일이 존재하지 않습니다: " + file.getFilePath());
+        }
 
         return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + encodedFileName + "\"")
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=\"" + URLEncoder.encode(file.getOriginalName(), StandardCharsets.UTF_8) + "\"")
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
                 .body(resource);
     }
-
-    /* ===========================================================
-     * ✅ 내부 접근 권한 검증 메서드
-     * =========================================================== */
-    private void checkViewerPermission(FileAttachment file, UserDetails userDetails) {
-        Long userId = Long.valueOf(userDetails.getUsername());
-
-        UserEntity currentUser = userRepository.findById(userId)
-                .orElseThrow(() -> new VerificationFailedException("사용자 정보를 찾을 수 없습니다."));
-
-        ApprovalDocuments doc = file.getDocument();
-
-        boolean isAuthor = doc.getAuthorUser().getUserId().equals(userId);
-        boolean isViewer = doc.getViewerIds().contains(String.valueOf(userId));
-        boolean isApprover = doc.getApprovalLine() != null &&
-                doc.getApprovalLine().stream()
-                        .anyMatch(step -> step.approverId() != null && step.approverId().equals(userId));
-
-        if (!(isAuthor || isViewer || isApprover)) {
-            log.warn("🚫 첨부파일 접근 차단 - 사용자 {} 문서 {} 접근 불가", userId, doc.getDocId());
-            throw new VerificationFailedException("이 첨부파일을 열람할 권한이 없습니다.");
-        }
-    }
-
 }

@@ -1,5 +1,6 @@
 package com.bizmate.groupware.approval.domain;
 
+import com.bizmate.hr.domain.UserEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
@@ -20,7 +21,7 @@ public class FileAttachment {
 
     // ✅ ApprovalDocuments와 FK 연결
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "DOCUMENT_ID") // ApprovalDocuments.DOC_ID 참조
+    @JoinColumn(name = "DOC_ID") // ApprovalDocuments.DOC_ID 참조
     private ApprovalDocuments document;
 
     @Column(name = "ORIGINAL_NAME", nullable = false, length = 255)
@@ -29,7 +30,7 @@ public class FileAttachment {
     @Column(name = "STORED_NAME", nullable = false, length = 255)
     private String storedName;
 
-    @Column(name = "FILE_PATH", nullable = false, length = 255)
+    @Column(name = "FILE_PATH", nullable = true, length = 255)
     private String filePath;
 
     @Column(name = "FILE_SIZE", nullable = false)
@@ -41,8 +42,17 @@ public class FileAttachment {
     @Column(name = "UPLOADED_AT", nullable = false)
     private LocalDateTime uploadedAt;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "USER_ID")
+    private UserEntity uploader;
+
     @PrePersist
     public void onCreate() {
+        if (uploadedAt == null) uploadedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    public void onUpdate() {
         if (uploadedAt == null) uploadedAt = LocalDateTime.now();
     }
 }

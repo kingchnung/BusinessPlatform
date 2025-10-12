@@ -40,4 +40,9 @@ public enum DocumentType {
         throw new IllegalArgumentException("유효하지 않은 문서유형: " + value);
     }
 
+    @JsonValue // ✅ Enum → JSON 문자열 변환 (응답 시)
+    public String toValue() {
+        return this.code; // ← "REQUEST" 로 직렬화됨
+    }
+
 }
