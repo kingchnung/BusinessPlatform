@@ -17,7 +17,6 @@ public class CollectionServiceTests {
 
     @Test
     public void testRegister() {
-
         for (int i = 1; i < 10; i++) {
             CollectionDTO collectionDTO = CollectionDTO.builder()
                     .collectionId("20250505-" + i)
@@ -31,4 +30,5 @@ public class CollectionServiceTests {
             log.info("생성된 주문 번호: {}", collectionId);
         }
     }
+
 }
