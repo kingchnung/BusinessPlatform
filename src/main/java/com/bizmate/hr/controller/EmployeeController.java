@@ -12,6 +12,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/employees")
@@ -50,6 +51,12 @@ public class EmployeeController {
         // ★ 변경: RequestDTO를 받고 DTO를 반환
         EmployeeDTO createdDto = employeeService.saveEmployee(null, requestDTO);
         return new ResponseEntity<>(createdDto, HttpStatus.CREATED);
+    }
+    @GetMapping("/next-no/{deptCode}")
+    @PreAuthorize("hasAnyAuthority('emp:create')")
+    public ResponseEntity<Map<String, String>> getNextEmpNoByDept(@PathVariable String deptCode){
+        String EmpNo = employeeService.generateEmpNo(deptCode);
+        return ResponseEntity.ok(Map.of("EmpNo", EmpNo));
     }
 
     // ★ 권한 설정: 'emp:update' 권한이 있는 사용자만 접근 가능

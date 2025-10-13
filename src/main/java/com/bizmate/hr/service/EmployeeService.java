@@ -12,4 +12,6 @@ public interface EmployeeService { // ★ 인터페이스 이름 변경
     EmployeeDTO getEmployee(Long empId);
     void deleteEmployee(Long empId);
     EmployeeDetailDTO getEmployeeDetail(Long empId);
+
+    String generateEmpNo(String deptCode);
 }

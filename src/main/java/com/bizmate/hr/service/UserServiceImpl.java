@@ -51,6 +51,12 @@ public class UserServiceImpl implements UserService {
         user.setPwHash(encodedPassword);
         user.setEmployee(employee);
         user.setIsLocked("N"); // 초기에는 잠금 해제 상태
+        user.setEmpName(employee.getEmpName());
+        user.setEmail(employee.getEmail());
+        user.setPhone(employee.getPhone());
+        user.setDeptName(employee.getDepartment().getDeptName());
+        user.setPositionName(employee.getPosition().getPositionName());
+        user.setDeptCode(employee.getDepartment().getDeptCode());
 
         // 3. 역할 초기 설정: 'EMPLOYEE' 역할을 부여합니다.
         Role employeeRole = roleRepository.findByRoleName("EMPLOYEE")
