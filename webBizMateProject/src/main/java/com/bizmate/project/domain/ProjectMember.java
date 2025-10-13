@@ -45,7 +45,6 @@ public class ProjectMember extends BaseTimeEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "pm_role_name")
-    @Builder.Default
     private ProjectMemberStatus pmRoleName;
 
     @PrePersist

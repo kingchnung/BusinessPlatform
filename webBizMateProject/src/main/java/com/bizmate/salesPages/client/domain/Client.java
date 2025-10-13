@@ -1,0 +1,92 @@
+package com.bizmate.salesPages.client.domain;
+
+import jakarta.persistence.*;
+import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.time.LocalDate;
+
+@Getter
+@ToString
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
+@Entity
+@Table(name = "CLIENT")
+public class Client {
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "CLIENT_SEQ_GENERATOR")
+    @SequenceGenerator(
+            name = "CLIENT_SEQ_GENERATOR",
+            sequenceName = "CLIENT_SEQ",
+            allocationSize = 1,
+            initialValue = 1
+    )
+    private Long clientNo;
+
+    @Column(unique = true, nullable = false)
+    private String clientId;
+
+    private String clientCompany;
+    private String clientCeo;
+    private String clientBusinessType;
+    private String clientAddress;
+    private String clientContact;
+
+    @CreationTimestamp
+    @Temporal(TemporalType.DATE)
+    private LocalDate registrationDate;
+
+    private String clientNote;
+    private String businessLicenseFile;
+
+    @Builder.Default
+    private Boolean validationStatus = false;
+
+    private String empName;
+    private String clientEmail;
+    private String userId;
+
+//    public void setClientNo(Long clientNo){
+//        this.clientNo = clientNo;
+//    }
+//
+//    public void setClientId(String clientId) {
+//        this.clientId = clientId;
+//    }
+
+    public void changeClientId(String clientId){
+        this.clientId = clientId;
+    }
+    public void changeClientCompany(String clientCompany){
+        this.clientCompany = clientCompany;
+    }
+    public void changeClientCeo(String clientCeo){
+        this.clientCeo = clientCeo;
+    }
+    public void changeClientBusinessType(String clientBusinessType){
+        this.clientBusinessType = clientBusinessType;
+    }
+    public void changeClientAddress(String clientAddress){
+        this.clientAddress = clientAddress;
+    }
+    public void changeClientContact(String clientContact) {
+        this.clientContact = clientContact;
+    }
+    public void changeClientNote(String clientNote) {
+        this.clientNote = clientNote;
+    }
+    public void changeBusinessLicenseFile(String businessLicenseFile) {
+        this.businessLicenseFile = businessLicenseFile;
+    }
+    public void changeEmpName(String empName) {
+        this.empName = empName;
+    }
+    public void changeClientEmail(String clientEmail) {
+        this.clientEmail = clientEmail;
+    }
+    public void changeUserId(String userId) {
+        this.userId = userId;
+    }
+}

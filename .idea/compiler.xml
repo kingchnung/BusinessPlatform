@@ -8,13 +8,21 @@
         <processorPath useClasspath="false">
           <entry name="$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.projectlombok/lombok/1.18.40/398c6d2d7c42c96b65e78d2ddc9be0058c163453/lombok-1.18.40.jar" />
         </processorPath>
-        <module name="webBizMateProject.main" />
-        <module name="webBizMateProject.test" />
+        <module name="com.bizmate.webBizMateProject.main" />
+        <module name="com.bizmate.webBizMateProject.test" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="webBizMateProject" target="21" />
+      <module name="webBizMateProject.main" target="21" />
+      <module name="webBizMateProject.test" target="21" />
+    </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="com.bizmate.webBizMateProject" options="-parameters" />
+      <module name="com.bizmate.webBizMateProject.main" options="-parameters" />
+      <module name="com.bizmate.webBizMateProject.test" options="-parameters" />
       <module name="webBizMateProject" options="-parameters" />
       <module name="webBizMateProject.main" options="-parameters" />
       <module name="webBizMateProject.test" options="-parameters" />
