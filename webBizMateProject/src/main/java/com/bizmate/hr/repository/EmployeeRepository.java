@@ -25,4 +25,7 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
     Optional<Employee> findByIdWithDepartmentAndPosition(@Param("empId") Long empId);
 
     long countByDepartment_DeptCode(String deptCode);
+
+    @Query("SELECT e FROM Employee e LEFT JOIN FETCH e.department LEFT JOIN FETCH e.position WHERE e.empId = :empId")
+    Optional<Employee> findEmployeeDetailById(@Param("empId") Long empId);
 }

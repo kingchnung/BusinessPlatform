@@ -1,6 +1,7 @@
 package com.bizmate.hr.controller;
 
 import com.bizmate.hr.dto.employee.EmployeeDTO;
+import com.bizmate.hr.dto.employee.EmployeeDetailDTO;
 import com.bizmate.hr.dto.employee.EmployeeRequestDTO;
 import com.bizmate.hr.service.EmployeeService;
 import jakarta.validation.Valid;
@@ -27,11 +28,18 @@ public class EmployeeController {
     }
 
     // ★ 권한 설정: 'emp:read' 권한이 있는 사용자만 접근 가능
-    @GetMapping("/{empId}")
+    @GetMapping("/{empId}/summary")
     @PreAuthorize("hasAuthority('emp:read')")
     public ResponseEntity<EmployeeDTO> getEmployee(@PathVariable Long empId){
         // Service가 EntityNotFoundException을 던지므로, Controller는 200 OK 또는 예외 처리를 따릅니다.
         EmployeeDTO dto = employeeService.getEmployee(empId);
+        return ResponseEntity.ok(dto);
+    }
+
+    @GetMapping("/{empId}/detail")
+    @PreAuthorize("hasAnyAuthority('emp:read')")
+    public ResponseEntity<EmployeeDetailDTO> getEmployeeDetail(@PathVariable Long empId){
+        EmployeeDetailDTO dto = employeeService.getEmployeeDetail(empId);
         return ResponseEntity.ok(dto);
     }
 
@@ -61,4 +69,6 @@ public class EmployeeController {
         employeeService.deleteEmployee(empId);
         return ResponseEntity.noContent().build();
     }
+
+
 }

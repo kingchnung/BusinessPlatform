@@ -6,6 +6,7 @@ import com.bizmate.hr.domain.UserEntity;
 import com.bizmate.hr.domain.code.Grade;
 import com.bizmate.hr.domain.code.Position;
 import com.bizmate.hr.dto.employee.EmployeeDTO;
+import com.bizmate.hr.dto.employee.EmployeeDetailDTO;
 import com.bizmate.hr.dto.employee.EmployeeRequestDTO;
 import com.bizmate.hr.repository.*;
 
@@ -101,6 +102,13 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     public void deleteEmployee(Long empId) {
         employeeRepository.deleteById(empId);
+    }
+
+    @Override
+    public EmployeeDetailDTO getEmployeeDetail(Long empId) {
+        Employee employee = employeeRepository.findEmployeeDetailById(empId)
+                .orElseThrow(()-> new EntityNotFoundException("직원을 찾을 수 없습니다"));
+        return EmployeeDetailDTO.fromEntity(employee);
     }
 
     /**
