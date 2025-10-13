@@ -1,6 +1,8 @@
 package com.bizmate.hr.dto.employee;
 
 import com.bizmate.hr.domain.Employee;
+import com.bizmate.hr.domain.code.Grade;
+import com.bizmate.hr.domain.code.Position;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -29,12 +31,12 @@ public class EmployeeResponseDTO {
     private final Long deptId;
     private final String deptName; // Department Entity에서 가져옴
 
-    private final long position; // 직위
-    private final long rank;    // 직급
+    private final Position position; // 직위
+    private final Grade grade;    // 직급
     private final LocalDate startDate;
     private final LocalDate leaveDate;
     private final String status;
-    private final Float careerYears;
+    private final Double careerYears;
     private final String ssnMask;
 
     // 생성/수정자 정보 (User Entity에서 가져옴)
@@ -64,7 +66,7 @@ public class EmployeeResponseDTO {
                 .deptId(employee.getDepartment() != null ? employee.getDepartment().getDeptId() : null)
                 .deptName(deptName) // 부서명 포함
                 .position(employee.getPosition())
-                .rank(employee.getRank())
+                .grade(employee.getGrade())
                 .startDate(employee.getStartDate())
                 .leaveDate(employee.getLeaveDate())
                 .status(employee.getStatus())

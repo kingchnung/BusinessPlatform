@@ -59,6 +59,7 @@ public class JWTCheckFilter extends OncePerRequestFilter {
 
             String username = claims.get("username", String.class);
             String empName = claims.get("empName", String.class);
+            String departmentCode = claims.get("departmentCode", String.class);
             Long userId = claims.get("userId", Long.class);
             Long empId = claims.get("empId", Long.class);
 
@@ -72,6 +73,7 @@ public class JWTCheckFilter extends OncePerRequestFilter {
             UserDTO userDTO = new UserDTO(
                     userId,
                     empId,
+                    departmentCode,
                     username,
                     "NOPASSWORD",
                     empName,
@@ -87,21 +89,23 @@ public class JWTCheckFilter extends OncePerRequestFilter {
 
             SecurityContextHolder.getContext().setAuthentication(authToken);
 
-            chain.doFilter(request, response);
+
+        } catch (ExpiredJwtException e) {
+            log.warn("❌ JWT 만료: {}", e.getMessage());
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json");
+            new Gson().toJson(Map.of("error", "ERROR_EXPIRED_TOKEN", "message", e.getMessage()), response.getWriter());
+            return;
 
         } catch (JwtException e) {
-            // ... (예외 처리 로직 생략)
-            if (e instanceof ExpiredJwtException) {
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                response.setContentType("application/json");
-                new Gson().toJson(Map.of("error", "ERROR_EXPIRED_TOKEN", "message", e.getMessage()), response.getWriter());
-            } else {
-                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-                response.setContentType("application/json");
-                new Gson().toJson(Map.of("error", "ERROR_INVALID_TOKEN", "message", e.getMessage()), response.getWriter());
-            }
-
+            log.warn("❌ JWT 유효성 실패: {}", e.getMessage());
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            response.setContentType("application/json");
+            new Gson().toJson(Map.of("error", "ERROR_INVALID_TOKEN", "message", e.getMessage()), response.getWriter());
+            return;
         }
+
+        chain.doFilter(request, response);
     }
 
     /**

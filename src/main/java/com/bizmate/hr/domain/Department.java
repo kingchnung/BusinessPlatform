@@ -4,6 +4,7 @@ import com.bizmate.hr.domain.Employee;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -48,8 +49,21 @@ public class Department {
     @Column(name = "is_used", nullable = false, length = 1)
     private String isUsed = "Y";
 
+    // ★ 7. 생성일 (추가)
+    @Column(name = "cre_date", nullable = false)
+    private LocalDateTime creDate = LocalDateTime.now();
+
+    // ★ 8. 수정일 (추가)
+    @Column(name = "upd_date")
+    private LocalDateTime updDate;
+
     // 연관 관계 (직원) - 부서가 삭제될 때 직원에 대한 영향 고려 필요 (비즈니스 로직으로 처리)
     @OneToMany(mappedBy = "department")
     @Builder.Default
     private List<Employee> employees = new ArrayList<>();
+
+    //부서장 추가
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "manager_id") // 부서장 Employee의 ID를 FK로 가짐
+    private Employee manager; // 부서장 Employee 객체
 }

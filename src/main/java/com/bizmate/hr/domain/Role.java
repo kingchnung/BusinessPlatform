@@ -43,7 +43,7 @@ public class Role {
     @JoinTable(
             name = "ROLE_PERMISSIONS",
             joinColumns = @JoinColumn(name = "role_id"),
-            inverseJoinColumns = @JoinColumn(name = "permi_id")
+            inverseJoinColumns = @JoinColumn(name = "perm_id")
     )
     @Builder.Default
     private Set<Permission> permissions = new HashSet<>();

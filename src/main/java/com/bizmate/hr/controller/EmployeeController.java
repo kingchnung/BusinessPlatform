@@ -27,11 +27,11 @@ public class EmployeeController {
     }
 
     // ★ 권한 설정: 'emp:read' 권한이 있는 사용자만 접근 가능
-    @GetMapping("/{id}")
+    @GetMapping("/{empId}")
     @PreAuthorize("hasAuthority('emp:read')")
-    public ResponseEntity<EmployeeDTO> getEmployee(@PathVariable Long id){
+    public ResponseEntity<EmployeeDTO> getEmployee(@PathVariable Long empId){
         // Service가 EntityNotFoundException을 던지므로, Controller는 200 OK 또는 예외 처리를 따릅니다.
-        EmployeeDTO dto = employeeService.getEmployee(id);
+        EmployeeDTO dto = employeeService.getEmployee(empId);
         return ResponseEntity.ok(dto);
     }
 
@@ -45,20 +45,20 @@ public class EmployeeController {
     }
 
     // ★ 권한 설정: 'emp:update' 권한이 있는 사용자만 접근 가능
-    @PutMapping("/{id}")
+    @PutMapping("/{empId}")
     @PreAuthorize("hasAuthority('emp:update')")
-    public ResponseEntity<EmployeeDTO> updateEmployee(@PathVariable Long id,
+    public ResponseEntity<EmployeeDTO> updateEmployee(@PathVariable Long empId,
                                                       @RequestBody @Valid EmployeeRequestDTO requestDTO){
         // ★ 변경: RequestDTO를 받고 DTO를 반환
-        EmployeeDTO updatedDto = employeeService.saveEmployee(id, requestDTO);
+        EmployeeDTO updatedDto = employeeService.saveEmployee(empId, requestDTO);
         return ResponseEntity.ok(updatedDto);
     }
 
     // ★ 권한 설정: 'emp:delete' 권한이 있는 사용자만 접근 가능
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{empId}")
     @PreAuthorize("hasAuthority('emp:delete')")
-    public ResponseEntity<Void> deleteEmployee(@PathVariable Long id){
-        employeeService.deleteEmployee(id);
+    public ResponseEntity<Void> deleteEmployee(@PathVariable Long empId){
+        employeeService.deleteEmployee(empId);
         return ResponseEntity.noContent().build();
     }
 }

@@ -1,5 +1,7 @@
 package com.bizmate.hr.domain;
 
+import com.bizmate.hr.domain.code.Grade;
+import com.bizmate.hr.domain.code.Position;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -55,16 +57,18 @@ public class Employee {
 
     // 9. 부서ID (FK) -> Department Entity 참조
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "dept_id")
+    @JoinColumn(name = "dept_id", nullable = false)
     private Department department;
 
-    // 10. 직위
-    @Column(name = "position")
-    private long position;
+    // 10. 직책
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "position_code", nullable = false)
+    private Position position;
 
     // 11. 직급
-    @Column(name = "rank", nullable = false)
-    private long rank;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "grade_code", nullable = false)
+    private Grade grade;
 
     // 12. 입사일
     @Column(name = "start_date", nullable = false)
@@ -79,8 +83,8 @@ public class Employee {
     private String status = "ACTIVE";
 
     // 15. 경력연수
-    @Column(name = "career_years", precision = 5, scale = 1)
-    private Float careerYears;
+    @Column(name = "career_years")
+    private Double careerYears;
 
     // 16. 주민번호 마스킹
     @Column(name = "ssn_mask", length = 20)

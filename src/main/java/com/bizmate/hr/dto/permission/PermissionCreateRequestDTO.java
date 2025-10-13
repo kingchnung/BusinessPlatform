@@ -15,7 +15,7 @@ public class PermissionCreateRequestDTO {
 
     @NotBlank(message = "권한명은 필수입니다.")
     @Size(max = 100, message = "권한명은 100자 이하로 입력해야 합니다.")
-    private String permiName;    // 권한명 (예: hr_card:read, user:manage)
+    private String permName;    // 권한명 (예: hr_card:read, user:manage)
 
     @Size(max = 255, message = "설명은 255자 이하로 입력해야 합니다.")
     private String description; // 권한 설명

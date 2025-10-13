@@ -12,8 +12,8 @@ import lombok.Getter;
 @Builder
 public class PermissionResponseDTO {
 
-    private final Long permiId;
-    private final String permiName;
+    private final Long permId;
+    private final String permName;
     private final String description;
 
     /**
@@ -22,8 +22,8 @@ public class PermissionResponseDTO {
     public static PermissionResponseDTO fromEntity(Permission permission) {
 
         return PermissionResponseDTO.builder()
-                .permiId(permission.getPermiId())
-                .permiName(permission.getPermiName())
+                .permId(permission.getPermId())
+                .permName(permission.getPermName())
                 .description(permission.getDescription())
                 .build();
     }

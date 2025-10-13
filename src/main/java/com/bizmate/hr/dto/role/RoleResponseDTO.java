@@ -29,7 +29,7 @@ public class RoleResponseDTO {
 
         // Role에 연결된 Permission 엔티티에서 permiName만 추출
         List<String> permissionNames = role.getPermissions().stream()
-                .map(permission -> permission.getPermiName())
+                .map(permission -> permission.getPermName())
                 .collect(Collectors.toList());
 
         return RoleResponseDTO.builder()

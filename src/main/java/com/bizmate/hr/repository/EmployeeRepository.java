@@ -15,11 +15,12 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
     List<Employee> findByEmpNameContaining(String name);
     List<Employee> findByStatus(String status);
 
-    // ★ 추가: Fetch Join을 사용하여 Employee와 Department를 한 번에 조회 (N+1 문제 해결)
-    @Query("SELECT e FROM Employee e JOIN FETCH e.department") // e.department는 Employee 엔티티의 필드명
-    List<Employee> findAllWithDepartment();
+    // ★★★ 수정: Position도 함께 Fetch Join하여 가져옵니다. ★★★
+    // Position과 Department 모두 Eager Loading합니다.
+    @Query("SELECT e FROM Employee e JOIN FETCH e.department JOIN FETCH e.position")
+    List<Employee> findAllWithDepartmentAndPosition(); // 메서드명도 변경 (명확성을 위해)
 
-    // ★ 추가: 특정 직원 조회 시에도 Fetch Join 적용
-    @Query("SELECT e FROM Employee e JOIN FETCH e.department WHERE e.empId = :empId")
-    Optional<Employee> findByIdWithDepartment(@Param("empId") Long empId);
+    // ★ 수정: 특정 직원 조회 시에도 Position Fetch Join 적용
+    @Query("SELECT e FROM Employee e JOIN FETCH e.department JOIN FETCH e.position WHERE e.empId = :empId")
+    Optional<Employee> findByIdWithDepartmentAndPosition(@Param("empId") Long empId);
 }

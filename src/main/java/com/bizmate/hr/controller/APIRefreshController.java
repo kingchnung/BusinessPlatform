@@ -1,5 +1,6 @@
 package com.bizmate.hr.controller;
 
+import com.bizmate.hr.domain.UserEntity;
 import com.bizmate.hr.dto.user.UserDTO;
 import com.bizmate.hr.security.jwt.JWTProvider;
 import io.jsonwebtoken.Claims;
@@ -63,7 +64,10 @@ public class APIRefreshController {
         UserDTO userDTO = createUserDTOFromClaims(claims);
 
         // 5. 새 Access Token 발급
-        String newAccessToken = jwtProvider.generateAccessToken(userDTO);
+        String newAccessToken = jwtProvider.createAccessToken(
+                userDTO,
+                userDTO.getRoleNames(),
+                userDTO.getPermissionNames());
 
         // 6. Refresh Token 갱신 여부 결정 (Rotation)
         String newRefreshToken = refreshToken;
@@ -71,7 +75,7 @@ public class APIRefreshController {
 
         if (checkTimeForRotation(expirationDate)) {
             // 갱신 임계값 미만 남음 -> 새 Refresh Token 발급
-            newRefreshToken = jwtProvider.generateRefreshToken(userDTO);
+            newRefreshToken = jwtProvider.createRefreshToken(userDTO);
             log.info("Refresh Token 만료일이 임박하여 새 Refresh Token을 발급했습니다.");
         } else {
             log.info("Refresh Token이 충분히 유효하여 기존 토큰을 유지합니다.");
@@ -117,6 +121,7 @@ public class APIRefreshController {
         Long empId = claims.get("empId", Long.class);
         String username = claims.get("username", String.class);
         String empName = claims.get("empName", String.class);
+        String departmentCode = claims.get("departmentCode", String.class);
 
         List<String> roleNames = (List<String>) claims.get("roles");
         List<String> permissionNames = (List<String>) claims.get("perms");
@@ -127,6 +132,7 @@ public class APIRefreshController {
         return new UserDTO(
                 userId,
                 empId,
+                departmentCode,
                 username,
                 "NOPASSWORD",
                 empName,

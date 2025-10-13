@@ -4,11 +4,7 @@ import com.bizmate.hr.domain.Role;
 import com.bizmate.hr.domain.Permission;
 import com.bizmate.hr.domain.UserEntity; // 엔티티 이름 변경 적용
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.springframework.security.core.GrantedAuthority;
@@ -27,12 +23,27 @@ public class UserDTO extends User {
     // DTO의 final 필드들
     private final Long userId;
     private final Long empId;
+    private final String departmentCode;
     private final String username;
     private final String pwHash;
     private final String empName;
     private final boolean isAccountNonLocked;
     private final List<String> roleNames;
     private final List<String> permissionNames;
+
+    public UserDTO(Long userId, Long empId, String empName, String departmentCode, String username) {
+        super(empName, "", Collections.singleton(new SimpleGrantedAuthority("ROLE_USER"))); // ✅ 최소한의 super 호출
+        this.userId = userId;
+        this.empId = empId;
+        this.departmentCode = departmentCode;
+        this.empName = empName;
+        this.username = username;
+        this.pwHash = "";
+        this.isAccountNonLocked = true;
+        this.roleNames = Collections.emptyList();
+        this.permissionNames = Collections.emptyList();
+    }
+
 
     /**
      * Spring Security의 UserDetails를 상속받는 생성자
@@ -41,6 +52,7 @@ public class UserDTO extends User {
     public UserDTO(
             Long userId,
             Long empId,
+            String departmentCode,
             String username,
             String pwHash,
             String empName,
@@ -58,6 +70,7 @@ public class UserDTO extends User {
         // 2. DTO 필드 초기화 (super() 호출 후)
         this.userId = userId;
         this.empId = empId;
+        this.departmentCode = departmentCode;
         this.username = username;
         this.pwHash = pwHash;
         this.empName = empName;
@@ -97,6 +110,7 @@ public class UserDTO extends User {
 
         dataMap.put("userId", userId);
         dataMap.put("empId", empId);
+        dataMap.put("departmentCode", departmentCode);
         dataMap.put("username", username);
         dataMap.put("empName", empName);
 
@@ -118,7 +132,7 @@ public class UserDTO extends User {
 
         List<String> permissionNames = user.getRoles().stream()
                 .flatMap(role -> role.getPermissions().stream())
-                .map(Permission::getPermiName)
+                .map(Permission::getPermName)
                 .distinct()
                 .collect(Collectors.toList());
 
@@ -132,6 +146,7 @@ public class UserDTO extends User {
         return new UserDTO(
                 user.getUserId(),
                 user.getEmployee().getEmpId(),
+                user.getDeptCode(),
                 user.getUsername(),
                 user.getPwHash(),
                 user.getEmployee().getEmpName(),

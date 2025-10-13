@@ -24,12 +24,12 @@ public class Permission {
     // 1. 권한ID (PK)
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "permi_id")
-    private Long permiId;
+    @Column(name = "perm_id")
+    private Long permId;
 
     // 2. 권한명 (유일키, 필수)
-    @Column(name = "permi_name", unique = true, nullable = false, length = 100)
-    private String permiName;
+    @Column(name = "perm_name", unique = true, nullable = false, length = 100)
+    private String permName;
 
     // 3. 설명
     @Column(name = "description", length = 255)
