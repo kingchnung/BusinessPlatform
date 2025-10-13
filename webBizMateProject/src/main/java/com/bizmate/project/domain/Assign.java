@@ -41,6 +41,12 @@ public class Assign {
 
     @PrePersist
     public void PrePersist() {
+        if(taskStartDate != null){
+            setTaskStartDate(getTaskStartDate().withNano(0));
+        }
+        if(taskEndDate != null){
+            setTaskEndDate(getTaskEndDate().withNano(0));
+        }
 
     }
 

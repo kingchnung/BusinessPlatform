@@ -1,10 +1,6 @@
 package com.bizmate.project.repository;
 
 
-import com.bizmate.hr.domain.Employee;
-import com.bizmate.hr.domain.UserEntity;
-import com.bizmate.hr.repository.EmployeeRepository;
-import com.bizmate.hr.repository.UserRepository;
 import com.bizmate.project.domain.Assign;
 import com.bizmate.project.domain.Project;
 import com.bizmate.project.domain.ProjectMember;
@@ -13,7 +9,11 @@ import com.bizmate.project.domain.enums.AssignStatus;
 import com.bizmate.project.domain.enums.ProjectImportance;
 import com.bizmate.project.domain.enums.ProjectMemberStatus;
 import com.bizmate.project.domain.enums.ProjectStatus;
+import com.bizmate.project.domain.hr.Employees;
+import com.bizmate.project.domain.hr.Users;
 import com.bizmate.project.domain.sails.Client;
+import com.bizmate.project.repository.hr.EmployeesRepository;
+import com.bizmate.project.repository.hr.UsersRepository;
 import com.bizmate.project.repository.salse.ClientRepository;
 import com.bizmate.project.service.ProjectService;
 import lombok.Builder;
@@ -33,7 +33,7 @@ public class ProjectTest {
 
 
     @Autowired
-    private EmployeeRepository employeesRepository;
+    private EmployeesRepository employeesRepository;
 
     @Autowired
     private ProjectRepository projectRepository;
@@ -42,7 +42,7 @@ public class ProjectTest {
     private ClientRepository clientRepository;
 
     @Autowired
-    private UserRepository usersRepository;
+    private UsersRepository usersRepository;
 
     @Autowired
     private ProjectService projectService;
@@ -67,7 +67,7 @@ public class ProjectTest {
 
     @Test
     public void readEmployees() {
-        List<Employee> employeesList = new ArrayList<>();
+        List<Employees> employeesList = new ArrayList<>();
         employeesList = employeesRepository.findAll();
         employeesList.stream()
                         .forEach(employees -> System.out.println("employees, = " + employees.getEmpName()));
@@ -81,7 +81,7 @@ public class ProjectTest {
         Client client  = clientRepository.findById("20240001A")
                 .orElseThrow(() -> new RuntimeException("거래처를 찿을 수 없습니다"));
 
-        UserEntity user1 = usersRepository.findById(1010L)
+        Users user1 = usersRepository.findById(1010)
                 .orElseThrow(() -> new RuntimeException("유저를 찿을 수 없습니다"));
 
 
@@ -105,7 +105,7 @@ public class ProjectTest {
         Client client  = clientRepository.findById("20240001A")
                 .orElseThrow(() -> new RuntimeException("거래처를 찿을 수 없습니다"));
 
-        UserEntity user1 = usersRepository.findById(1010L)
+        Users user1 = usersRepository.findById(1010)
                 .orElseThrow(() -> new RuntimeException("유저를 찿을 수 없습니다"));
 
         String projectStatus = ProjectStatus.BEFORE_START.getStatus();
@@ -123,7 +123,7 @@ public class ProjectTest {
 
         projectRepository.save(projectTest);
 
-        UserEntity user2 = usersRepository.findById(1010L)
+        Users user2 = usersRepository.findById(1010)
                 .orElseThrow(() -> new RuntimeException("users를 찿을 수 없습니다"));
 
         ProjectMemberId projectMemberId = ProjectMemberId
@@ -137,7 +137,7 @@ public class ProjectTest {
 
         ProjectMember projectMember = ProjectMember
                 .builder()
-                .pmId(projectMemberId)
+                .id(projectMemberId)
                 .projectId(projectTest)
                 .userId(user2)
                 .assign(assign1)

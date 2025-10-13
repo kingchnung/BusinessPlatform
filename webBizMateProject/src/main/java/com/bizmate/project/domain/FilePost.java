@@ -38,7 +38,7 @@ public class FilePost extends BaseTimeEntity {
     @Column(nullable = false)
     private String fpContent;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "project_board_id")
     private ProjectBoard projectBoard;
 

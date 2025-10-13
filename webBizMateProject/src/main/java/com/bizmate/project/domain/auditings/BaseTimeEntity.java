@@ -15,32 +15,37 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @MappedSuperclass
+// 이 클래스를 상속받는 서브 클래스들의 테이블에 이 클래스 필드들이 포함된다.
 @EntityListeners(AuditingEntityListener.class)
+// 생성 시간 자동 기록 , 수정 시간 자동 기록
+// 생성자/ 수정자 자동 기록 어노테이션
 public abstract class BaseTimeEntity {
 
+    //updatable = false
+    // 특정 필드를 데이터베이스에서 업데이트 할 수 없도록 설정하는 역할
 
-    // 등록시간 매핑
     @CreatedDate
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     @Column(name = "reg_date", updatable = false)
     private LocalDateTime regDate;
 
-
-    // 수정시간 매핑
     @LastModifiedDate
     @Column(name = "mod_date")
     private LocalDateTime modDate;
 
     @CreatedBy
+    // 엔티티가 처음 생성 될때 RIG_ID 칼럼에 생성자의 식별자를 자동으로 기록
     @Column(name = "reg_id", updatable = false)
     private String regId;
 
     @LastModifiedBy
+    // 엔티티가 수정될때 MOD_ID 컬럼에 마지막 수정자의 식별자를 자동으로 기록
     @Column(name = "mod_id")
     private String modId;
 
     @PrePersist
     public void onPrePersist() {
+        // 최초 저장 시 수정시간, 수정자 필드를 null 또는 기본값으로 명시적으로 설정
         this.modDate = null;
         this.modId = null;
     }
@@ -48,6 +53,6 @@ public abstract class BaseTimeEntity {
     @PreUpdate
     public void onPreUpdate() {
         this.modDate = LocalDateTime.now();
+        // 수정자 정보를 설정하는 로직 추가
     }
-
 }

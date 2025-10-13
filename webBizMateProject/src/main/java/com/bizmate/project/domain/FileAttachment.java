@@ -29,6 +29,9 @@ public class FileAttachment extends BaseTimeEntity {
     @Column(nullable = false)
     private String filePath;
 
+//    @Column
+//    private LocalDateTime updateDate;
+    // BaseTimeEntity 를 상속받음으로서 자동으로 생성,수정 주기 정리해줌
 
     @ManyToOne
     @JoinColumn(name = "file_post_id")
@@ -37,6 +40,9 @@ public class FileAttachment extends BaseTimeEntity {
     @PrePersist
     public void PrePersist() {
 
+        if(getRegDate() != null){
+            setRegDate(getRegDate().withNano(0));
+        }
 
     }
 }

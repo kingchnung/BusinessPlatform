@@ -1,11 +1,11 @@
 package com.bizmate.project.domain;
 
 
-import com.bizmate.hr.domain.UserEntity;
 import com.bizmate.project.domain.auditings.BaseTimeEntity;
 import com.bizmate.project.domain.enums.ProjectImportance;
 import com.bizmate.project.domain.enums.ProjectStatus;
-import com.bizmate.salesPages.client.domain.Client;
+import com.bizmate.project.domain.hr.Users;
+import com.bizmate.project.domain.sails.Client;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
@@ -14,13 +14,14 @@ import java.time.LocalDateTime;
 
 @Builder
 @Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
 @Table(name = "project")
 @SequenceGenerator(name = "project_id_generator",
     sequenceName = "project_id_seq",
-    initialValue = 1,
+    initialValue = 1000,
     allocationSize = 1)
 public class Project extends BaseTimeEntity {
 
@@ -60,7 +61,7 @@ public class Project extends BaseTimeEntity {
 
     @ManyToOne
     @JoinColumn(name = "user_id" , nullable = false)
-    private UserEntity userId;
+    private Users userId;
 
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -76,36 +77,10 @@ public class Project extends BaseTimeEntity {
             projectStartDate = LocalDateTime.now();
             setProjectStartDate(getProjectStartDate().withNano(0));// 저장 순간의 당일
         }
+        if(projectEndDate != null){
+            setProjectEndDate(getProjectEndDate().withNano(0));
+        }
 
     }
-
-    public void setProjectName(String projectName) {
-        this.projectName = projectName;
-    }
-
-    public void setProjectStartDate(LocalDateTime projectStartDate) {
-        this.projectStartDate = projectStartDate;
-    }
-
-    public void setProjectEndDate(LocalDateTime projectEndDate) {
-        this.projectEndDate = projectEndDate;
-    }
-
-    public void setProjectStatus(ProjectStatus projectStatus) {
-        this.projectStatus = projectStatus;
-    }
-
-    public void setProjectImportance(ProjectImportance projectImportance) {
-        this.projectImportance = projectImportance;
-    }
-
-    public void setManagerName(String managerName) {
-        this.managerName = managerName;
-    }
-
-    public void setUserId(UserEntity userId) {
-        this.userId = userId;
-    }
-
 
 }

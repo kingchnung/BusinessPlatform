@@ -28,14 +28,18 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'com.google.code.gson:gson:2.10.1'
-
+<<<<<<< HEAD
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
 	implementation 'org.modelmapper:modelmapper:3.2.1'
+=======
+
+//	implementation 'org.modelmapper:modelmapper:3.2.1'
+>>>>>>> parent of 3873236 (프로젝트 Test 전 어플리케이션 정상 실행)
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 
 	compileOnly 'org.projectlombok:lombok'
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 	runtimeOnly 'com.oracle.database.jdbc:ojdbc11'
-    implementation 'org.springframework.boot:spring-boot-starter-validation'
 	annotationProcessor 'org.projectlombok:lombok'
 
 	// https://mvnrepository.com/artifact/io.jsonwebtoken/jjwt-api

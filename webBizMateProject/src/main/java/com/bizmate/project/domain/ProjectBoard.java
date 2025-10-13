@@ -1,17 +1,18 @@
 package com.bizmate.project.domain;
 
-import com.bizmate.hr.domain.UserEntity;
 import com.bizmate.project.domain.auditings.BaseTimeEntity;
 import com.bizmate.project.domain.enums.ProjectBoardStatus;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
 
 import java.time.LocalDate;
 
 @Getter
 @Setter
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
@@ -26,16 +27,14 @@ public class ProjectBoard extends BaseTimeEntity {
     @Column(nullable = false)
     private String boardTitle;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false ,length = 255)
-    @Builder.Default
+    @Enumerated
+    @Column(nullable = false)
     private ProjectBoardStatus boardType = ProjectBoardStatus.ISSUE_BOARD;
 
 
     @OneToOne
     @JoinColumn(name = "project_id")
     private Project projectId;
-
-
+    // forignKey 로 잡은 프로젝트Id
 
 }

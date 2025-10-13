@@ -1,18 +1,8 @@
 package com.bizmate.project.dto.response;
 
-import lombok.*;
-
 import java.time.LocalDateTime;
 
-@NoArgsConstructor
-@AllArgsConstructor
-@Getter
-@Setter
-@Builder
-@ToString
 public class ProjectResponseDTO {
-
-    private Long projectId;
 
     private String projectNo;
 
