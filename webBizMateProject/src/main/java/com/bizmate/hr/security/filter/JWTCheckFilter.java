@@ -1,9 +1,7 @@
 package com.bizmate.hr.security.filter;
 
-import com.bizmate.hr.dto.user.UserDTO;
+import com.bizmate.hr.security.UserPrincipal;
 import com.bizmate.hr.security.jwt.JWTProvider;
-import com.google.gson.Gson;
-import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
@@ -12,120 +10,63 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import java.io.IOException;
-import java.util.*;
 
+import java.io.IOException;
 
 /**
  * [JWTCheckFilter]
- * - 모든 요청에 앞서 Access Token의 유효성을 검증하고, 유효할 경우 SecurityContext에 인증 정보를 설정
+ * - 모든 요청에서 JWT Access Token을 확인하고,
+ *   유효하면 SecurityContext에 Authentication을 설정하는 역할.
+ * - UserPrincipal 기반으로 변경됨.
  */
 @Slf4j
+@Component
 @RequiredArgsConstructor
 public class JWTCheckFilter extends OncePerRequestFilter {
 
-    private final JWTProvider jwtProvider; // ★ 변경점 1: JWTProvider 주입
-
-    // 필터 제외 URL 패턴 (학원 예제의 shouldNotFilter 로직 대체)
-    @Override
-    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
-        // OPTIONS 메서드와 로그인/리프레시 요청은 필터를 건너뜁니다.
-        String path = request.getRequestURI();
-        return request.getMethod().equals("OPTIONS") ||
-                path.startsWith("/api/member/login") ||
-                path.startsWith("/api/member/refresh");
-    }
+    private final JWTProvider jwtProvider;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
-            throws ServletException, IOException {
+    protected void doFilterInternal(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            FilterChain filterChain
+    ) throws ServletException, IOException {
 
-        String authHeader = request.getHeader("Authorization");
+        String header = request.getHeader("Authorization");
 
-        if (authHeader == null || authHeader.length() < 7 || !authHeader.startsWith("Bearer ")) {
-            chain.doFilter(request, response);
+        if (header == null || !header.startsWith("Bearer ")) {
+            filterChain.doFilter(request, response);
             return;
         }
 
+        String token = header.substring(7); // “Bearer “ 제거
+
         try {
-            String accessToken = authHeader.substring(7);
-            Claims claims = jwtProvider.validateToken(accessToken);
+            if (jwtProvider.validateToken(token)) {
+                Authentication authentication = jwtProvider.getAuthentication(token);
 
-            String username = claims.get("username", String.class);
-            String empName = claims.get("empName", String.class);
-            Long userId = claims.get("userId", Long.class);
-            Long empId = claims.get("empId", Long.class);
-
-            List<String> roleNames = (List<String>) claims.get("roles");
-            List<String> permissionNames = (List<String>) claims.get("perms");
-
-            // ★★★ 최종 수정 로직: Authorities 컬렉션 생성 ★★★
-            Collection<? extends GrantedAuthority> authorities = createAuthorities(roleNames, permissionNames);
-
-            // 4. UserDTO 객체 재구성
-            UserDTO userDTO = new UserDTO(
-                    userId,
-                    empId,
-                    username,
-                    "NOPASSWORD",
-                    empName,
-                    true,
-                    roleNames,
-                    permissionNames,
-                    authorities // ★★★ 생성된 authorities 컬렉션을 마지막 인수로 전달 ★★★
-            );
-
-            // 5. SecurityContext에 인증 정보 설정
-            UsernamePasswordAuthenticationToken authToken =
-                    new UsernamePasswordAuthenticationToken(userDTO, null, userDTO.getAuthorities());
-
-            SecurityContextHolder.getContext().setAuthentication(authToken);
-
-            chain.doFilter(request, response);
-
-        } catch (JwtException e) {
-            // ... (예외 처리 로직 생략)
-            if (e instanceof ExpiredJwtException) {
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                response.setContentType("application/json");
-                new Gson().toJson(Map.of("error", "ERROR_EXPIRED_TOKEN", "message", e.getMessage()), response.getWriter());
-            } else {
-                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-                response.setContentType("application/json");
-                new Gson().toJson(Map.of("error", "ERROR_INVALID_TOKEN", "message", e.getMessage()), response.getWriter());
+                if (authentication instanceof org.springframework.security.authentication.UsernamePasswordAuthenticationToken authToken) {
+                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                    log.debug("JWT 인증 성공: {}", authToken.getName());
+                }
             }
-
-        }
-    }
-
-    /**
-     * JWT 클레임에서 추출한 역할 및 권한 목록으로 Spring Security Authorities 컬렉션을 생성합니다.
-     */
-    private Collection<? extends GrantedAuthority> createAuthorities(
-            List<String> roleNames, List<String> permissionNames) {
-
-        List<SimpleGrantedAuthority> authorities = new ArrayList<>();
-
-        // 역할(Role) 등록: "ROLE_" 접두어 사용
-        if (roleNames != null) {
-            roleNames.stream()
-                    .map(role -> new SimpleGrantedAuthority("ROLE_" + role))
-                    .forEach(authorities::add);
+        } catch (ExpiredJwtException e) {
+            log.warn("JWT 만료됨: {}", e.getMessage());
+            // Access Token 만료 → RefreshController에서 처리
+        } catch (JwtException e) {
+            log.error("JWT 검증 실패: {}", e.getMessage());
+        } catch (Exception e) {
+            log.error("JWT 필터 처리 중 예외 발생", e);
         }
 
-        // 권한(Permission) 등록: 세부 권한 체크에 사용
-        if (permissionNames != null) {
-            permissionNames.stream()
-                    .map(SimpleGrantedAuthority::new)
-                    .forEach(authorities::add);
-        }
-
-        return authorities;
+        filterChain.doFilter(request, response);
     }
 }

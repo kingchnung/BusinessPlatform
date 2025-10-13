@@ -1,17 +1,15 @@
 package com.bizmate.hr.service;
 
+import com.bizmate.hr.domain.code.Position;
 import com.bizmate.hr.dto.code.PositionDTO;
 import com.bizmate.hr.dto.code.PositionRequestDTO;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface PositionService {
-    // 직책코드를 Long 타입으로 받습니다. 신규 등록 시에는 null이 전달됩니다.
-    PositionDTO savePosition(Long positionCode, PositionRequestDTO requestDTO);
-
     List<PositionDTO> getAllPositions();
-
     PositionDTO getPosition(Long positionCode);
-
+    PositionDTO savePosition(Long positionCode, PositionRequestDTO requestDTO);
     void deletePosition(Long positionCode);
 }
