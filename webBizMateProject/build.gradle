@@ -29,12 +29,17 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'com.google.code.gson:gson:2.10.1'
 <<<<<<< HEAD
+<<<<<<< HEAD
     implementation 'org.springframework.boot:spring-boot-starter-validation'
 	implementation 'org.modelmapper:modelmapper:3.2.1'
 =======
 
 //	implementation 'org.modelmapper:modelmapper:3.2.1'
 >>>>>>> parent of 3873236 (프로젝트 Test 전 어플리케이션 정상 실행)
+=======
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+	implementation 'org.modelmapper:modelmapper:3.2.1'
+>>>>>>> 012888a19aa4a6b073b1335f00e9ca841e7b8343
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 
 	compileOnly 'org.projectlombok:lombok'
