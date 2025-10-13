@@ -33,6 +33,10 @@ public class UserDTO extends User {
     private final String empName;
     private final boolean isAccountNonLocked;
     private final boolean isActive;
+    private String email;
+    private String phone;
+    private String deptName;
+    private String deptCode;
     private final List<String> roleNames;
     private final List<String> permissionNames;
 
@@ -48,6 +52,7 @@ public class UserDTO extends User {
             String empName,
             boolean isAccountNonLocked,
             boolean isActive,
+            String email,
             List<String> roleNames,
             List<String> permissionNames,
             // ★★★ 이미 생성된 authorities를 인수로 받음 ★★★
@@ -64,6 +69,7 @@ public class UserDTO extends User {
         this.username = username;
         this.pwHash = pwHash;
         this.empName = empName;
+        this.email = email;
         this.isAccountNonLocked = isAccountNonLocked;
         this.isActive = isActive;
         this.roleNames = roleNames;
@@ -130,6 +136,7 @@ public class UserDTO extends User {
                 user.getEmployee() != null ? user.getEmployee().getEmpName() : null,
                 isAccountNonLocked,
                 isActive,
+                user.getEmail(),
                 roleNames,
                 permissionNames,
                 authorities // ★★★ 생성된 authorities 전달 ★★★

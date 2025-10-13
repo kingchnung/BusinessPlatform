@@ -471,9 +471,15 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
                 new UserDTO(
                         userEntity.getUserId(),
                         userEntity.getEmployee().getEmpId(),
+                        userEntity.getUsername(),
+                        null,
                         userEntity.getEmpName(),
-                        dept.getDeptCode(),
-                        userEntity.getUsername()
+                        true,
+                        true,
+                        userEntity.getEmail(),
+                        null,
+                        null,
+                        null
                 )
         );
 

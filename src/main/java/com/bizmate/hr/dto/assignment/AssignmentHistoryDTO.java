@@ -1,10 +1,6 @@
 package com.bizmate.hr.dto.assignment;
 
 import com.bizmate.hr.domain.AssignmentsHistory;
-<<<<<<<< HEAD:src/main/java/com/bizmate/hr/dto/assignment/AssignmentHistoryResponseDTO.java
-========
-
->>>>>>>> a924a2d3328190d8b15831561e60435a573c6a40:src/main/java/com/bizmate/hr/dto/assignment/AssignmentHistoryDTO.java
 import com.bizmate.hr.domain.Department;
 import com.bizmate.hr.domain.code.Position;
 import com.bizmate.hr.domain.code.Grade;

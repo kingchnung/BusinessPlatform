@@ -96,12 +96,6 @@ public class APIRefreshController {
     private UserPrincipal createPrincipalFromClaims(Claims claims) {
         Long userId = claims.get("uid", Long.class);
         String username = claims.getSubject();
-    private UserDTO createUserDTOFromClaims(Claims claims) {
-        Long userId = claims.get("userId", Long.class);
-        Long empId = claims.get("empId", Long.class);
-        String username = claims.get("username", String.class);
-        String empName = claims.get("empName", String.class);
-        String departmentCode = claims.get("departmentCode", String.class);
 
         @SuppressWarnings("unchecked")
         List<String> roleNames = (List<String>) claims.getOrDefault("roles", Collections.emptyList());
@@ -112,8 +106,6 @@ public class APIRefreshController {
 
         return new UserPrincipal(
                 userId,
-                empId,
-                departmentCode,
                 username,
                 "", // password는 JWT에 없음
                 true,

@@ -1,10 +1,7 @@
 package com.bizmate.config;
 
 import com.bizmate.hr.security.filter.JWTCheckFilter;
-import com.bizmate.hr.security.handler.APILoginFailHandler;
-import com.bizmate.hr.security.handler.APILoginSuccessHandler;
-import com.bizmate.hr.security.handler.CustomAccessDeniedHandler;
-import com.bizmate.hr.security.handler.CustomAuthenticationEntryPoint;
+import com.bizmate.hr.security.handler.*;
 import com.bizmate.hr.security.jwt.JWTProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,6 +9,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -35,10 +34,10 @@ public class SecurityConfig {
     private final JWTProvider jwtProvider;
     private final APILoginSuccessHandler apiLoginSuccessHandler;
     private final APILoginFailHandler apiLoginFailHandler;
-    private final CustomAccessDeniedHandler customAccessDeniedHandler;
+    private final CustomAccessDeniedHandler accessDeniedHandler;
 
     /**
-     * ✅ 비밀번호 암호화 Bean
+     * ✅ 비밀번호 인코더 Bean
      */
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -46,7 +45,7 @@ public class SecurityConfig {
     }
 
     /**
-     * ✅ JWT 필터 Bean
+     * ✅ JWT 필터
      */
     @Bean
     public JWTCheckFilter jwtCheckFilter() {
@@ -54,53 +53,52 @@ public class SecurityConfig {
     }
 
     /**
-     * ✅ 보안 필터 체인 설정
+     * ✅ Security 필터 체인 (통합형)
      */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        log.info("▶▶▶ SecurityConfig: 필터 체인 초기화 시작");
+        log.info("▶▶▶ [SecurityConfig] 필터 체인 초기화");
 
         http
-                // 1️⃣ 기본 인증 기능 비활성화
+                // 기본 인증 비활성화
                 .csrf(csrf -> csrf.disable())
                 .httpBasic(basic -> basic.disable())
                 .formLogin(form -> form.disable())
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
-                // 2️⃣ CORS 설정
+                // CORS 설정
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
-                // 3️⃣ 요청 인가 규칙
+                // 접근 제어
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                "/api/member/login",
-                                "/api/mock/login",
+                                "/api/auth/login",
+                                "/api/auth/refresh",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
+                                "/swagger-resources/**",
+                                "/h2-console/**",
                                 "/error"
                         ).permitAll()
                         .requestMatchers("/api/**").authenticated()
                         .anyRequest().permitAll()
                 )
 
-                // 4️⃣ 로그인/로그아웃 설정
+                // JWT 필터
+                .addFilterBefore(jwtCheckFilter(), UsernamePasswordAuthenticationFilter.class)
+
+                // 로그인/로그아웃 설정
                 .formLogin(form -> form
                         .loginPage("/api/member/login")
                         .successHandler(apiLoginSuccessHandler)
                         .failureHandler(apiLoginFailHandler)
                 )
-                .logout(logout -> logout
-                        .logoutUrl("/api/member/logout")
-                        .permitAll()
-                )
+                .logout(logout -> logout.logoutUrl("/api/member/logout").permitAll())
 
-                // 5️⃣ JWT 필터 등록
-                .addFilterBefore(jwtCheckFilter(), UsernamePasswordAuthenticationFilter.class)
-
-                // 6️⃣ 예외 처리
+                // 예외 처리
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint(new CustomAuthenticationEntryPoint())
-                        .accessDeniedHandler(customAccessDeniedHandler)
+                        .accessDeniedHandler(accessDeniedHandler)
                 );
 
         return http.build();
@@ -124,7 +122,7 @@ public class SecurityConfig {
     }
 
     /**
-     * ✅ 권한 계층 설정 (상위 권한 자동 상속)
+     * ✅ 권한 계층 설정 (ROLE 상속)
      */
     @Bean
     public RoleHierarchy roleHierarchy() {
@@ -139,7 +137,16 @@ public class SecurityConfig {
             data:read:all > dept:read
             data:read:all > pos:read
             data:read:all > grade:read
-            """);
+            data:write:all > emp:create
+            data:write:all > emp:update
+            data:write:all > emp:delete
+        """);
         return hierarchy;
+    }
+
+    // ✅ AuthenticationManager Bean 등록 (AuthService에서 주입 가능)
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
+        return configuration.getAuthenticationManager();
     }
 }
