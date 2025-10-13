@@ -123,6 +123,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         user.setPhone(employee.getPhone());
         user.setDeptName(employee.getDepartment().getDeptName());
         user.setPositionName(employee.getPosition().getPositionName());
+        user.setDeptCode(employee.getDepartment().getDeptCode());
         userRepository.save(user);
     }
 
