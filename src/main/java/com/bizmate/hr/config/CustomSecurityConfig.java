@@ -23,7 +23,6 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.Arrays;
 import java.util.List;
 
-@Configuration
 @RequiredArgsConstructor
 @EnableMethodSecurity // @PreAuthorize, @PostAuthorize 등을 활성화
 @Slf4j

@@ -15,12 +15,14 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
 
 /**
  * [APILoginSuccessHandler]
  * - 로그인 성공 후 JWT를 생성하여 JSON 형태로 응답하는 핸들러
  */
 @Slf4j
+@Component
 @RequiredArgsConstructor // ★ 변경점 1: JWTProvider 주입을 위해 Lombok의 RequiredArgsConstructor 사용
 public class APILoginSuccessHandler implements AuthenticationSuccessHandler {
 

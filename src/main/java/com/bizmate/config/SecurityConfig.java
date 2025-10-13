@@ -2,6 +2,7 @@ package com.bizmate.config;
 
 import com.bizmate.hr.security.filter.JWTCheckFilter;
 import com.bizmate.hr.security.handler.APILoginFailHandler;
+import com.bizmate.hr.security.handler.APILoginSuccessHandler;
 import com.bizmate.hr.security.handler.CustomAccessDeniedHandler;
 import com.bizmate.hr.security.handler.CustomAuthenticationEntryPoint;
 import com.bizmate.hr.security.jwt.JWTProvider;
@@ -13,7 +14,6 @@ import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -33,11 +33,12 @@ import java.util.List;
 public class SecurityConfig {
 
     private final JWTProvider jwtProvider;
+    private final APILoginSuccessHandler apiLoginSuccessHandler;
     private final APILoginFailHandler apiLoginFailHandler;
     private final CustomAccessDeniedHandler customAccessDeniedHandler;
 
     /**
-     * ✅ PasswordEncoder
+     * ✅ 비밀번호 암호화 Bean
      */
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -45,7 +46,7 @@ public class SecurityConfig {
     }
 
     /**
-     * ✅ JWT 인증 필터 (토큰 유효성 + SecurityContext 등록)
+     * ✅ JWT 필터 Bean
      */
     @Bean
     public JWTCheckFilter jwtCheckFilter() {
@@ -53,58 +54,69 @@ public class SecurityConfig {
     }
 
     /**
-     * ✅ SecurityFilterChain - 통합 설정
+     * ✅ 보안 필터 체인 설정
      */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         log.info("▶▶▶ SecurityConfig: 필터 체인 초기화 시작");
 
-        return http
-                // 1️⃣ 기본 인증 관련 기능 비활성화
-                .csrf(AbstractHttpConfigurer::disable)
-                .httpBasic(AbstractHttpConfigurer::disable)
-                .formLogin(AbstractHttpConfigurer::disable)
+        http
+                // 1️⃣ 기본 인증 기능 비활성화
+                .csrf(csrf -> csrf.disable())
+                .httpBasic(basic -> basic.disable())
+                .formLogin(form -> form.disable())
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
                 // 2️⃣ CORS 설정
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
-                // 3️⃣ 인가 규칙
+                // 3️⃣ 요청 인가 규칙
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                "/api/member/login",   // 로그인 엔드포인트
+                                "/api/member/login",
                                 "/api/mock/login",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
                                 "/error"
-                        ).permitAll() // 인증 불필요
-                        .requestMatchers("/api/**").authenticated() // JWT 인증 필요
+                        ).permitAll()
+                        .requestMatchers("/api/**").authenticated()
                         .anyRequest().permitAll()
                 )
 
-                // 4️⃣ JWT 검증 필터 등록 (UsernamePasswordAuthenticationFilter 전에 실행)
-                .addFilterBefore(jwtCheckFilter(), UsernamePasswordAuthenticationFilter.class)
-
-                // 5️⃣ 인증 및 인가 예외 처리
-                .exceptionHandling(handler -> handler
-                        .authenticationEntryPoint(new CustomAuthenticationEntryPoint())
-                        .accessDeniedHandler(customAccessDeniedHandler)
+                // 4️⃣ 로그인/로그아웃 설정
+                .formLogin(form -> form
+                        .loginPage("/api/member/login")
+                        .successHandler(apiLoginSuccessHandler)
+                        .failureHandler(apiLoginFailHandler)
+                )
+                .logout(logout -> logout
+                        .logoutUrl("/api/member/logout")
+                        .permitAll()
                 )
 
-                .build();
+                // 5️⃣ JWT 필터 등록
+                .addFilterBefore(jwtCheckFilter(), UsernamePasswordAuthenticationFilter.class)
+
+                // 6️⃣ 예외 처리
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint(new CustomAuthenticationEntryPoint())
+                        .accessDeniedHandler(customAccessDeniedHandler)
+                );
+
+        return http.build();
     }
 
     /**
-     * ✅ CORS 설정 (React와 통신 허용)
+     * ✅ CORS 설정 (React 등 외부 클라이언트 허용)
      */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOriginPatterns(List.of("*")); // React Localhost 등 모든 Origin 허용
-        configuration.setAllowCredentials(true); // 쿠키 / 인증정보 허용
+        configuration.setAllowedOriginPatterns(List.of("*"));
+        configuration.setAllowCredentials(true);
         configuration.setAllowedMethods(Arrays.asList("HEAD", "GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
-        configuration.setExposedHeaders(List.of("Authorization")); // JWT 토큰 헤더 노출 허용
+        configuration.setExposedHeaders(List.of("Authorization"));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
@@ -112,25 +124,22 @@ public class SecurityConfig {
     }
 
     /**
-     * ✅ 권한 계층 설정 (상위 권한 → 하위 권한 자동 상속)
+     * ✅ 권한 계층 설정 (상위 권한 자동 상속)
      */
     @Bean
     public RoleHierarchy roleHierarchy() {
-        RoleHierarchyImpl roleHierarchy = new RoleHierarchyImpl();
-        String hierarchy = """
+        RoleHierarchyImpl hierarchy = new RoleHierarchyImpl();
+        hierarchy.setHierarchy("""
             ROLE_CEO > sys:admin
             sys:admin > sys:manage
             sys:manage > data:write:all
             sys:manage > data:read:all
             ROLE_MANAGER > ROLE_EMPLOYEE
-            data:read:all > data:read:self
             data:read:all > emp:read
             data:read:all > dept:read
             data:read:all > pos:read
             data:read:all > grade:read
-            data:write:all > data:write:self
-            """;
-        roleHierarchy.setHierarchy(hierarchy);
-        return roleHierarchy;
+            """);
+        return hierarchy;
     }
 }
