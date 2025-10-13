@@ -1,4 +1,4 @@
-package com.bizmate.hr.domain.assignment;
+package com.bizmate.hr.domain;
 
 import com.bizmate.hr.domain.Employee;
 import com.bizmate.hr.domain.UserEntity;
