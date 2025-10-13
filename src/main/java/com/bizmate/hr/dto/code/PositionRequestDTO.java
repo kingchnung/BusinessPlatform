@@ -9,4 +9,6 @@ public class PositionRequestDTO {
     private String positionName;
 
     private String description; // 직무기술은 선택 사항
+
+    private String isUsed = "Y";
 }

@@ -4,8 +4,13 @@ import com.bizmate.hr.domain.Role;
 import com.bizmate.hr.domain.Permission;
 import com.bizmate.hr.domain.UserEntity; // 엔티티 이름 변경 적용
 
-import java.util.*;
+
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -23,27 +28,13 @@ public class UserDTO extends User {
     // DTO의 final 필드들
     private final Long userId;
     private final Long empId;
-    private final String departmentCode;
     private final String username;
     private final String pwHash;
     private final String empName;
     private final boolean isAccountNonLocked;
+    private final boolean isActive;
     private final List<String> roleNames;
     private final List<String> permissionNames;
-
-    public UserDTO(Long userId, Long empId, String empName, String departmentCode, String username) {
-        super(empName, "", Collections.singleton(new SimpleGrantedAuthority("ROLE_USER"))); // ✅ 최소한의 super 호출
-        this.userId = userId;
-        this.empId = empId;
-        this.departmentCode = departmentCode;
-        this.empName = empName;
-        this.username = username;
-        this.pwHash = "";
-        this.isAccountNonLocked = true;
-        this.roleNames = Collections.emptyList();
-        this.permissionNames = Collections.emptyList();
-    }
-
 
     /**
      * Spring Security의 UserDetails를 상속받는 생성자
@@ -52,11 +43,11 @@ public class UserDTO extends User {
     public UserDTO(
             Long userId,
             Long empId,
-            String departmentCode,
             String username,
             String pwHash,
             String empName,
             boolean isAccountNonLocked,
+            boolean isActive,
             List<String> roleNames,
             List<String> permissionNames,
             // ★★★ 이미 생성된 authorities를 인수로 받음 ★★★
@@ -70,11 +61,11 @@ public class UserDTO extends User {
         // 2. DTO 필드 초기화 (super() 호출 후)
         this.userId = userId;
         this.empId = empId;
-        this.departmentCode = departmentCode;
         this.username = username;
         this.pwHash = pwHash;
         this.empName = empName;
         this.isAccountNonLocked = isAccountNonLocked;
+        this.isActive = isActive;
         this.roleNames = roleNames;
         this.permissionNames = permissionNames;
     }
@@ -87,19 +78,11 @@ public class UserDTO extends User {
     private static Collection<? extends GrantedAuthority> createAuthorities(
             List<String> roleNames, List<String> permissionNames) {
 
-        List<SimpleGrantedAuthority> authorities = new ArrayList<>();
+        return Stream.concat(
+                roleNames.stream().map(role -> new SimpleGrantedAuthority("ROLE_" + role)),
+                permissionNames.stream().map(SimpleGrantedAuthority::new)
+        ).distinct().collect(Collectors.toList());
 
-        // 역할(Role) 등록: "ROLE_" 접두어 사용
-        roleNames.stream()
-                .map(role -> new SimpleGrantedAuthority("ROLE_" + role))
-                .forEach(authorities::add);
-
-        // 권한(Permission) 등록: 세부 권한 체크에 사용
-        permissionNames.stream()
-                .map(SimpleGrantedAuthority::new)
-                .forEach(authorities::add);
-
-        return authorities;
     }
 
     /**
@@ -107,10 +90,6 @@ public class UserDTO extends User {
      */
     public Map<String, Object> getClaims() {
         Map<String, Object> dataMap = new HashMap<>();
-
-        dataMap.put("userId", userId);
-        dataMap.put("empId", empId);
-        dataMap.put("departmentCode", departmentCode);
         dataMap.put("username", username);
         dataMap.put("empName", empName);
 
@@ -125,7 +104,6 @@ public class UserDTO extends User {
      * (이 메서드에서 authorities를 생성하여 생성자에 전달)
      */
     public static UserDTO fromEntity(UserEntity user) {
-
         List<String> roleNames = user.getRoles().stream()
                 .map(Role::getRoleName)
                 .collect(Collectors.toList());
@@ -136,8 +114,9 @@ public class UserDTO extends User {
                 .distinct()
                 .collect(Collectors.toList());
 
-        boolean isLocked = false;
+        boolean isLocked = "Y".equalsIgnoreCase(user.getIsLocked());
         boolean isAccountNonLocked = !isLocked;
+        boolean isActive = "Y".equalsIgnoreCase(user.getIsActive());
 
         // ★★★ Authorities를 미리 생성 ★★★
         Collection<? extends GrantedAuthority> authorities =
@@ -145,12 +124,12 @@ public class UserDTO extends User {
 
         return new UserDTO(
                 user.getUserId(),
-                user.getEmployee().getEmpId(),
-                user.getDeptCode(),
+                user.getEmployee() != null ? user.getEmployee().getEmpId() : null,
                 user.getUsername(),
                 user.getPwHash(),
-                user.getEmployee().getEmpName(),
+                user.getEmployee() != null ? user.getEmployee().getEmpName() : null,
                 isAccountNonLocked,
+                isActive,
                 roleNames,
                 permissionNames,
                 authorities // ★★★ 생성된 authorities 전달 ★★★
