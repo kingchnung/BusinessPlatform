@@ -2,9 +2,11 @@ package com.bizmate.salesPages.client.controller;
 
 import com.bizmate.common.dto.PageRequestDTO;
 import com.bizmate.common.dto.PageResponseDTO;
+import com.bizmate.hr.security.UserPrincipal;
 import com.bizmate.salesPages.client.dto.ClientDTO;
 import com.bizmate.salesPages.client.service.ClientService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -25,8 +27,19 @@ public class ClientController {
         return clientService.clientList(pageRequestDTO);
     }
 
+//    @PostMapping(value = "/")
+//    public Map<String,Long> register(@RequestBody ClientDTO clientDTO){
+//        Long clientNo = clientService.clientRegister(clientDTO);
+//        return Map.of("ClientNo",clientNo);
+//    }
+
     @PostMapping(value = "/")
-    public Map<String,Long> register(@RequestBody ClientDTO clientDTO){
+    public Map<String,Long> register(@RequestBody ClientDTO clientDTO, @AuthenticationPrincipal UserPrincipal userPrincipal){
+        String writerName = userPrincipal.getUsername();
+        String writerId = userPrincipal.getUserId().toString();
+        clientDTO.setWriter(writerName);
+        clientDTO.setUserId(writerId);
+
         Long clientNo = clientService.clientRegister(clientDTO);
         return Map.of("ClientNo",clientNo);
     }

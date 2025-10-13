@@ -28,6 +28,8 @@ public class Collection {
 
     private BigDecimal collectionMoney;
     private String collectionNote;
+    private String writer;
+    private String userId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "client_id", referencedColumnName = "clientId")

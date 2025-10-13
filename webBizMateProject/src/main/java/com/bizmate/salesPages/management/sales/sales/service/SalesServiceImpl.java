@@ -2,6 +2,7 @@ package com.bizmate.salesPages.management.sales.sales.service;
 
 import com.bizmate.common.dto.PageRequestDTO;
 import com.bizmate.common.dto.PageResponseDTO;
+import com.bizmate.hr.security.UserPrincipal;
 import com.bizmate.salesPages.management.sales.sales.domain.Sales;
 import com.bizmate.salesPages.management.sales.sales.dto.SalesDTO;
 import com.bizmate.salesPages.management.sales.sales.repository.SalesRepository;
@@ -11,6 +12,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,6 +33,13 @@ public class SalesServiceImpl implements SalesService{
 
     @Override
     public String register(SalesDTO salesDTO) {
+        UserPrincipal userPrincipal = (UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String writerName = userPrincipal.getUsername();
+        String writerId = userPrincipal.getUserId().toString();
+
+        salesDTO.setUserId(writerId);
+        salesDTO.setWriter(writerName);
+
         LocalDate today = LocalDate.now();
 
         salesDTO.setSalesDate(today);
@@ -76,8 +85,6 @@ public class SalesServiceImpl implements SalesService{
         sales.changeSalesAmount(salesDTO.getSalesAmount());
         sales.changeDeploymentDate(salesDTO.getDeploymentDate());
         sales.changeUserId(salesDTO.getUserId());
-        sales.changeWriter(salesDTO.getWriter());
-        sales.changeClientId(salesDTO.getClientId());
         sales.changeClientCompany(salesDTO.getClientCompany());
         sales.changeSalesNote(salesDTO.getSalesNote());
         sales.changeProjectId(salesDTO.getProjectId());

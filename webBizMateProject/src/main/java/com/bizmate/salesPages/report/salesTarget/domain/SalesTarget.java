@@ -37,6 +37,8 @@ public class SalesTarget {
     private Integer targetYear;
     private Integer targetMonth;
     private BigDecimal targetAmount;
+    private String userId;
+    private String writer;
 
     public void changTargetYear(Integer targetYear){
         this.targetYear = targetYear;
@@ -48,5 +50,13 @@ public class SalesTarget {
 
     public void changeTargetAmount(BigDecimal targetAmount){
         this.targetAmount = targetAmount;
+    }
+
+    public void setUserId(String userId){
+        this.userId = userId;
+    }
+
+    public void setWriter(String writer){
+        this.writer = writer;
     }
 }

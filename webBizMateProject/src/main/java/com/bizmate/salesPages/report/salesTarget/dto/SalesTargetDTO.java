@@ -21,4 +21,6 @@ public class SalesTargetDTO {
     private Integer targetYear;
     private Integer targetMonth;
     private BigDecimal targetAmount;
+    private String userId;
+    private String writer;
 }

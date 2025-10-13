@@ -22,7 +22,7 @@ import java.io.IOException;
 /**
  * [JWTCheckFilter]
  * - 모든 요청에서 JWT Access Token을 확인하고,
- *   유효하면 SecurityContext에 Authentication을 설정하는 역할.
+ * 유효하면 SecurityContext에 Authentication을 설정하는 역할.
  * - UserPrincipal 기반으로 변경됨.
  */
 @Slf4j

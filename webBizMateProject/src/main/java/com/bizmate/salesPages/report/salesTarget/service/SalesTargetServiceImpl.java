@@ -2,6 +2,7 @@ package com.bizmate.salesPages.report.salesTarget.service;
 
 import com.bizmate.common.dto.PageRequestDTO;
 import com.bizmate.common.dto.PageResponseDTO;
+import com.bizmate.hr.security.UserPrincipal;
 import com.bizmate.salesPages.report.salesTarget.domain.SalesTarget;
 import com.bizmate.salesPages.report.salesTarget.dto.SalesTargetDTO;
 import com.bizmate.salesPages.report.salesTarget.repository.SalesTargetRepository;
@@ -11,6 +12,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,7 +31,14 @@ public class SalesTargetServiceImpl implements SalesTargetService{
 
     @Override
     public Long register(SalesTargetDTO salesTargetDTO) {
+        UserPrincipal userPrincipal = (UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String writer = userPrincipal.getUsername();
+        String userId = userPrincipal.getUserId().toString();
+
         SalesTarget salesTarget = modelMapper.map(salesTargetDTO, SalesTarget.class);
+        salesTarget.setWriter(writer);
+        salesTarget.setUserId(userId);
+
         SalesTarget savedSalesTarget = salesTargetRepository.save(salesTarget);
         return savedSalesTarget.getTargetId();
     }

@@ -2,6 +2,7 @@ package com.bizmate.salesPages.management.order.order.service;
 
 import com.bizmate.common.dto.PageRequestDTO;
 import com.bizmate.common.dto.PageResponseDTO;
+import com.bizmate.hr.security.UserPrincipal;
 import com.bizmate.salesPages.management.order.order.domain.Order;
 import com.bizmate.salesPages.management.order.order.dto.OrderDTO;
 import com.bizmate.salesPages.management.order.order.repository.OrderRepository;
@@ -11,6 +12,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,6 +32,13 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public String register(OrderDTO orderDTO) {
+        UserPrincipal userPrincipal = (UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String writerName = userPrincipal.getUsername();
+        String writerId = userPrincipal.getUserId().toString();
+
+        orderDTO.setUserId(writerId);
+        orderDTO.setWriter(writerName);
+
         LocalDate today = LocalDate.now();
 
         // 1. 주문 일자 설정
@@ -77,8 +86,6 @@ public class OrderServiceImpl implements OrderService {
         Optional<Order> result = orderRepository.findById(orderDTO.getOrderId());
         Order order = result.orElseThrow();
 
-        order.changeUserId(orderDTO.getUserId());
-        order.changeWriter(orderDTO.getWriter());
         order.changeOrderAmount(orderDTO.getOrderAmount());
         order.changeClientId(orderDTO.getClientId());
         order.changeClientCompany(orderDTO.getClientCompany());

@@ -2,6 +2,7 @@ package com.bizmate.salesPages.client.service;
 
 import com.bizmate.common.dto.PageRequestDTO;
 import com.bizmate.common.dto.PageResponseDTO;
+import com.bizmate.hr.security.UserPrincipal;
 import com.bizmate.salesPages.client.domain.Client;
 import com.bizmate.salesPages.client.dto.ClientDTO;
 import com.bizmate.salesPages.client.repository.ClientRepository;
@@ -11,6 +12,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,9 +27,24 @@ public class ClientServiceImpl implements ClientService{
     private final ClientRepository clientRepository;
     private final ModelMapper modelMapper;
 
+//    @Override
+//    public Long clientRegister(ClientDTO clientDTO) {
+//        Client client = modelMapper.map(clientDTO, Client.class);
+//        Client savedClient = clientRepository.save(client);
+//        return savedClient.getClientNo();
+//    }
+
     @Override
     public Long clientRegister(ClientDTO clientDTO) {
+        UserPrincipal userPrincipal = (UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        String writer = userPrincipal.getUsername();
+        String userId = userPrincipal.getUserId().toString();
+
         Client client = modelMapper.map(clientDTO, Client.class);
+        client.changeWriter(writer);
+        client.changeUserId(userId);
+
         Client savedClient = clientRepository.save(client);
         return savedClient.getClientNo();
     }
@@ -53,7 +70,7 @@ public class ClientServiceImpl implements ClientService{
         client.changeClientContact(clientDTO.getClientContact());
         client.changeClientNote(clientDTO.getClientNote());
         client.changeBusinessLicenseFile(clientDTO.getBusinessLicenseFile());
-        client.changeEmpName(clientDTO.getEmpName());
+        client.changeWriter(clientDTO.getWriter());
         client.changeClientEmail(clientDTO.getClientEmail());
         client.changeUserId(clientDTO.getUserId());
 
@@ -87,9 +104,12 @@ public class ClientServiceImpl implements ClientService{
             case "clientContact" :
                 result = clientRepository.findByClientContactContaining(pageRequestDTO.getKeyword(),pageable);
                 break;
-            case  "empName" :
-                result = clientRepository.findByEmpNameContaining(pageRequestDTO.getKeyword(),pageable);
-                break;
+//            case  "writer" :
+//                result = clientRepository.findByWriterContaining(pageRequestDTO.getKeyword(),pageable);
+//                break;
+//            case  "userId" :
+//                result = clientRepository.findByUserIdContaining(pageRequestDTO.getKeyword(),pageable);
+//                break;
             default:
                 result = clientRepository.findAll(pageable);
                 break;

@@ -8,9 +8,6 @@ import org.springframework.stereotype.Service;
 @Service
 public interface ClientService {
     public Long clientRegister(ClientDTO clientDTO);
-
-//    List<String> register(List<ClientDTO> clientDTOList);
-
     public ClientDTO clientGet(Long clientNo);
     public void clientModify(ClientDTO clientDTO);
     public void clientRemove(Long clientNo);

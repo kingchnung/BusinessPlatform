@@ -1,5 +1,6 @@
 package com.bizmate.salesPages.management.collections.service;
 
+import com.bizmate.hr.security.UserPrincipal;
 import com.bizmate.salesPages.client.domain.Client;
 import com.bizmate.salesPages.client.repository.ClientRepository;
 import com.bizmate.common.dto.PageRequestDTO;
@@ -15,6 +16,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -47,6 +49,8 @@ public class CollectionServiceImpl implements CollectionService{
                 .collectionDate(collection.getCollectionDate())
                 .collectionMoney(collection.getCollectionMoney())
                 .collectionNote(collection.getCollectionNote())
+                .userId(collection.getUserId().toString())
+                .writer(collection.getWriter())
                 .clientId(client.getClientId())
                 .clientCompany(client.getClientCompany())
                 .build();
@@ -54,6 +58,10 @@ public class CollectionServiceImpl implements CollectionService{
 
     @Override
     public String register(CollectionDTO collectionDTO) {
+        UserPrincipal userPrincipal = (UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String writerName = userPrincipal.getUsername();
+        String writerId = userPrincipal.getUserId().toString();
+
         LocalDate today = LocalDate.now();
 
         // 1. DTO에서 전달받은 clientId로 실제 Client 엔티티를 DB에서 조회
@@ -83,6 +91,8 @@ public class CollectionServiceImpl implements CollectionService{
                 .collectionId(finalCollectionId)
                 .collectionMoney(collectionDTO.getCollectionMoney())
                 .collectionNote(collectionDTO.getCollectionNote())
+                .userId(writerId)
+                .writer(writerName)
                 .client(client)
                 .build();
 

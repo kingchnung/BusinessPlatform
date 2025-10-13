@@ -77,14 +77,6 @@ public class Sales {
         this.userId = userId;
     }
 
-    public void changeWriter(String writer) {
-        this.writer = writer;
-    }
-
-    public void changeClientId(String clientId) {
-        this.clientId = clientId;
-    }
-
     public void changeClientCompany(String clientCompany) {
         this.clientCompany = clientCompany;
     }

@@ -21,6 +21,8 @@ public class CollectionDTO {
 
     private BigDecimal collectionMoney;
     private String collectionNote;
+    private String writer;
+    private String userId;
     private String clientId;
     private String clientCompany;
 }

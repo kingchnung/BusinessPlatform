@@ -73,14 +73,6 @@ public class Order implements Serializable {
         this.orderAmount = orderAmount;
     }
 
-    public void changeUserId(String userId) {
-        this.userId = userId;
-    }
-
-    public void changeWriter(String writer) {
-        this.writer = writer;
-    }
-
     public void changeClientId(String clientId) {
         this.clientId = clientId;
     }

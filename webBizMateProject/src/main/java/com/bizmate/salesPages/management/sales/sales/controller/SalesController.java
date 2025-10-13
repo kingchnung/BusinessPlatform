@@ -2,9 +2,11 @@ package com.bizmate.salesPages.management.sales.sales.controller;
 
 import com.bizmate.common.dto.PageRequestDTO;
 import com.bizmate.common.dto.PageResponseDTO;
+import com.bizmate.hr.security.UserPrincipal;
 import com.bizmate.salesPages.management.sales.sales.dto.SalesDTO;
 import com.bizmate.salesPages.management.sales.sales.service.SalesService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -25,8 +27,19 @@ public class SalesController {
         return salesService.list(pageRequestDTO);
     }
 
+//    @PostMapping("/")
+//    public Map<String, String> register(@RequestBody SalesDTO salesDTO){
+//        String salesId = salesService.register(salesDTO);
+//        return Map.of("SalesId", salesId);
+//    }
+
     @PostMapping("/")
-    public Map<String, String> register(@RequestBody SalesDTO salesDTO){
+    public Map<String, String> register(@RequestBody SalesDTO salesDTO, @AuthenticationPrincipal UserPrincipal userPrincipal){
+        String writerName = userPrincipal.getUsername();
+        String writerId = userPrincipal.getUserId().toString();
+        salesDTO.setWriter(writerName);
+        salesDTO.setUserId(writerId);
+
         String salesId = salesService.register(salesDTO);
         return Map.of("SalesId", salesId);
     }
