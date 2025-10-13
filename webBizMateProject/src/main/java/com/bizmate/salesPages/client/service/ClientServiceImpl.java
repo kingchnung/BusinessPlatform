@@ -26,20 +26,6 @@ public class ClientServiceImpl implements ClientService{
     private final ClientRepository clientRepository;
     private final ModelMapper modelMapper;
 
-//    @Override
-//    public List<String> register(List<ClientDTO> clientDTOList) {
-//        List<String> registeredClientIds = new ArrayList<>();
-//
-//        for (ClientDTO clientDTO : clientDTOList) {
-//            Client client = modelMapper.map(clientDTO, Client.class);
-//
-//            Client savedClient = clientRepository.save(client);
-//            registeredClientIds.add(savedClient.getClientId());
-//        }
-//
-//        return registeredClientIds;
-//    }
-
     @Override
     public Long clientRegister(ClientDTO clientDTO) {
         Client client = modelMapper.map(clientDTO, Client.class);

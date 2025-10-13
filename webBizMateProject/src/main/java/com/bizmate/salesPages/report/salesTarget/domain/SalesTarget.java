@@ -28,7 +28,7 @@ public class SalesTarget {
             strategy = GenerationType.SEQUENCE,
             generator = "SALES_TARGET_SEQ_GENERATOR"
     )
-    private String targetId;
+    private Long targetId;
 
     @CreationTimestamp
     @Temporal(TemporalType.DATE)
