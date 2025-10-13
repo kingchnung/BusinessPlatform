@@ -47,7 +47,7 @@ public class Department {
     private List<Department> childDepartments = new ArrayList<>();
 
     // 5. 사용여부
-    @Column(name = "is_used", nullable = false, length = 1)
+    @Column(name = "is_used",  length = 1)
     private String isUsed = "Y";
 
     // ★ 7. 생성일 (추가)

@@ -31,7 +31,7 @@ public class Grade {
     private Integer gradeOrder;
 
     // 4. 사용여부
-    @Column(name = "is_used", nullable = false, length = 1)
+    @Column(name = "is_used",  length = 1)
     private String isUsed = "Y";
 
     // 참고: Employee 엔티티와의 연관관계는 Employee 쪽에서 ManyToOne으로 처리합니다.

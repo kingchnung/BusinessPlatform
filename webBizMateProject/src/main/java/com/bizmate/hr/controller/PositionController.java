@@ -20,7 +20,7 @@ public class PositionController {
     private final PositionService positionService;
 
     @GetMapping
-//    @PreAuthorize("hasAuthority('position:read')")
+//    @PreAuthorize("hasAuthority('pos:read')")
     public List<PositionDTO> getAllPositions() {
         return positionService.getAllPositions();
     }

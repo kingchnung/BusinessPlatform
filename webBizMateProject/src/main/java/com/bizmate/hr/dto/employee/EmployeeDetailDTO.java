@@ -54,8 +54,8 @@ public class EmployeeDetailDTO {
     public static EmployeeDetailDTO fromEntity(Employee e) {
         // null 체크를 통해 NullPointerException 방지
         String deptName = e.getDepartment() != null ? e.getDepartment().getDeptName() : "미지정";
-        String createdBy = e.getCreatedBy() != null ? e.getCreatedBy().getEmpName() : "시스템";
-        String updatedBy = e.getUpdatedBy() != null ? e.getUpdatedBy().getEmpName() : "시스템";
+        String createdBy = e.getCreBy() != null ? e.getCreBy().getEmpName() : "시스템";
+        String updatedBy = e.getUpdBy() != null ? e.getUpdBy().getEmpName() : "시스템";
 
         return EmployeeDetailDTO.builder()
                 .empId(e.getEmpId())

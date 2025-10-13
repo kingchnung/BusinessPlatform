@@ -1,8 +1,6 @@
 package com.bizmate.hr.controller;
 
-import com.bizmate.hr.dto.employee.EmployeeDTO;
-import com.bizmate.hr.dto.employee.EmployeeDetailDTO;
-import com.bizmate.hr.dto.employee.EmployeeRequestDTO;
+import com.bizmate.hr.dto.employee.*;
 import com.bizmate.hr.service.EmployeeService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -47,10 +45,10 @@ public class EmployeeController {
     // ★ 권한 설정: 'emp:create' 권한이 있는 사용자만 접근 가능
     @PostMapping("/add")
     @PreAuthorize("hasAuthority('emp:create')")
-    public ResponseEntity<EmployeeDTO> createEmployee(@RequestBody @Valid EmployeeRequestDTO requestDTO){
-        // ★ 변경: RequestDTO를 받고 DTO를 반환
-        EmployeeDTO createdDto = employeeService.saveEmployee(null, requestDTO);
-        return new ResponseEntity<>(createdDto, HttpStatus.CREATED);
+    public ResponseEntity<EmployeeDTO> createEmployee(
+            @RequestBody @Valid EmployeeCreateRequestDTO requestDTO){
+        EmployeeDTO created = employeeService.createEmployee(requestDTO);
+        return new ResponseEntity<>(created, HttpStatus.CREATED);
     }
     @GetMapping("/next-no/{deptCode}")
     @PreAuthorize("hasAnyAuthority('emp:create')")
@@ -62,11 +60,12 @@ public class EmployeeController {
     // ★ 권한 설정: 'emp:update' 권한이 있는 사용자만 접근 가능
     @PutMapping("/{empId}")
     @PreAuthorize("hasAuthority('emp:update')")
-    public ResponseEntity<EmployeeDTO> updateEmployee(@PathVariable Long empId,
-                                                      @RequestBody @Valid EmployeeRequestDTO requestDTO){
+    public ResponseEntity<EmployeeDTO> updateEmployee(
+            @PathVariable Long empId,
+            @RequestBody @Valid EmployeeUpdateRequestDTO requestDTO){
         // ★ 변경: RequestDTO를 받고 DTO를 반환
-        EmployeeDTO updatedDto = employeeService.saveEmployee(empId, requestDTO);
-        return ResponseEntity.ok(updatedDto);
+        EmployeeDTO updated = employeeService.updateEmployee(empId, requestDTO);
+        return ResponseEntity.ok(updated);
     }
 
     // ★ 권한 설정: 'emp:delete' 권한이 있는 사용자만 접근 가능
