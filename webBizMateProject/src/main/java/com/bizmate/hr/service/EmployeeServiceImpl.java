@@ -111,6 +111,9 @@ public class EmployeeServiceImpl implements EmployeeService {
         return EmployeeDetailDTO.fromEntity(employee);
     }
 
+
+
+
     /**
      * 🔹 직원 정보 변경 시 UserEntity의 복제 필드를 동기화하는 메서드
      */
@@ -132,7 +135,9 @@ public class EmployeeServiceImpl implements EmployeeService {
     // ===============================
     // 🔹 사번 자동 생성 로직
     // ===============================
-    private String generateEmpNo(String deptCode) {
+    @Override
+    @Transactional(readOnly = true)
+    public String generateEmpNo(String deptCode) {
         Department dept = departmentRepository.findByDeptCode(deptCode)
                 .orElseThrow(() -> new EntityNotFoundException("부서 ID " + deptCode + "를 찾을 수 없습니다."));
 
