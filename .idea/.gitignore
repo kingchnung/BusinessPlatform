@@ -1,8 +1,11 @@
 # 디폴트 무시된 파일
 /shelf/
 /workspace.xml
+<<<<<<< HEAD
 # 에디터 기반 HTTP 클라이언트 요청
 /httpRequests/
 # Datasource local storage ignored files
 /dataSources/
 /dataSources.local.xml
+=======
+>>>>>>> efa32a64f7d5feb73ac9984852c1ab1b879200c2

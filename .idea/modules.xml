@@ -3,6 +3,11 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/backend.iml" filepath="$PROJECT_DIR$/.idea/backend.iml" />
+<<<<<<< HEAD
+=======
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/webBizMateProject.main.iml" filepath="$PROJECT_DIR$/.idea/modules/webBizMateProject.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/webBizMateProject.test.iml" filepath="$PROJECT_DIR$/.idea/modules/webBizMateProject.test.iml" />
+>>>>>>> efa32a64f7d5feb73ac9984852c1ab1b879200c2
     </modules>
   </component>
 </project>

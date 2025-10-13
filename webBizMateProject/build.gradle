@@ -28,18 +28,29 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'com.google.code.gson:gson:2.10.1'
+<<<<<<< HEAD
 
 	implementation 'org.modelmapper:modelmapper:3.2.1'
 	implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter'
+=======
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+	implementation 'org.modelmapper:modelmapper:3.2.1'
+	implementation 'org.springframework.boot:spring-boot-starter-security'
+>>>>>>> efa32a64f7d5feb73ac9984852c1ab1b879200c2
 
 	compileOnly 'org.projectlombok:lombok'
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 	runtimeOnly 'com.oracle.database.jdbc:ojdbc11'
+<<<<<<< HEAD
     implementation 'org.springframework.boot:spring-boot-starter-validation'
 	annotationProcessor 'org.projectlombok:lombok'
 
 
+=======
+	annotationProcessor 'org.projectlombok:lombok'
+
+>>>>>>> efa32a64f7d5feb73ac9984852c1ab1b879200c2
 	// https://mvnrepository.com/artifact/io.jsonwebtoken/jjwt-api
 	implementation("io.jsonwebtoken:jjwt-api:0.11.5")
 	// https://mvnrepository.com/artifact/io.jsonwebtoken/jjwt-impl
@@ -50,7 +61,11 @@ dependencies {
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 	testCompileOnly 'org.projectlombok:lombok'
+<<<<<<< HEAD
     testAnnotationProcessor 'org.projectlombok:lombok'
+=======
+	testAnnotationProcessor 'org.projectlombok:lombok'
+>>>>>>> efa32a64f7d5feb73ac9984852c1ab1b879200c2
 	testImplementation 'org.springframework.security:spring-security-test'
 
 
