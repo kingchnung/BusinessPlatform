@@ -40,6 +40,7 @@ public class JWTProvider {
      * Access Token을 생성합니다.
      */
     public String createAccessToken(UserPrincipal principal) {
+        log.info("jwt생성 직전 권한 목록 : {}",principal.getAuthorities());
         return createToken(principal, accessTokenValidityMillis);
     }
 
@@ -99,6 +100,7 @@ public class JWTProvider {
     }
 
     public Claims parseClaims(String token) {
+
         return Jwts.parser().setSigningKey(ks).parseClaimsJws(token).getBody();
     }
 

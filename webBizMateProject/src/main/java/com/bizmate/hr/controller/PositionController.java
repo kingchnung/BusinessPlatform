@@ -20,26 +20,26 @@ public class PositionController {
     private final PositionService positionService;
 
     @GetMapping
-    @PreAuthorize("hasAuthority('position:read')")
+//    @PreAuthorize("hasAuthority('pos:read')")
     public List<PositionDTO> getAllPositions() {
         return positionService.getAllPositions();
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAuthority('position:read')")
+//    @PreAuthorize("hasAuthority('pos:read')")
     public ResponseEntity<PositionDTO> getPosition(@PathVariable("id") Long positionCode) {
         return ResponseEntity.ok(positionService.getPosition(positionCode));
     }
 
     @PostMapping
-    @PreAuthorize("hasAuthority('position:create')")
+    @PreAuthorize("hasAuthority('pos:create')")
     public ResponseEntity<PositionDTO> createPosition(@RequestBody @Valid PositionRequestDTO requestDTO) {
         PositionDTO created = positionService.savePosition(null, requestDTO);
         return new ResponseEntity<>(created, HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAuthority('position:update')")
+    @PreAuthorize("hasAuthority('pos:update')")
     public ResponseEntity<PositionDTO> updatePosition(@PathVariable("id") Long positionCode,
                                                       @RequestBody @Valid PositionRequestDTO requestDTO) {
         PositionDTO updated = positionService.savePosition(positionCode, requestDTO);
@@ -47,7 +47,7 @@ public class PositionController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAuthority('position:delete')")
+    @PreAuthorize("hasAuthority('pos:delete')")
     public ResponseEntity<Void> deletePosition(@PathVariable("id") Long positionCode) {
         positionService.deletePosition(positionCode);
         return ResponseEntity.noContent().build();

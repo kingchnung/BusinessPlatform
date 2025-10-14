@@ -5,9 +5,7 @@ import com.bizmate.hr.domain.Employee;
 import com.bizmate.hr.domain.UserEntity;
 import com.bizmate.hr.domain.code.Grade;
 import com.bizmate.hr.domain.code.Position;
-import com.bizmate.hr.dto.employee.EmployeeDTO;
-import com.bizmate.hr.dto.employee.EmployeeDetailDTO;
-import com.bizmate.hr.dto.employee.EmployeeRequestDTO;
+import com.bizmate.hr.dto.employee.*;
 import com.bizmate.hr.repository.*;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -30,6 +28,8 @@ public class EmployeeServiceImpl implements EmployeeService {
     private final UserService userService;
     private final UserRepository userRepository;
 
+
+
     @Override
     @Transactional(readOnly = true)
     public List<EmployeeDTO> getAllEmployees() {
@@ -47,57 +47,88 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
-    public EmployeeDTO saveEmployee(Long empId, EmployeeRequestDTO requestDTO) {
-        Employee employee;
+    public EmployeeDTO createEmployee(EmployeeCreateRequestDTO dto) {
+        // ✅ 1. 부서 코드로 다음 사번 생성
+        Department dept = departmentRepository.findByDeptCode(dto.getDeptCode())
+                .orElseThrow(() -> new EntityNotFoundException("부서를 찾을 수 없습니다."));
 
-        if (empId != null) {
-            // 수정 모드
-            employee = employeeRepository.findById(empId)
-                    .orElseThrow(() -> new EntityNotFoundException("사원 ID " + empId + "를 찾을 수 없습니다."));
-        } else {
-            // 신규 등록
-            employee = new Employee();
-            // 🔹 자동 사번 생성 (DTO에서 받지 않음)
-            String empNo = generateEmpNo(requestDTO.getDeptCode());
-            employee.setEmpNo(empNo);
-
-
-        }
-
+        String empNo = generateEmpNo(dto.getDeptCode());  // 자동 생성
 
         // 🔹 FK 엔티티 조회
-        Department department = departmentRepository.findByDeptCode(requestDTO.getDeptCode())
-                .orElseThrow(() -> new EntityNotFoundException("부서 ID " + requestDTO.getDeptCode() + "를 찾을 수 없습니다."));
-        Position position = positionRepository.findById(requestDTO.getPositionCode())
-                .orElseThrow(() -> new EntityNotFoundException("직책 코드 " + requestDTO.getPositionCode() + "를 찾을 수 없습니다."));
-        Grade grade = gradeRepository.findById(requestDTO.getGradeCode())
-                .orElseThrow(() -> new EntityNotFoundException("직급 코드 " + requestDTO.getGradeCode() + "를 찾을 수 없습니다."));
+        Department department = departmentRepository.findByDeptCode(dto.getDeptCode())
+                .orElseThrow(() -> new EntityNotFoundException("부서 ID " + dto.getDeptCode() + "를 찾을 수 없습니다."));
+        Position position = positionRepository.findById(dto.getPositionCode())
+                .orElseThrow(() -> new EntityNotFoundException("직책 코드 " + dto.getPositionCode() + "를 찾을 수 없습니다."));
+        Grade grade = gradeRepository.findById(dto.getGradeCode())
+                .orElseThrow(() -> new EntityNotFoundException("직급 코드 " + dto.getGradeCode() + "를 찾을 수 없습니다."));
 
         // 🔹 기본 필드 매핑
-        employee.setEmpName(requestDTO.getEmpName());
-        employee.setPhone(requestDTO.getPhone());
-        employee.setEmail(requestDTO.getEmail());
-        employee.setStartDate(requestDTO.getStartDate());
+        Employee employee = new Employee();
+        employee.setEmpNo(empNo);
+        employee.setEmpName(dto.getEmpName());
+        employee.setGender(dto.getGender());
+        employee.setBirthDate(dto.getBirthDate());
+        employee.setPhone(dto.getPhone());
+        employee.setEmail(dto.getEmail());
+        employee.setAddress(dto.getAddress());
         employee.setDepartment(department);
         employee.setPosition(position);
         employee.setGrade(grade);
-        employee.setStatus(requestDTO.getStatus() != null
-                ? requestDTO.getStatus().trim().toUpperCase()
-                : "ACTIVE");
+        employee.setStartDate(dto.getStartDate());
+        employee.setStatus("ACTIVE");
 
         // 🔹 저장
         Employee savedEmployee = employeeRepository.save(employee);
 
         // 🔹 신규 직원일 경우 자동 계정 생성
-        if (empId == null) {
-            userService.createUserAccount(savedEmployee);
-        } else {
-            //수정시 uesr정보 동기화
-            syncUserInfo(savedEmployee);
-        }
+
+        userService.createUserAccount(savedEmployee);
 
         return EmployeeDTO.fromEntity(savedEmployee);
     }
+
+    @Override
+    public EmployeeDTO updateEmployee(Long empId, EmployeeUpdateRequestDTO requestDTO) {
+        // 🔹 기존 직원 조회
+        Employee employee = employeeRepository.findById(empId)
+                .orElseThrow(() -> new EntityNotFoundException("사원 ID " + empId + "를 찾을 수 없습니다."));
+
+        // 🔹 수정 가능한 필드만 반영
+        employee.setPhone(requestDTO.getPhone());
+        employee.setEmail(requestDTO.getEmail());
+        employee.setAddress(requestDTO.getAddress());
+
+        // 🔹 FK 변경(선택적)
+        if (requestDTO.getDeptCode() != null) {
+            Department dept = departmentRepository.findByDeptCode(requestDTO.getDeptCode())
+                    .orElseThrow(() -> new EntityNotFoundException("부서 코드 " + requestDTO.getDeptCode() + "를 찾을 수 없습니다."));
+            employee.setDepartment(dept);
+        }
+
+        if (requestDTO.getPositionCode() != null) {
+            Position pos = positionRepository.findById(requestDTO.getPositionCode())
+                    .orElseThrow(() -> new EntityNotFoundException("직책 코드 " + requestDTO.getPositionCode() + "를 찾을 수 없습니다."));
+            employee.setPosition(pos);
+        }
+
+        if (requestDTO.getGradeCode() != null) {
+            Grade grade = gradeRepository.findById(requestDTO.getGradeCode())
+                    .orElseThrow(() -> new EntityNotFoundException("직급 코드 " + requestDTO.getGradeCode() + "를 찾을 수 없습니다."));
+            employee.setGrade(grade);
+        }
+
+        // 🔹 저장
+        Employee updatedEmployee = employeeRepository.save(employee);
+
+        // 🔹 User 정보 동기화
+        syncUserInfo(updatedEmployee);
+
+        return EmployeeDTO.fromEntity(updatedEmployee);
+    }
+
+
+
+
 
     @Override
     public void deleteEmployee(Long empId) {
@@ -111,6 +142,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         return EmployeeDetailDTO.fromEntity(employee);
     }
 
+
     /**
      * 🔹 직원 정보 변경 시 UserEntity의 복제 필드를 동기화하는 메서드
      */
@@ -123,6 +155,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         user.setPhone(employee.getPhone());
         user.setDeptName(employee.getDepartment().getDeptName());
         user.setPositionName(employee.getPosition().getPositionName());
+        user.setDeptCode(employee.getDepartment().getDeptCode());
         userRepository.save(user);
     }
 
@@ -131,7 +164,9 @@ public class EmployeeServiceImpl implements EmployeeService {
     // ===============================
     // 🔹 사번 자동 생성 로직
     // ===============================
-    private String generateEmpNo(String deptCode) {
+    @Override
+    @Transactional(readOnly = true)
+    public String generateEmpNo(String deptCode) {
         Department dept = departmentRepository.findByDeptCode(deptCode)
                 .orElseThrow(() -> new EntityNotFoundException("부서 ID " + deptCode + "를 찾을 수 없습니다."));
 

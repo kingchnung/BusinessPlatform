@@ -23,10 +23,12 @@ public class EmployeeUpdateRequestDTO {
 
     // **[핵심] 부서/직급/직위 변경은 인사발령(emp_admin_002) 로직을 따르므로 이 DTO에서 제거**
     // **[단축] 퇴사일/상태/경력연수 등 인사카드 단독 수정 항목**
+    private LocalDate startDate;
     private LocalDate leaveDate;    // 퇴사일
     private String status;          // 재직상태
+    private String deptCode;
+    private Long positionCode;
+    private Long gradeCode;
     private Float careerYears;      // 근속연수 (경력)
-    private Long deptId;            // 부서ID (단순 인사카드 수정 시 부서ID 변경은 배제)
-    private Integer rank;           // 직급
-    private String position;        // 직위
+
 }

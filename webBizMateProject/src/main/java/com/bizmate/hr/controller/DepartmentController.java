@@ -31,7 +31,7 @@ public class DepartmentController {
         return ResponseEntity.ok(departmentService.getDepartment(id));
     }
 
-    @PostMapping
+    @PostMapping("/add")
     @PreAuthorize("hasAuthority('dept:create')")
     public ResponseEntity<DepartmentDTO> createDepartment(@RequestBody @Valid DepartmentRequestDTO requestDTO) {
         DepartmentDTO createdDto = departmentService.saveDepartment(null, requestDTO);
