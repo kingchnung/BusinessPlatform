@@ -1,7 +1,7 @@
 package com.bizmate.salesPages.client.service;
 
-import com.bizmate.common.dto.PageRequestDTO;
-import com.bizmate.common.dto.PageResponseDTO;
+import com.bizmate.salesPages.common.dto.PageRequestDTO;
+import com.bizmate.salesPages.common.dto.PageResponseDTO;
 import com.bizmate.salesPages.client.dto.ClientDTO;
 import org.springframework.stereotype.Service;
 

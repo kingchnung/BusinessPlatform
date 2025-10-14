@@ -1,11 +1,16 @@
 package com.bizmate.salesPages.management.sales.sales.service;
 
-import com.bizmate.common.dto.PageRequestDTO;
-import com.bizmate.common.dto.PageResponseDTO;
-import com.bizmate.hr.security.UserPrincipal;
+import com.bizmate.salesPages.common.dto.PageRequestDTO;
+import com.bizmate.salesPages.common.dto.PageResponseDTO;
+import com.bizmate.UserPrincipal;
+import com.bizmate.salesPages.management.order.order.domain.Order;
+import com.bizmate.salesPages.management.order.order.repository.OrderRepository;
+import com.bizmate.salesPages.management.order.orderItem.domain.OrderItem;
 import com.bizmate.salesPages.management.sales.sales.domain.Sales;
 import com.bizmate.salesPages.management.sales.sales.dto.SalesDTO;
 import com.bizmate.salesPages.management.sales.sales.repository.SalesRepository;
+import com.bizmate.salesPages.management.sales.salesItem.domain.SalesItem;
+import com.bizmate.salesPages.management.sales.salesItem.dto.SalesItemDTO;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
@@ -28,6 +33,7 @@ import java.util.stream.Collectors;
 @Transactional
 public class SalesServiceImpl implements SalesService{
     private final SalesRepository salesRepository;
+    private final OrderRepository orderRepository;
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyyMMdd");
     private final ModelMapper modelMapper;
 
@@ -59,12 +65,46 @@ public class SalesServiceImpl implements SalesService{
         String datePart = today.format(DATE_FORMAT);
         String sequencePart = String.format("%04d", nextSequence);
         String finalSalesId = datePart + "-" + sequencePart;
-
         salesDTO.setSalesId(finalSalesId);
 
-        Sales sales = modelMapper.map(salesDTO, Sales.class);
-        Sales savedSales = salesRepository.save(sales);
+        Order order = null;
+        if(salesDTO.getOrderId() != null && !salesDTO.getOrderId().isEmpty()){
+            order = orderRepository.findById(salesDTO.getOrderId())
+                    .orElseThrow(()->new NoSuchElementException("Order ID [" + salesDTO.getOrderId() + "]를 찾을 수 없습니다."));
 
+            salesDTO.setProjectId(salesDTO.getProjectId() != null ? salesDTO.getProjectId() : order.getProjectId());
+            salesDTO.setProjectName(salesDTO.getProjectName() != null? salesDTO.getProjectName() : order.getProjectName());
+            salesDTO.setClientId(salesDTO.getClientId() != null? salesDTO.getClientId() : order.getClientId());
+            salesDTO.setClientCompany(salesDTO.getClientCompany() != null? salesDTO.getClientCompany(): order.getClientCompany());
+        }
+
+        Sales sales = modelMapper.map(salesDTO, Sales.class);
+        sales.setOrder(order);
+
+        if(order != null && (salesDTO.getSalesItems() == null || salesDTO.getSalesItems().isEmpty())){
+            for(OrderItem orderItem : order.getOrderItems()){
+                SalesItem salesItem = SalesItem.builder()
+                        .itemName(orderItem.getItemName())
+                        .quantity(orderItem.getQuantity())
+                        .unitPrice(orderItem.getUnitPrice())
+                        .vat(orderItem.getVat())
+                        .totalAmount(orderItem.getTotalAmount())
+                        .itemNote(orderItem.getItemNote())
+                        .lineNum(orderItem.getLineNum())
+                        .build();
+                sales.addSalesItem(salesItem);
+            }
+        }
+
+        else if (salesDTO.getSalesItems() != null && !salesDTO.getSalesItems().isEmpty()){
+            for(SalesItemDTO salesItemDTO : salesDTO.getSalesItems()){
+                SalesItem salesItem = modelMapper.map(salesItemDTO, SalesItem.class);
+
+                sales.addSalesItem(salesItem);
+            }
+        }
+
+        Sales savedSales = salesRepository.save(sales);
         return savedSales.getSalesId();
     }
 
@@ -82,9 +122,8 @@ public class SalesServiceImpl implements SalesService{
         Sales sales = result.orElseThrow(()->
                 new NoSuchElementException("Sales ID ["+ salesDTO.getOrderId()+ "]을 찾을 수 없습니다."));
 
-        sales.changeSalesAmount(salesDTO.getSalesAmount());
+//        sales.changeSalesAmount(salesDTO.getSalesAmount());
         sales.changeDeploymentDate(salesDTO.getDeploymentDate());
-        sales.changeUserId(salesDTO.getUserId());
         sales.changeClientCompany(salesDTO.getClientCompany());
         sales.changeSalesNote(salesDTO.getSalesNote());
         sales.changeProjectId(salesDTO.getProjectId());

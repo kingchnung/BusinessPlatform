@@ -1,7 +1,7 @@
 package com.bizmate.salesPages.report.salesTarget.service;
 
-import com.bizmate.common.dto.PageRequestDTO;
-import com.bizmate.common.dto.PageResponseDTO;
+import com.bizmate.salesPages.common.dto.PageRequestDTO;
+import com.bizmate.salesPages.common.dto.PageResponseDTO;
 import com.bizmate.salesPages.report.salesTarget.dto.SalesTargetDTO;
 
 public interface SalesTargetService {

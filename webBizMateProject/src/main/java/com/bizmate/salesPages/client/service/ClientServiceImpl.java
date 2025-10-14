@@ -1,8 +1,8 @@
 package com.bizmate.salesPages.client.service;
 
-import com.bizmate.common.dto.PageRequestDTO;
-import com.bizmate.common.dto.PageResponseDTO;
-import com.bizmate.hr.security.UserPrincipal;
+import com.bizmate.salesPages.common.dto.PageRequestDTO;
+import com.bizmate.salesPages.common.dto.PageResponseDTO;
+import com.bizmate.UserPrincipal;
 import com.bizmate.salesPages.client.domain.Client;
 import com.bizmate.salesPages.client.dto.ClientDTO;
 import com.bizmate.salesPages.client.repository.ClientRepository;

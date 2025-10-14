@@ -1,9 +1,11 @@
 package com.bizmate.salesPages.management.sales.sales.dto;
 
+import com.bizmate.salesPages.management.sales.salesItem.dto.SalesItemDTO;
 import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
 @Setter
 @Getter
@@ -31,5 +33,7 @@ public class SalesDTO {
 
     // 연관된 Order 정보는 ID만 포함 (Optional)
     private String orderId;
+
+    private List<SalesItemDTO> salesItems;
 
 }
