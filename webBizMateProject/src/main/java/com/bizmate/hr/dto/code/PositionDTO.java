@@ -13,6 +13,8 @@ public class PositionDTO {
     private String isUsed; // ★ 새로운 필드
 
     public static PositionDTO fromEntity(Position position) {
+        if(position == null) return null;
+
         return PositionDTO.builder()
                 .positionCode(position.getPositionCode())
                 .positionName(position.getPositionName())

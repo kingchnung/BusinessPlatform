@@ -65,6 +65,16 @@ public class UserEntity {
     @Column(name = "upd_date")
     private LocalDateTime updDate;
 
+    @PrePersist
+    public void prePersist() {
+        this.creDate = LocalDateTime.now();
+        this.updDate = LocalDateTime.now();
+    }
+    @PreUpdate
+    public void preUpdate() {
+        this.updDate = LocalDateTime.now();
+    }
+
     // 11~15. 조회 편의를 위한 직원 정보 복제 필드 (데이터 정합성 관리가 필요함)
     @Column(name = "emp_name", length = 50)
     private String empName;

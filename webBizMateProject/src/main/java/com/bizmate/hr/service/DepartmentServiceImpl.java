@@ -22,7 +22,7 @@ public class DepartmentServiceImpl implements DepartmentService { // ★ 서비�
     @Override
     @Transactional(readOnly = true)
     public List<DepartmentDTO> getAllDepartments() {
-        return departmentRepository.findAll().stream()
+        return departmentRepository.findAllByOrderByDeptCodeAsc().stream()
                 .map(DepartmentDTO::fromEntity)
                 .collect(Collectors.toList());
     }
