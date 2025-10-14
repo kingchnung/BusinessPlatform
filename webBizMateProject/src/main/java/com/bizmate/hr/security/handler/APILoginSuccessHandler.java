@@ -1,59 +1,60 @@
 package com.bizmate.hr.security.handler;
 
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.Map;
-
-import org.springframework.security.core.Authentication;
-import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
-
 import com.google.gson.Gson;
-import com.bizmate.hr.dto.user.UserDTO; // 저희가 정의한 UserDTO 사용
-import com.bizmate.hr.security.jwt.JWTProvider; // 이전 단계에서 설계한 JWTProvider 사용
+import com.bizmate.hr.security.UserPrincipal;
+import com.bizmate.hr.security.jwt.JWTProvider;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.stereotype.Component;
+
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * [APILoginSuccessHandler]
- * - 로그인 성공 후 JWT를 생성하여 JSON 형태로 응답하는 핸들러
+ * - 로그인 성공 시 JWT Access/Refresh Token을 생성하고 JSON 형태로 응답
  */
 @Slf4j
-@RequiredArgsConstructor // ★ 변경점 1: JWTProvider 주입을 위해 Lombok의 RequiredArgsConstructor 사용
+@Component
+@RequiredArgsConstructor
 public class APILoginSuccessHandler implements AuthenticationSuccessHandler {
 
-    // ★ 변경점 1: JWTProvider를 필드로 주입받음
     private final JWTProvider jwtProvider;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
                                         Authentication authentication) throws IOException, ServletException {
 
-        log.info("▶▶▶ APILoginSuccessHandler 실행: 로그인 성공");
+        log.info("✅ 로그인 성공 → JWT 토큰 발급 시작");
 
-        // ★ 변경점 2: DTO 형 변환 (MemberDTO -> UserDTO)
-        UserDTO userDTO = (UserDTO) authentication.getPrincipal();
+        // 1️⃣ 인증된 사용자 정보 가져오기
+        UserPrincipal principal = (UserPrincipal) authentication.getPrincipal();
 
-        // JWT에 담길 클레임 데이터 (userId, username, empName, roles, perms 포함)
-        Map<String, Object> claims = userDTO.getClaims();
+        // 2️⃣ JWT Access / Refresh 토큰 생성
+        String accessToken = jwtProvider.createAccessToken(principal);
+        String refreshToken = jwtProvider.createRefreshToken(principal);
 
-        // ★ 변경점 3: JWTProvider를 사용하여 토큰 생성 (JWTUtil.generateToken 대체)
-        String accessToken = jwtProvider.createAccessToken(userDTO,userDTO.getRoleNames(),userDTO.getPermissionNames());
-        String refreshToken = jwtProvider.createRefreshToken(userDTO);
+        // 3️⃣ 응답 데이터 구성
+        Map<String, Object> responseBody = new HashMap<>();
+        responseBody.put("userId", principal.getUserId());
+        responseBody.put("username", principal.getUsername());
+        responseBody.put("roles", principal.getAuthorities());
+        responseBody.put("accessToken", accessToken);
+        responseBody.put("refreshToken", refreshToken);
 
-        claims.put("accessToken", accessToken);
-        claims.put("refreshToken", refreshToken);
-
-        // 응답 설정 (학원 예제와 동일)
+        // 4️⃣ JSON 응답 전송
         response.setContentType("application/json; charset=UTF-8");
-        PrintWriter printWriter = response.getWriter();
+        PrintWriter writer = response.getWriter();
+        new Gson().toJson(responseBody, writer);
+        writer.close();
 
-        // Gson을 사용하여 claims Map을 JSON 문자열로 변환 후 전송
-        new Gson().toJson(claims, printWriter);
-        printWriter.close();
-
-        log.info("JWT 발급 완료: Access Token 및 Refresh Token 응답 전송");
+        log.info("🎉 JWT 발급 완료: {}", principal.getUsername());
     }
 }

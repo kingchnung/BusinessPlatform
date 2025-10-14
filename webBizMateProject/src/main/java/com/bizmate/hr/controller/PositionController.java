@@ -19,49 +19,37 @@ public class PositionController {
 
     private final PositionService positionService;
 
-    /**
-     * 직책 전체 조회 API
-     * 권한: data:read:all (모든 데이터 조회 가능 권한)
-     */
     @GetMapping
-    @PreAuthorize("hasAuthority('data:read:all')")
+    @PreAuthorize("hasAuthority('position:read')")
     public List<PositionDTO> getAllPositions() {
         return positionService.getAllPositions();
     }
 
-    /**
-     * 신규 직책 등록 API
-     * 권한: dept:manage (마스터 데이터 관리 권한)
-     */
+    @GetMapping("/{id}")
+    @PreAuthorize("hasAuthority('position:read')")
+    public ResponseEntity<PositionDTO> getPosition(@PathVariable("id") Long positionCode) {
+        return ResponseEntity.ok(positionService.getPosition(positionCode));
+    }
+
     @PostMapping
-    @PreAuthorize("hasAuthority('dept:manage')")
+    @PreAuthorize("hasAuthority('position:create')")
     public ResponseEntity<PositionDTO> createPosition(@RequestBody @Valid PositionRequestDTO requestDTO) {
-        // ID가 null이면 신규 등록 처리
-        PositionDTO createdDto = positionService.savePosition(null, requestDTO);
-        return new ResponseEntity<>(createdDto, HttpStatus.CREATED);
+        PositionDTO created = positionService.savePosition(null, requestDTO);
+        return new ResponseEntity<>(created, HttpStatus.CREATED);
     }
 
-    /**
-     * 직책 정보 수정 API
-     * 권한: dept:manage
-     */
-    @PutMapping("/{code}")
-    @PreAuthorize("hasAuthority('dept:manage')")
-    public ResponseEntity<PositionDTO> updatePosition(@PathVariable("code") Long code,
+    @PutMapping("/{id}")
+    @PreAuthorize("hasAuthority('position:update')")
+    public ResponseEntity<PositionDTO> updatePosition(@PathVariable("id") Long positionCode,
                                                       @RequestBody @Valid PositionRequestDTO requestDTO) {
-        // PathVariable의 code(PK)를 사용하여 수정 처리
-        PositionDTO updatedDto = positionService.savePosition(code, requestDTO);
-        return ResponseEntity.ok(updatedDto);
+        PositionDTO updated = positionService.savePosition(positionCode, requestDTO);
+        return ResponseEntity.ok(updated);
     }
 
-    /**
-     * 직책 삭제 API
-     * 권한: dept:manage
-     */
-    @DeleteMapping("/{code}")
-    @PreAuthorize("hasAuthority('dept:manage')")
-    public ResponseEntity<Void> deletePosition(@PathVariable("code") Long code) {
-        positionService.deletePosition(code);
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('position:delete')")
+    public ResponseEntity<Void> deletePosition(@PathVariable("id") Long positionCode) {
+        positionService.deletePosition(positionCode);
         return ResponseEntity.noContent().build();
     }
 }

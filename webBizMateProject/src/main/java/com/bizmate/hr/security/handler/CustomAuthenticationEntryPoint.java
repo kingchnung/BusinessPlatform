@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.Map;
@@ -17,6 +18,7 @@ import java.util.Map;
  * - HTML 로그인 페이지 대신, JSON 형태의 오류 메시지를 응답합니다.
  */
 @Slf4j
+@Component
 public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
     @Override

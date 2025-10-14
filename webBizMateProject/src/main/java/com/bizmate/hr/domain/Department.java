@@ -40,6 +40,7 @@ public class Department {
     @JoinColumn(name = "parent_dept_id")
     private Department parentDepartment;
 
+
     // 계층 구조 관리를 위한 자식 부서 목록 (편의상)
     @OneToMany(mappedBy = "parentDepartment")
     @Builder.Default
