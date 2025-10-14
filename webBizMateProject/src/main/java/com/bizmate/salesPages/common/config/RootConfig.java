@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class RootConfig {
     @Bean
-    ModelMapper getMapper() {
+    ModelMapper salesGetMapper() {
         ModelMapper modelMapper = new ModelMapper();
         modelMapper.getConfiguration().setFieldMatchingEnabled(true)    // 필드 매칭 활성화
                 .setFieldAccessLevel(org.modelmapper.config.Configuration.AccessLevel.PRIVATE)      // 접근 수준 설정
