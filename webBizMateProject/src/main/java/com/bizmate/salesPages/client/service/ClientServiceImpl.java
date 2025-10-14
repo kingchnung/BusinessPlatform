@@ -2,7 +2,6 @@ package com.bizmate.salesPages.client.service;
 
 import com.bizmate.salesPages.common.dto.PageRequestDTO;
 import com.bizmate.salesPages.common.dto.PageResponseDTO;
-import com.bizmate.UserPrincipal;
 import com.bizmate.salesPages.client.domain.Client;
 import com.bizmate.salesPages.client.dto.ClientDTO;
 import com.bizmate.salesPages.client.repository.ClientRepository;
@@ -27,24 +26,9 @@ public class ClientServiceImpl implements ClientService{
     private final ClientRepository clientRepository;
     private final ModelMapper modelMapper;
 
-//    @Override
-//    public Long clientRegister(ClientDTO clientDTO) {
-//        Client client = modelMapper.map(clientDTO, Client.class);
-//        Client savedClient = clientRepository.save(client);
-//        return savedClient.getClientNo();
-//    }
-
     @Override
     public Long clientRegister(ClientDTO clientDTO) {
-        UserPrincipal userPrincipal = (UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-        String writer = userPrincipal.getUsername();
-        String userId = userPrincipal.getUserId().toString();
-
         Client client = modelMapper.map(clientDTO, Client.class);
-        client.changeWriter(writer);
-        client.changeUserId(userId);
-
         Client savedClient = clientRepository.save(client);
         return savedClient.getClientNo();
     }
@@ -70,9 +54,7 @@ public class ClientServiceImpl implements ClientService{
         client.changeClientContact(clientDTO.getClientContact());
         client.changeClientNote(clientDTO.getClientNote());
         client.changeBusinessLicenseFile(clientDTO.getBusinessLicenseFile());
-        client.changeWriter(clientDTO.getWriter());
         client.changeClientEmail(clientDTO.getClientEmail());
-        client.changeUserId(clientDTO.getUserId());
 
         clientRepository.save(client);
     }
@@ -104,12 +86,9 @@ public class ClientServiceImpl implements ClientService{
             case "clientContact" :
                 result = clientRepository.findByClientContactContaining(pageRequestDTO.getKeyword(),pageable);
                 break;
-//            case  "writer" :
-//                result = clientRepository.findByWriterContaining(pageRequestDTO.getKeyword(),pageable);
-//                break;
-//            case  "userId" :
-//                result = clientRepository.findByUserIdContaining(pageRequestDTO.getKeyword(),pageable);
-//                break;
+            case  "userId" :
+                result = clientRepository.findByUserIdContaining(pageRequestDTO.getKeyword(),pageable);
+                break;
             default:
                 result = clientRepository.findAll(pageable);
                 break;

@@ -1,6 +1,5 @@
 package com.bizmate.salesPages.management.collections.service;
 
-import com.bizmate.UserPrincipal;
 import com.bizmate.salesPages.client.domain.Client;
 import com.bizmate.salesPages.client.repository.ClientRepository;
 import com.bizmate.salesPages.common.dto.PageRequestDTO;
@@ -49,7 +48,7 @@ public class CollectionServiceImpl implements CollectionService{
                 .collectionDate(collection.getCollectionDate())
                 .collectionMoney(collection.getCollectionMoney())
                 .collectionNote(collection.getCollectionNote())
-                .userId(collection.getUserId().toString())
+                .userId(collection.getUserId())
                 .writer(collection.getWriter())
                 .clientId(client.getClientId())
                 .clientCompany(client.getClientCompany())
@@ -58,16 +57,14 @@ public class CollectionServiceImpl implements CollectionService{
 
     @Override
     public String register(CollectionDTO collectionDTO) {
-        UserPrincipal userPrincipal = (UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String writerName = userPrincipal.getUsername();
-        String writerId = userPrincipal.getUserId().toString();
-
         LocalDate today = LocalDate.now();
 
         // 1. DTO에서 전달받은 clientId로 실제 Client 엔티티를 DB에서 조회
         String clientId = collectionDTO.getClientId();
         Client client = clientRepository.findByClientId(clientId)
                 .orElseThrow(() -> new NoSuchElementException("Client with ID " + clientId + " not found."));
+
+        collectionDTO.setClientCompany(client.getClientCompany());
 
         String maxCollectionId = collectionRepository.findMaxCollectionIdByCollectionDate(today).orElse(null);
 
@@ -91,8 +88,8 @@ public class CollectionServiceImpl implements CollectionService{
                 .collectionId(finalCollectionId)
                 .collectionMoney(collectionDTO.getCollectionMoney())
                 .collectionNote(collectionDTO.getCollectionNote())
-                .userId(writerId)
-                .writer(writerName)
+                .writer(collectionDTO.getWriter())
+                .userId(collectionDTO.getUserId())
                 .client(client)
                 .build();
 

@@ -13,7 +13,7 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-public class OrderItemServicImpl implements OrderItemService{
+public class OrderItemServiceImpl implements OrderItemService{
     private final OrderItemRepository orderItemRepository;
 
     @Override
@@ -48,7 +48,7 @@ public class OrderItemServicImpl implements OrderItemService{
         updateOrderItem.changeItemName(orderItem.getItemName());
         updateOrderItem.changeQuantity(orderItem.getQuantity());
         updateOrderItem.changeUnitPrice(orderItem.getUnitPrice());
-        updateOrderItem.changeVat(orderItem.getVat());
+        updateOrderItem.changeUnitVat(orderItem.getUnitVat());
         updateOrderItem.changeTotalAmount(orderItem.getTotalAmount());
         updateOrderItem.changeItemNote(orderItem.getItemNote());
 

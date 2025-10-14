@@ -22,6 +22,6 @@ public interface ClientRepository extends JpaRepository<Client, Long> {
     Page<Client> findByClientCompanyContaining(String clientCompany, Pageable pageable);
     Page<Client> findByClientCeoContaining(String clientCeo, Pageable pageable);
     Page<Client> findByClientContactContaining(String clientContact, Pageable pageable);
-    Page<Client> findByWriterContaining(String writer, Pageable pageable);
+    Page<Client> findByUserIdContaining(String userId, Pageable pageable);
 
 }

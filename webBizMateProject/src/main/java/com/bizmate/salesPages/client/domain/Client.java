@@ -72,13 +72,7 @@ public class Client {
     public void changeBusinessLicenseFile(String businessLicenseFile) {
         this.businessLicenseFile = businessLicenseFile;
     }
-    public void changeWriter(String writer) {
-        this.writer = writer;
-    }
     public void changeClientEmail(String clientEmail) {
         this.clientEmail = clientEmail;
-    }
-    public void changeUserId(String userId) {
-        this.userId = userId;
     }
 }

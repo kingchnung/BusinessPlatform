@@ -22,6 +22,8 @@ public class SalesDTO {
     private String projectName;
     private LocalDate deploymentDate;
     private BigDecimal salesAmount;
+    private BigDecimal totalSubAmount;
+    private BigDecimal totalVatAmount;
     private String userId;
     private String writer;
     private String clientId;

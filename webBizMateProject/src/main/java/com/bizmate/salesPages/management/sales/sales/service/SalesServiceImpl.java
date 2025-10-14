@@ -2,7 +2,6 @@ package com.bizmate.salesPages.management.sales.sales.service;
 
 import com.bizmate.salesPages.common.dto.PageRequestDTO;
 import com.bizmate.salesPages.common.dto.PageResponseDTO;
-import com.bizmate.UserPrincipal;
 import com.bizmate.salesPages.management.order.order.domain.Order;
 import com.bizmate.salesPages.management.order.order.repository.OrderRepository;
 import com.bizmate.salesPages.management.order.orderItem.domain.OrderItem;
@@ -17,12 +16,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -39,15 +38,7 @@ public class SalesServiceImpl implements SalesService{
 
     @Override
     public String register(SalesDTO salesDTO) {
-        UserPrincipal userPrincipal = (UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String writerName = userPrincipal.getUsername();
-        String writerId = userPrincipal.getUserId().toString();
-
-        salesDTO.setUserId(writerId);
-        salesDTO.setWriter(writerName);
-
         LocalDate today = LocalDate.now();
-
         salesDTO.setSalesDate(today);
 
         String maxSalesId = salesRepository.findMaxSalesIdBySalesDate(today).orElse(null);
@@ -81,28 +72,34 @@ public class SalesServiceImpl implements SalesService{
         Sales sales = modelMapper.map(salesDTO, Sales.class);
         sales.setOrder(order);
 
-        if(order != null && (salesDTO.getSalesItems() == null || salesDTO.getSalesItems().isEmpty())){
+        List<SalesItem> finalSalesItems;
+
+        if (salesDTO.getSalesItems() != null && !salesDTO.getSalesItems().isEmpty()){
+            finalSalesItems = salesDTO.getSalesItems().stream()
+                    .map(itemDTO -> modelMapper.map(itemDTO, SalesItem.class))
+                    .collect(Collectors.toList());
+            }
+        else if(order != null){
+            finalSalesItems = new ArrayList<>();
             for(OrderItem orderItem : order.getOrderItems()){
                 SalesItem salesItem = SalesItem.builder()
                         .itemName(orderItem.getItemName())
                         .quantity(orderItem.getQuantity())
                         .unitPrice(orderItem.getUnitPrice())
-                        .vat(orderItem.getVat())
+                        .unitVat(orderItem.getUnitVat())
                         .totalAmount(orderItem.getTotalAmount())
                         .itemNote(orderItem.getItemNote())
                         .lineNum(orderItem.getLineNum())
                         .build();
-                sales.addSalesItem(salesItem);
+                finalSalesItems.add(salesItem);
             }
         }
-
-        else if (salesDTO.getSalesItems() != null && !salesDTO.getSalesItems().isEmpty()){
-            for(SalesItemDTO salesItemDTO : salesDTO.getSalesItems()){
-                SalesItem salesItem = modelMapper.map(salesItemDTO, SalesItem.class);
-
-                sales.addSalesItem(salesItem);
-            }
+         else {
+             finalSalesItems = new ArrayList<>();
         }
+        sales.updateSalesItems(finalSalesItems);
+
+        sales.calculateSalesAmount();
 
         Sales savedSales = salesRepository.save(sales);
         return savedSales.getSalesId();
@@ -122,14 +119,41 @@ public class SalesServiceImpl implements SalesService{
         Sales sales = result.orElseThrow(()->
                 new NoSuchElementException("Sales ID ["+ salesDTO.getOrderId()+ "]을 찾을 수 없습니다."));
 
-//        sales.changeSalesAmount(salesDTO.getSalesAmount());
+        sales.changeClientId(salesDTO.getClientId());
         sales.changeDeploymentDate(salesDTO.getDeploymentDate());
-        sales.changeClientCompany(salesDTO.getClientCompany());
         sales.changeSalesNote(salesDTO.getSalesNote());
         sales.changeProjectId(salesDTO.getProjectId());
-        sales.changeProjectName(salesDTO.getProjectName());
 
-        salesRepository.save(sales);
+        List<SalesItemDTO> newItemDto = salesDTO.getSalesItems();
+        List<SalesItem> mergedItem = new ArrayList<>();
+
+        for(SalesItemDTO itemDTO : newItemDto) {
+            if(itemDTO.getSalesItemId() != null){
+                SalesItem existingItem = sales.getSalesItems().stream()
+                        .filter(item -> itemDTO.getSalesItemId().equals(item.getSalesItemId()))
+                        .findFirst()
+                        .orElse(null);
+
+                if(existingItem != null) {
+                    existingItem.changeItemName(itemDTO.getItemName());
+                    existingItem.changeQuantity(itemDTO.getQuantity());
+                    existingItem.changeUnitPrice(itemDTO.getUnitPrice());
+                    existingItem.changeUnitVat(itemDTO.getUnitVat());
+                    existingItem.changeItemNote(itemDTO.getItemNote());
+
+                    existingItem.calculateAmount();
+                    mergedItem.add(existingItem);
+                }
+            } else {
+                SalesItem newItem = modelMapper.map(itemDTO, SalesItem.class);
+
+                newItem.calculateAmount();
+                mergedItem.add(newItem);
+            }
+        }
+
+        sales.updateSalesItems(mergedItem);
+        sales.calculateSalesAmount();
     }
 
     @Override

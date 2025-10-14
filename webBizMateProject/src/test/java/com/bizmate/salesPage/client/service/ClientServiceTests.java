@@ -18,10 +18,9 @@ public class ClientServiceTests {
     private ClientService clientService;
 
     @Test
-    @WithMockUser(username = "testUser", roles = {"USER", "ADMIN"})
     public void testRegister() {
         ClientDTO clientDTO = ClientDTO.builder()
-                .clientId("123-15-465463")
+                .clientId("12315465463")
                 .clientCompany("테스트용3")
                 .clientCeo("test3")
                 .clientBusinessType("제조업")

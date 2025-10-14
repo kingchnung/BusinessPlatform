@@ -51,12 +51,4 @@ public class SalesTarget {
     public void changeTargetAmount(BigDecimal targetAmount){
         this.targetAmount = targetAmount;
     }
-
-    public void setUserId(String userId){
-        this.userId = userId;
-    }
-
-    public void setWriter(String writer){
-        this.writer = writer;
-    }
 }

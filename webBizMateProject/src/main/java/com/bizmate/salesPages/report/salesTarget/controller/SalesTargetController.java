@@ -2,7 +2,6 @@ package com.bizmate.salesPages.report.salesTarget.controller;
 
 import com.bizmate.salesPages.common.dto.PageRequestDTO;
 import com.bizmate.salesPages.common.dto.PageResponseDTO;
-import com.bizmate.UserPrincipal;
 import com.bizmate.salesPages.report.salesTarget.dto.SalesTargetDTO;
 import com.bizmate.salesPages.report.salesTarget.service.SalesTargetService;
 import lombok.RequiredArgsConstructor;
@@ -27,19 +26,8 @@ public class SalesTargetController {
         return salesTargetService.list(pageRequestDTO);
     }
 
-//    @PostMapping("/")
-//    public Map<String, Long> register(@RequestBody SalesTargetDTO salesTargetDTO){
-//        Long targetId = salesTargetService.register(salesTargetDTO);
-//        return Map.of("TargetId", targetId);
-//    }
-
     @PostMapping("/")
-    public Map<String, Long> register(@RequestBody SalesTargetDTO salesTargetDTO, @AuthenticationPrincipal UserPrincipal userPrincipal){
-        String writerName = userPrincipal.getUsername();
-        String writerId = userPrincipal.getUserId().toString();
-        salesTargetDTO.setWriter(writerName);
-        salesTargetDTO.setUserId(writerId);
-
+    public Map<String, Long> register(@RequestBody SalesTargetDTO salesTargetDTO){
         Long targetId = salesTargetService.register(salesTargetDTO);
         return Map.of("TargetId", targetId);
     }

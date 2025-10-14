@@ -2,7 +2,6 @@ package com.bizmate.salesPages.management.order.order.controller;
 
 import com.bizmate.salesPages.common.dto.PageRequestDTO;
 import com.bizmate.salesPages.common.dto.PageResponseDTO;
-import com.bizmate.UserPrincipal;
 import com.bizmate.salesPages.management.order.order.dto.OrderDTO;
 import com.bizmate.salesPages.management.order.order.service.OrderService;
 import lombok.RequiredArgsConstructor;
@@ -27,23 +26,11 @@ public class OrderController {
         return orderService.list(pageRequestDTO);
     }
 
-//    @PostMapping(value = "/")
-//    public Map<String, String> register(@RequestBody OrderDTO orderDTO){
-//        String orderId = orderService.register(orderDTO);
-//        return Map.of("OrderId", orderId);
-//    }
-
     @PostMapping(value = "/")
-    public Map<String, String> register(@RequestBody OrderDTO orderDTO, @AuthenticationPrincipal UserPrincipal userPrincipal){
-        String writerName = userPrincipal.getUsername();
-        String writerId = userPrincipal.getUserId().toString();
-        orderDTO.setWriter(writerName);
-        orderDTO.setUserId(writerId);
-
+    public Map<String, String> register(@RequestBody OrderDTO orderDTO){
         String orderId = orderService.register(orderDTO);
         return Map.of("OrderId", orderId);
     }
-
 
     @PutMapping("/{orderId}")
     public Map<String, String> modify(@PathVariable(name = "orderId")String orderId, @RequestBody OrderDTO orderDTO){

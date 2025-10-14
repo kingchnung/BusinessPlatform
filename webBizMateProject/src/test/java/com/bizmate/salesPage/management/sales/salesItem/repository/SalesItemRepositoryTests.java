@@ -40,7 +40,7 @@ public class SalesItemRepositoryTests {
                 .itemName("테스트 품목1")
                 .quantity(1L)
                 .unitPrice(new BigDecimal("1504000"))
-                .vat(new BigDecimal("15040"))
+                .unitVat(new BigDecimal("15040"))
                 .totalAmount(new BigDecimal("1654400"))
                 .build();
         sales.addSalesItem(salesItem);
@@ -51,7 +51,7 @@ public class SalesItemRepositoryTests {
                 .itemName("테스트 품목2")
                 .quantity(1L)
                 .unitPrice(new BigDecimal("1504000"))
-                .vat(new BigDecimal("15040"))
+                .unitVat(new BigDecimal("15040"))
                 .totalAmount(new BigDecimal("1654400"))
                 .build();
         sales.addSalesItem(salesItem1);
@@ -62,7 +62,7 @@ public class SalesItemRepositoryTests {
                 .itemName("테스트 품목3")
                 .quantity(1L)
                 .unitPrice(new BigDecimal("1504000"))
-                .vat(new BigDecimal("15040"))
+                .unitVat(new BigDecimal("15040"))
                 .totalAmount(new BigDecimal("1654400"))
                 .build();
         sales.addSalesItem(salesItem2);

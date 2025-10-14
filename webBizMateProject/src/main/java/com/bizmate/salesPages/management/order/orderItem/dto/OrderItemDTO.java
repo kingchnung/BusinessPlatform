@@ -1,4 +1,4 @@
-package com.bizmate.salesPages.management.sales.salesItem.dto;
+package com.bizmate.salesPages.management.order.orderItem.dto;
 
 import lombok.Builder;
 import lombok.Data;
@@ -7,13 +7,13 @@ import java.math.BigDecimal;
 
 @Data
 @Builder
-public class SalesItemDTO {
-    private Long salesItemId;
+public class OrderItemDTO {
+    private Long orderItemId;
 
     private String itemName;
     private Long quantity;
     private BigDecimal unitPrice;
-    private BigDecimal unitVat;
+    private BigDecimal uintVat;
     private BigDecimal totalAmount;
     private String itemNote;
     private Integer lineNum;

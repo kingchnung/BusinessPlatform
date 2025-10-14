@@ -33,7 +33,7 @@ public class OrderItem {
     private String itemName;
     private Long quantity;
     private BigDecimal unitPrice;
-    private BigDecimal vat;
+    private BigDecimal unitVat;
     private BigDecimal totalAmount;
     private String itemNote;
     private Integer lineNum;
@@ -59,8 +59,8 @@ public class OrderItem {
         this.unitPrice = unitPrice;
     }
 
-    public void changeVat(BigDecimal vat) {
-        this.vat = vat;
+    public void changeUnitVat(BigDecimal unitVat) {
+        this.unitVat = unitVat;
     }
 
     public void changeTotalAmount(BigDecimal totalAmount) {
@@ -71,4 +71,21 @@ public class OrderItem {
         this.itemNote = itemNote;
     }
 
+    public void calculateAmount() {
+        if(this.unitPrice != null && this.quantity != null && this.quantity > 0) {
+            if(this.unitVat == null || this.unitVat.compareTo(BigDecimal.ZERO) == 0){
+                BigDecimal tenPercent = new BigDecimal("0.1");
+                this.unitVat = this.unitPrice.multiply(tenPercent)
+                        .setScale(2, BigDecimal.ROUND_HALF_UP);
+            }
+
+            BigDecimal subTotal = this.unitPrice.multiply(BigDecimal.valueOf(this.quantity));
+            BigDecimal totalVat = this.unitVat.multiply(BigDecimal.valueOf(this.quantity));
+            this.totalAmount = subTotal.add(totalVat).setScale(2, BigDecimal.ROUND_HALF_UP);
+
+        } else {
+            this.unitVat = BigDecimal.ZERO;
+            this.totalAmount = BigDecimal.ZERO;
+        }
+    }
 }

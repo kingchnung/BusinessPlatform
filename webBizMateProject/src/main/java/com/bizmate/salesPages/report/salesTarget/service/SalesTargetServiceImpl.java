@@ -2,7 +2,6 @@ package com.bizmate.salesPages.report.salesTarget.service;
 
 import com.bizmate.salesPages.common.dto.PageRequestDTO;
 import com.bizmate.salesPages.common.dto.PageResponseDTO;
-import com.bizmate.UserPrincipal;
 import com.bizmate.salesPages.report.salesTarget.domain.SalesTarget;
 import com.bizmate.salesPages.report.salesTarget.dto.SalesTargetDTO;
 import com.bizmate.salesPages.report.salesTarget.repository.SalesTargetRepository;
@@ -31,14 +30,7 @@ public class SalesTargetServiceImpl implements SalesTargetService{
 
     @Override
     public Long register(SalesTargetDTO salesTargetDTO) {
-        UserPrincipal userPrincipal = (UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String writer = userPrincipal.getUsername();
-        String userId = userPrincipal.getUserId().toString();
-
         SalesTarget salesTarget = modelMapper.map(salesTargetDTO, SalesTarget.class);
-        salesTarget.setWriter(writer);
-        salesTarget.setUserId(userId);
-
         SalesTarget savedSalesTarget = salesTargetRepository.save(salesTarget);
         return savedSalesTarget.getTargetId();
     }

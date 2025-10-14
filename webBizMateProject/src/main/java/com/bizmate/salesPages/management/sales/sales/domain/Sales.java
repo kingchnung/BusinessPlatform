@@ -30,6 +30,8 @@ public class Sales {
     private String projectName;
     private LocalDate deploymentDate;
     private BigDecimal salesAmount;
+    private BigDecimal totalSubAmount;
+    private BigDecimal totalVatAmount;
     private String userId;
     private String writer;
     private String clientId;
@@ -56,29 +58,56 @@ public class Sales {
     @JoinColumn(name = "order_id")
     private Order order;
 
+    public void calculateSalesAmount(){
+        if(this.salesItems == null || this.salesItems.isEmpty()){
+            this.salesAmount = BigDecimal.ZERO.setScale(2, BigDecimal.ROUND_HALF_UP);
+            this.totalSubAmount = BigDecimal.ZERO.setScale(2,BigDecimal.ROUND_HALF_UP);
+            this.totalVatAmount = BigDecimal.ZERO.setScale(2,BigDecimal.ROUND_HALF_UP);
+            return;
+        }
+
+        BigDecimal subAmountSum = BigDecimal.ZERO;
+        BigDecimal vatAmountSum = BigDecimal.ZERO;
+
+        for(SalesItem item : this.salesItems){
+            if(item.getUnitPrice() != null && item.getQuantity() != null){
+                BigDecimal itemSubTotal = item.getUnitPrice().multiply(BigDecimal.valueOf(item.getQuantity()));
+                subAmountSum = subAmountSum.add(itemSubTotal);
+
+                if(item.getUnitVat() != null){
+                    BigDecimal itemTotalVat = item.getUnitVat().multiply(BigDecimal.valueOf(item.getQuantity()));
+                    vatAmountSum = vatAmountSum.add(itemTotalVat);
+                }
+            }
+        }
+
+        this.totalSubAmount = subAmountSum.setScale(2, BigDecimal.ROUND_HALF_UP);
+        this.totalVatAmount = vatAmountSum.setScale(2, BigDecimal.ROUND_HALF_UP);
+
+        this.salesAmount = this.totalSubAmount.add(this.totalVatAmount).setScale(2, BigDecimal.ROUND_HALF_UP);
+    }
+
+    public void updateSalesItems(List<SalesItem> newSalesItems){
+        this.salesItems.clear();
+
+        if(newSalesItems != null){
+            for(SalesItem salesItem : newSalesItems){
+                salesItem.calculateAmount();
+                this.addSalesItem(salesItem);
+            }
+        }
+    }
 
     public void changeProjectId(String projectId) {
         this.projectId = projectId;
-    }
-
-    public void changeProjectName(String projectName) {
-        this.projectName = projectName;
     }
 
     public void changeDeploymentDate(LocalDate deploymentDate) {
         this.deploymentDate = deploymentDate;
     }
 
-    public void changeSalesAmount(BigDecimal salesAmount) {
-        this.salesAmount = salesAmount;
-    }
-
-    public void changeUserId(String userId) {
-        this.userId = userId;
-    }
-
-    public void changeClientCompany(String clientCompany) {
-        this.clientCompany = clientCompany;
+    public void changeClientId(String clientId) {
+        this.clientId = clientId;
     }
 
     public void changeSalesNote(String salesNote) {
