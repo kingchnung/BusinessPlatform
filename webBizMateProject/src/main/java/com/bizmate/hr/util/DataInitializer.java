@@ -210,7 +210,7 @@ public class DataInitializer implements CommandLineRunner {
                 .orElseGet(() -> departmentRepository.save(Department.builder()
                         .deptCode(code)
                         .deptName(name)
-                        .parentDepartment(parent)
+                        .parentDept(parent)
                         .creDate(LocalDateTime.now())
                         .build()));
     }
@@ -310,44 +310,42 @@ public class DataInitializer implements CommandLineRunner {
             Grade gradeManager = gradeRepository.findByGradeName("부장/차장").orElseThrow();
             Grade gradeStaff = gradeRepository.findByGradeName("사원/대리").orElseThrow();
 
+            Role roleCEO = roleRepository.findByRoleName("CEO").orElseThrow();
+            Role roleMANAGER = roleRepository.findByRoleName("MANAGER").orElseThrow();
+            Role roleEMPLOYEE = roleRepository.findByRoleName("EMPLOYEE").orElseThrow();
+
             // ===== CEO (1명) =====
-            createEmployee(generateEmpNo("10"), "홍길동", deptMgmt, posCEO, gradeExec, "재직");
+            Employee ceo = createEmployee(generateEmpNo("10"), "홍길동", deptMgmt, posCEO, gradeExec, "재직");
+            createUserAccount(ceo, roleCEO);  // 🔹 CEO 권한 부여
 
-            // ===== 각 팀장 (6명) =====
-            createEmployee(generateEmpNo("11"), "김지원", deptSupport, posManager, gradeManager, "재직");     // 경영지원팀장
-            createEmployee(generateEmpNo("12"), "이회계", deptAccounting, posManager, gradeManager, "재직");  // 회계팀장
-            createEmployee(generateEmpNo("21"), "박영업", deptSales, posManager, gradeManager, "재직");       // 영업팀장
-            createEmployee(generateEmpNo("31"), "최개발", deptDev1, posManager, gradeManager, "재직");        // 개발1팀장
-            createEmployee(generateEmpNo("32"), "정개발", deptDev2, posManager, gradeManager, "재직");        // 개발2팀장
-            createEmployee(generateEmpNo("33"), "오개발", deptDev3, posManager, gradeManager, "재직");        // 개발3팀장
+            // 팀장 6명
+            createUserAccount(createEmployee(generateEmpNo("11"), "김지원", deptSupport, posManager, gradeManager, "재직"), roleMANAGER);
+            createUserAccount(createEmployee(generateEmpNo("12"), "이회계", deptAccounting, posManager, gradeManager, "재직"), roleMANAGER);
+            createUserAccount(createEmployee(generateEmpNo("21"), "박영업", deptSales, posManager, gradeManager, "재직"), roleMANAGER);
+            createUserAccount(createEmployee(generateEmpNo("31"), "최개발", deptDev1, posManager, gradeManager, "재직"), roleMANAGER);
+            createUserAccount(createEmployee(generateEmpNo("32"), "정개발", deptDev2, posManager, gradeManager, "재직"), roleMANAGER);
+            createUserAccount(createEmployee(generateEmpNo("33"), "오개발", deptDev3, posManager, gradeManager, "재직"), roleMANAGER);
 
-            // ===== 일반 직원 (총 23명) =====
-            // 부서별 인원 수를 나눠서 생성 (이름은 간단하게 김사원1~김사원23)
-            for (int i = 1; i <= 5; i++) {
-                createEmployee(generateEmpNo("11"), "경영사원" + i, deptSupport, posEmployee, gradeStaff, "재직");
-            }
+            // 일반 직원 (모두 EMPLOYEE)
+            for (int i = 1; i <= 5; i++)
+                createUserAccount(createEmployee(generateEmpNo("11"), "경영사원" + i, deptSupport, posEmployee, gradeStaff, "재직"), roleEMPLOYEE);
 
-            for (int i = 1; i <= 3; i++) {
-                createEmployee(generateEmpNo("12"), "회계사원" + i, deptAccounting, posEmployee, gradeStaff, "재직");
-            }
+            for (int i = 1; i <= 3; i++)
+                createUserAccount(createEmployee(generateEmpNo("12"), "회계사원" + i, deptAccounting, posEmployee, gradeStaff, "재직"), roleEMPLOYEE);
 
-            for (int i = 1; i <= 4; i++) {
-                createEmployee(generateEmpNo("21"), "영업사원" + i, deptSales, posEmployee, gradeStaff, "재직");
-            }
+            for (int i = 1; i <= 4; i++)
+                createUserAccount(createEmployee(generateEmpNo("21"), "영업사원" + i, deptSales, posEmployee, gradeStaff, "재직"), roleEMPLOYEE);
 
-            for (int i = 1; i <= 4; i++) {
-                createEmployee(generateEmpNo("31"), "개발1팀사원" + i, deptDev1, posEmployee, gradeStaff, "재직");
-            }
+            for (int i = 1; i <= 4; i++)
+                createUserAccount(createEmployee(generateEmpNo("31"), "개발1팀사원" + i, deptDev1, posEmployee, gradeStaff, "재직"), roleEMPLOYEE);
 
-            for (int i = 1; i <= 3; i++) {
-                createEmployee(generateEmpNo("32"), "개발2팀사원" + i, deptDev2, posEmployee, gradeStaff, "재직");
-            }
+            for (int i = 1; i <= 3; i++)
+                createUserAccount(createEmployee(generateEmpNo("32"), "개발2팀사원" + i, deptDev2, posEmployee, gradeStaff, "재직"), roleEMPLOYEE);
 
-            for (int i = 1; i <= 4; i++) {
-                createEmployee(generateEmpNo("33"), "개발3팀사원" + i, deptDev3, posEmployee, gradeStaff, "재직");
-            }
+            for (int i = 1; i <= 4; i++)
+                createUserAccount(createEmployee(generateEmpNo("33"), "개발3팀사원" + i, deptDev3, posEmployee, gradeStaff, "재직"), roleEMPLOYEE);
 
-            log.info("✅ 기본 직원(30명) 생성 완료");
+            log.info("✅ 기본 직원(30명) + 권한 매핑 완료");
 
 
     }

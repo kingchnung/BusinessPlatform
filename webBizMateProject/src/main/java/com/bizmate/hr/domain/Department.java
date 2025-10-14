@@ -1,6 +1,8 @@
 package com.bizmate.hr.domain;
 
 import com.bizmate.hr.domain.Employee;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -38,13 +40,14 @@ public class Department {
     // 4. 상위부서ID (Self-Join for Hierarchy)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_dept_id")
-    private Department parentDepartment;
+    @JsonBackReference
+    private Department parentDept;
 
 
     // 계층 구조 관리를 위한 자식 부서 목록 (편의상)
-    @OneToMany(mappedBy = "parentDepartment")
-    @Builder.Default
-    private List<Department> childDepartments = new ArrayList<>();
+    @OneToMany(mappedBy = "parentDept", cascade = CascadeType.ALL)
+    @JsonManagedReference
+    private List<Department> childDepts = new ArrayList<>();
 
     // 5. 사용여부
     @Column(name = "is_used",  length = 1)
