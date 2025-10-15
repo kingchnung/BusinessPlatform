@@ -1,15 +1,13 @@
 package com.bizmate.salesPage.client.service;
 
-import com.bizmate.salesPages.common.dto.PageRequestDTO;
-import com.bizmate.salesPages.common.dto.PageResponseDTO;
+import com.bizmate.common.dto.PageRequestDTO;
+import com.bizmate.common.dto.PageResponseDTO;
 import com.bizmate.salesPages.client.dto.ClientDTO;
 import com.bizmate.salesPages.client.service.ClientService;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.security.test.context.support.WithMockUser;
-
 
 @SpringBootTest
 @Slf4j
@@ -21,6 +19,7 @@ public class ClientServiceTests {
     public void testRegister() {
         ClientDTO clientDTO = ClientDTO.builder()
                 .clientId("12315465463")
+                .clientId("123-15-465463")
                 .clientCompany("테스트용3")
                 .clientCeo("test3")
                 .clientBusinessType("제조업")

@@ -1,8 +1,8 @@
 package com.bizmate.salesPages.report.salesTarget.service;
 
 import com.bizmate.hr.dto.user.UserDTO;
-import com.bizmate.salesPages.common.dto.PageRequestDTO;
-import com.bizmate.salesPages.common.dto.PageResponseDTO;
+import com.bizmate.common.dto.PageRequestDTO;
+import com.bizmate.common.dto.PageResponseDTO;
 import com.bizmate.salesPages.report.salesTarget.domain.SalesTarget;
 import com.bizmate.salesPages.report.salesTarget.dto.SalesTargetDTO;
 import com.bizmate.salesPages.report.salesTarget.repository.SalesTargetRepository;
@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Transactional
-public class SalesTargetServiceImpl implements SalesTargetService{
+public class SalesTargetServiceImpl implements SalesTargetService {
     private final SalesTargetRepository salesTargetRepository;
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyyMMdd");
     private final ModelMapper modelMapper;
@@ -32,7 +32,7 @@ public class SalesTargetServiceImpl implements SalesTargetService{
     @Override
     public Long register(SalesTargetDTO salesTargetDTO) {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        if(principal instanceof UserDTO userDTO){
+        if (principal instanceof UserDTO userDTO) {
             salesTargetDTO.setUserId(userDTO.getUsername());
             salesTargetDTO.setWriter(userDTO.getEmpName());
         } else {
@@ -72,7 +72,7 @@ public class SalesTargetServiceImpl implements SalesTargetService{
     @Override
     public PageResponseDTO<SalesTargetDTO> list(PageRequestDTO pageRequestDTO) {
         Pageable pageable = PageRequest.of(
-                pageRequestDTO.getPage()-1,
+                pageRequestDTO.getPage() - 1,
                 pageRequestDTO.getSize(),
                 Sort.by("targetId").descending());
 

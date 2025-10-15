@@ -1,11 +1,13 @@
 package com.bizmate.salesPages.management.order.order.controller;
 
-import com.bizmate.salesPages.common.dto.PageRequestDTO;
-import com.bizmate.salesPages.common.dto.PageResponseDTO;
+import com.bizmate.common.dto.PageRequestDTO;
+import com.bizmate.common.dto.PageResponseDTO;
 import com.bizmate.salesPages.management.order.order.dto.OrderDTO;
 import com.bizmate.salesPages.management.order.order.service.OrderService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
+<<<<<<< HEAD
+=======
+>>>>>>> 7e631613e802f528445a8f222c1ec078e9c8bda3
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
