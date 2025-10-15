@@ -14,14 +14,22 @@ import com.bizmate.hr.domain.UserEntity;
 import com.bizmate.hr.dto.user.UserDTO;
 import com.bizmate.hr.repository.DepartmentRepository;
 import com.bizmate.hr.repository.UserRepository;
+import com.bizmate.hr.security.UserPrincipal;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -46,67 +54,48 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
        ------------------------------------------------------------- */
     @Override
     @Transactional
-    public ApprovalDocumentsDto draft(ApprovalDocumentsDto dto) throws JsonProcessingException {
-        log.info("📝 [임시저장 서비스 호출] 요청 DTO: {}", dto);
+    public ApprovalDocumentsDto draft(ApprovalDocumentsDto dto, UserDTO loginUser) throws JsonProcessingException {
+        log.info("📝 [임시저장 서비스 호출] 작성자={}, DTO={}", loginUser.getEmpName(), dto);
 
+        // ✅ 작성자 정보 세팅
+        dto.setUserId(loginUser.getUserId());
+        dto.setAuthorName(loginUser.getEmpName());
         validateDraft(dto);
 
-        // ✅ 부서 정보 확인
+        // ✅ 부서 정보 보정 (DTO에 값이 없을 경우 자동조회)
         Long departmentId = dto.getDepartmentId();
         String departmentCode = dto.getDepartmentCode();
 
-        // 부서 ID나 코드가 DTO에 없으면 mapDtoToEntity 내부에서 자동으로 부서정보를 세팅하므로
-        // 여기서도 미리 한 번 보완
         if (departmentId == null || departmentCode == null || departmentCode.isBlank()) {
-            // 작성자의 부서를 기준으로 자동 조회
             UserEntity userEntity = userRepository.findById(dto.getUserId())
                     .orElseThrow(() -> new VerificationFailedException("작성자(UserEntity)를 찾을 수 없습니다."));
 
             Department dept = userEntity.getEmployee() != null ? userEntity.getEmployee().getDepartment() : null;
-            if (dept == null) {
+            if (dept == null)
                 throw new VerificationFailedException("부서 정보를 찾을 수 없습니다.");
-            }
 
             departmentId = dept.getDeptId();
             departmentCode = dept.getDeptCode();
 
-            // DTO 보정
             dto.setDepartmentId(departmentId);
             dto.setDepartmentCode(departmentCode);
         }
 
-        // ✅ ApprovalIdGenerator 사용 (동시성 보장 + DB 이어받기)
+        // ✅ 문서번호 생성 (ApprovalIdGenerator 사용)
         String docNumber = approvalIdGenerator.generateNewId(departmentId, departmentCode);
-
-        // ✅ 문서번호(PK) 세팅
         dto.setId(docNumber);
         dto.setFinalDocNumber(docNumber);
 
-        // ✅ 문서 Entity 변환 및 저장
+        // ✅ 엔티티 변환 및 저장
         ApprovalDocuments entity = mapDtoToEntity(dto, DocumentStatus.DRAFT);
+        entity.markCreated(loginUser); // Auditing 기록
+
         ApprovalDocuments saved = approvalDocumentsRepository.save(entity);
 
         // ✅ 첨부파일 처리
+        handleFileAttachments(dto, saved, loginUser);
 
-        if (dto.getAttachments() != null && !dto.getAttachments().isEmpty()) {
-            List<FileAttachment> newAttachments = dto.getAttachments().stream()
-                    .filter(a -> a.getId() == null) // ✅ 이미 DB에 존재하는 첨부파일은 제외
-                    .map(a -> a.toEntity(saved))
-                    .toList();
-
-            if (!newAttachments.isEmpty()) {
-                fileAttachmentRepository.saveAll(newAttachments);
-                log.info("📎 신규 첨부파일 {}건이 문서 [{}]에 매핑 완료", newAttachments.size(), saved.getDocId());
-            }
-        } else {
-            UserEntity uploader = userRepository.findById(dto.getUserId())
-                    .orElseThrow(() -> new VerificationFailedException("업로더를 찾을 수 없습니다."));
-            int linkedCount = fileAttachmentRepository.linkPendingFiles(saved, uploader);
-            log.info("📎 임시 업로드 파일 {}건이 문서 [{}]에 연결됨", linkedCount, saved.getDocId());
-        }
-
-        log.info("✅ 임시저장 완료: {}", saved.getDocId());
-
+        log.info("✅ 임시저장 완료: 문서ID={}", saved.getDocId());
         return mapEntityToDto(saved);
     }
 
@@ -116,74 +105,131 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
        ------------------------------------------------------------- */
     @Override
     @Transactional
-    public ApprovalDocumentsDto submit(ApprovalDocumentsDto dto) throws JsonProcessingException {
-        log.info("🚀 [상신 서비스 호출] 요청 DTO: {}", dto);
+    public ApprovalDocumentsDto submit(ApprovalDocumentsDto dto, UserDTO loginUser) throws JsonProcessingException {
+        log.info("🚀 [상신 서비스 호출] 작성자={}, DTO={}", loginUser.getEmpName(), dto);
+        log.info("🔑 submit() loginUser.username={}, userId={}", loginUser.getUsername(), loginUser.getUserId());
+
+        // ✅ 작성자 정보 세팅
+        dto.setUserId(loginUser.getUserId());
+        dto.setAuthorName(loginUser.getEmpName());
+        dto.setUsername(loginUser.getUsername());
 
         validateDraft(dto);
 
-        // 1️⃣ 부서 정보 확인 (draft()와 동일 로직)
+        // ✅ 부서 정보 확인
         Long departmentId = dto.getDepartmentId();
         String departmentCode = dto.getDepartmentCode();
 
         if (departmentId == null || departmentCode == null || departmentCode.isBlank()) {
-            // 작성자 기준으로 부서정보 자동 조회
-            UserEntity userEntity = userRepository.findById(dto.getUserId())
+            UserEntity userEntity = userRepository.findById(loginUser.getUserId())
                     .orElseThrow(() -> new VerificationFailedException("작성자(UserEntity)를 찾을 수 없습니다."));
 
             Department dept = userEntity.getEmployee() != null ? userEntity.getEmployee().getDepartment() : null;
-            if (dept == null) {
+            if (dept == null)
                 throw new VerificationFailedException("부서 정보를 찾을 수 없습니다.");
-            }
 
             departmentId = dept.getDeptId();
             departmentCode = dept.getDeptCode();
 
-            // DTO 보정
             dto.setDepartmentId(departmentId);
             dto.setDepartmentCode(departmentCode);
         }
 
-        // 2️⃣ ApprovalIdGenerator를 통해 문서번호 생성
-        String docNumber;
-        if (dto.getId() != null && !dto.getId().isEmpty()) {
-            // 이미 문서번호가 있으면 그대로 사용 (임시저장 후 상신 케이스)
-            docNumber = dto.getId();
-            log.info("📄 기존 임시저장 문서번호 사용: {}", docNumber);
+        // ✅ 3. 신규 vs 임시저장 구분
+        boolean isDraft = "DRAFT".equalsIgnoreCase(dto.getStatus());
+        ApprovalDocuments entity;
+
+        if (isDraft && dto.getId() != null) {
+            // ① 임시저장(DRAFT) → 상신(IN_PROGRESS)
+            log.info("✏️ 임시저장 문서 상신 전환: {}", dto.getId());
+
+            entity = approvalDocumentsRepository.findById(dto.getId())
+                    .orElseThrow(() -> new VerificationFailedException("임시저장 문서를 찾을 수 없습니다."));
+
+            entity.setStatus(DocumentStatus.IN_PROGRESS);
+            entity.markUpdated(loginUser);
         } else {
-            // 새 문서 상신 시 자동 생성
-            docNumber = approvalIdGenerator.generateNewId(departmentId, departmentCode);
-            log.info("📄 신규 문서번호 생성: {}", docNumber);
+            // ② 신규 상신
+            String docNumber = approvalIdGenerator.generateNewId(departmentId, departmentCode);
+            dto.setId(docNumber);
+            dto.setFinalDocNumber(docNumber);
+
+            log.info("🆕 신규 상신 생성: {}", docNumber);
+            entity = mapDtoToEntity(dto, DocumentStatus.IN_PROGRESS);
+            entity.markCreated(loginUser);
         }
 
-        // 3️⃣ DTO에 문서번호 반영
-        dto.setId(docNumber);
-        dto.setFinalDocNumber(docNumber);
-
-        // 4️⃣ 문서 Entity 변환 및 저장 (상태: 진행중)
-        ApprovalDocuments entity = mapDtoToEntity(dto, DocumentStatus.IN_PROGRESS);
         ApprovalDocuments saved = approvalDocumentsRepository.save(entity);
 
-        // 5️⃣ 첨부파일 처리
-        if (dto.getAttachments() != null && !dto.getAttachments().isEmpty()) {
-            List<FileAttachment> newAttachments = dto.getAttachments().stream()
-                    .filter(a -> a.getId() == null) // ✅ 이미 DB에 존재하는 첨부파일은 제외
-                    .map(a -> a.toEntity(saved))
-                    .toList();
+        // ✅ 첨부파일 처리
+        handleFileAttachments(dto, saved, loginUser);
 
-            if (!newAttachments.isEmpty()) {
-                fileAttachmentRepository.saveAll(newAttachments);
-                log.info("📎 신규 첨부파일 {}건이 문서 [{}]에 매핑 완료", newAttachments.size(), saved.getDocId());
-            }
-        } else {
-            UserEntity uploader = userRepository.findById(dto.getUserId())
-                    .orElseThrow(() -> new VerificationFailedException("업로더를 찾을 수 없습니다."));
-            int linkedCount = fileAttachmentRepository.linkPendingFiles(saved, uploader);
-            log.info("📎 임시 업로드 파일 {}건이 문서 [{}]에 연결됨", linkedCount, saved.getDocId());
+        log.info("✅ 상신 완료: 문서ID={}", saved.getDocId());
+        return mapEntityToDto(saved);
+    }
+
+    /* -------------------------------------------------------------
+   ✅ ③ 반려문서 재상신 (Resubmit)
+   ------------------------------------------------------------- */
+    @Override
+    @Transactional
+    public ApprovalDocumentsDto resubmit(String docId, ApprovalDocumentsDto dto, UserDTO loginUser) {
+        log.info("🔁 [문서 재상신 시작] docId={}, 사번={}, 이름={}", docId, loginUser.getUsername(), loginUser.getEmpName());
+
+        ApprovalDocuments document = approvalDocumentsRepository.findById(docId)
+                .orElseThrow(() -> new VerificationFailedException("문서를 찾을 수 없습니다."));
+
+        // 1️⃣ 상태 검증: 반려 상태만 재상신 가능
+        if (document.getStatus() != DocumentStatus.REJECTED)
+            throw new VerificationFailedException("반려(REJECTED) 상태의 문서만 재상신할 수 있습니다.");
+
+        // 2️⃣ 작성자 일치 검증 (사번 기준)
+        if (!document.getAuthorUser().getUsername().equals(loginUser.getUsername())) {
+            throw new VerificationFailedException("작성자만 재상신할 수 있습니다.");
         }
 
-        log.info("✅ 문서 상신 완료: {}", saved.getDocId());
+        // 3️⃣ 부서코드 검증 (변경 불가)
+        if (!document.getDepartment().getDeptCode().equals(dto.getDepartmentCode())) {
+            throw new VerificationFailedException("부서 정보가 일치하지 않습니다.");
+        }
 
-        return mapEntityToDto(saved);
+        // 4️⃣ 결재선 초기화
+        List<ApproverStep> approvalLine = document.getApprovalLine();
+        if (approvalLine == null || approvalLine.isEmpty())
+            throw new VerificationFailedException("결재선 정보가 존재하지 않습니다.");
+
+        // 모든 결재자 상태 초기화 (반려 이력은 유지하고 재시작할 수도 있음)
+        List<ApproverStep> resetLine = approvalLine.stream()
+                .map(step -> new ApproverStep(
+                        step.order(),
+                        step.approverId(), // ✅ 사번(username) 기준
+                        step.approverName(),
+                        Decision.PENDING, // 전부 대기 상태로 초기화
+                        "", // 코멘트 초기화
+                        null // 결정시각 초기화
+                ))
+                .toList();
+
+        document.setApprovalLine(resetLine);
+        document.setCurrentApproverIndex(0); // 첫 번째 결재자부터 다시 시작
+        document.setRejectedBy(null);
+        document.setRejectedReason(null);
+        document.setRejectedDate(null);
+        document.setRejectedEmpId(null);
+        document.setStatus(DocumentStatus.IN_PROGRESS); // 상태 복귀
+
+        // 5️⃣ 변경자 정보 업데이트
+        document.markUpdated(loginUser);
+
+        // 6️⃣ 저장 및 즉시 flush
+        approvalDocumentsRepository.saveAndFlush(document);
+
+        log.info("✅ 재상신 완료: 문서ID={}, 상태={}, 첫 결재자={}",
+                docId,
+                document.getStatus(),
+                resetLine.get(0).approverName());
+
+        return mapEntityToDto(document);
     }
 
 
@@ -206,7 +252,7 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
         int idx = document.getCurrentApproverIndex();
         ApproverStep current = line.get(idx);
 
-        if (!current.approverId().equals(loginUser.getUserId()))
+        if (!current.approverName().equals(loginUser.getEmpName()))
             throw new VerificationFailedException("현재 결재 차례가 아닙니다.");
 
         // 🔹 변경점: 승인 처리 및 결재선 상태 갱신
@@ -251,11 +297,13 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
    ------------------------------------------------------------- */
     @Override
     public ApprovalDocumentsDto reject(String docId, UserDTO loginUser, String reason) {
+        log.info("🔴 [반려 처리] 문서ID={}, 반려자={}, 사유={}", docId, loginUser.getEmpName(), reason);
+
         ApprovalDocuments document = approvalDocumentsRepository.findById(docId)
                 .orElseThrow(() -> new VerificationFailedException("문서를 찾을 수 없습니다."));
 
         if (!document.canReject())
-            throw new VerificationFailedException("진행 중(IN_PROGRESS) 상태의 문서만 반려할 수 있습니다.");
+            throw new VerificationFailedException("진행 중 상태의 문서만 반려할 수 있습니다.");
 
         List<ApproverStep> line = document.getApprovalLine();
         if (line == null || line.isEmpty())
@@ -264,10 +312,10 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
         int idx = document.getCurrentApproverIndex();
         ApproverStep current = line.get(idx);
 
-        if (!current.approverId().equals(loginUser.getUserId()))
+        if (!current.approverId().equals(loginUser.getUsername()))
             throw new VerificationFailedException("현재 결재 차례가 아닙니다.");
 
-        // 🔹 변경점: 반려 처리 시 reason null 방지
+        // ✅ 반려 처리
         ApproverStep rejected = new ApproverStep(
                 current.order(),
                 current.approverId(),
@@ -286,11 +334,8 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
         document.setStatus(DocumentStatus.REJECTED);
 
         document.markUpdated(loginUser);
-
-        // 🔹 변경점: 즉시 DB flush (상태 즉시 반영)
         approvalDocumentsRepository.saveAndFlush(document);
 
-        log.info("🔴 반려 완료: 문서={}, 반려자={}, 사유={}", docId, loginUser.getEmpName(), reason);
         return mapEntityToDto(document);
     }
 
@@ -300,17 +345,16 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
        ------------------------------------------------------------- */
     @Override
     public void logicalDelete(String docId, UserDTO loginUser, String reason) {
+        log.info("🗑️ [문서 삭제] 문서ID={}, 삭제자={}, 사유={}", docId, loginUser.getEmpName(), reason);
+
         ApprovalDocuments doc = approvalDocumentsRepository.findById(docId)
                 .orElseThrow(() -> new VerificationFailedException("문서를 찾을 수 없습니다."));
 
         if (!doc.isDeletable())
             throw new VerificationFailedException("DRAFT/REJECTED 상태만 삭제 가능합니다.");
 
-        // ✅ 도메인 로직으로 이동
         doc.markDeleted(loginUser, reason);
-
         approvalDocumentsRepository.save(doc);
-        log.info("🗑️ 논리삭제 완료: 문서ID={}, 삭제자={}, 사유={}", docId, loginUser.getEmpName(), reason);
     }
 
     /* -------------------------------------------------------------
@@ -380,6 +424,25 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
     /* -------------------------------------------------------------
        ✅ 내부 유틸
        ------------------------------------------------------------- */
+    private void handleFileAttachments(ApprovalDocumentsDto dto, ApprovalDocuments saved, UserDTO loginUser) {
+        if (dto.getAttachments() != null && !dto.getAttachments().isEmpty()) {
+            List<FileAttachment> newAttachments = dto.getAttachments().stream()
+                    .filter(a -> a.getId() == null)
+                    .map(a -> a.toEntity(saved))
+                    .toList();
+
+            if (!newAttachments.isEmpty()) {
+                fileAttachmentRepository.saveAll(newAttachments);
+                log.info("📎 첨부파일 {}건 매핑 완료 (문서ID={})", newAttachments.size(), saved.getDocId());
+            }
+        } else {
+            UserEntity uploader = userRepository.findById(loginUser.getUserId())
+                    .orElseThrow(() -> new VerificationFailedException("업로더를 찾을 수 없습니다."));
+            int linkedCount = fileAttachmentRepository.linkPendingFiles(saved, uploader);
+            log.info("📎 임시 업로드 {}건 연결됨 (문서ID={})", linkedCount, saved.getDocId());
+        }
+    }
+
     private void saveAttachments(List<FileAttachmentDto> attachmentDtos, ApprovalDocuments document) {
         if (attachmentDtos == null || attachmentDtos.isEmpty()) {
             return;
@@ -401,6 +464,7 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
     }
 
     private ApprovalDocuments mapDtoToEntity(ApprovalDocumentsDto dto, DocumentStatus status) {
+        log.info("🧾 [mapDtoToEntity] 시작: username={}, userId={}", dto.getUsername(), dto.getUserId());
         ApprovalDocuments entity = new ApprovalDocuments();
 
         // 기본 필드
@@ -410,17 +474,16 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
         entity.setStatus(status);
         entity.setFinalDocNumber(dto.getFinalDocNumber());
         entity.setDocContent(dto.getDocContent());
-        entity.setApprovalLine(dto.getApprovalLine());
         // ✅ 결재선 보정 (결재자 이름 자동 매핑)
         if (dto.getApprovalLine() != null && !dto.getApprovalLine().isEmpty()) {
             List<ApproverStep> fixedLine = dto.getApprovalLine().stream()
                     .map(step -> {
+                        String approverUsername = step.approverId() != null ? step.approverId() : null;
                         String approverName = step.approverName();
-                        Long approverId = step.approverId();
 
                         // approverName이 비어있다면 DB에서 가져오기
-                        if ((approverName == null || approverName.isBlank()) && approverId != null) {
-                            approverName = userRepository.findById(approverId)
+                        if ((approverName == null || approverName.isBlank()) && approverUsername != null) {
+                            approverName = userRepository.findByUsername(approverUsername)
                                     .map(UserEntity::getEmpName)
                                     .orElse("미등록 사용자");
                         }
@@ -428,7 +491,7 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
                         // ✅ record는 불변이라 새 객체 생성 필요
                         return new ApproverStep(
                                 step.order(),
-                                approverId,
+                                approverUsername != null ? approverUsername : "-",
                                 approverName,
                                 step.decision(),
                                 step.comment(),
@@ -444,9 +507,25 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
 
         entity.setCurrentApproverIndex(0);
 
-        // ✅ 작성자 조회
-        UserEntity userEntity = userRepository.findById(dto.getUserId())
-                .orElseThrow(() -> new VerificationFailedException("작성자(UserEntity)를 찾을 수 없습니다."));
+        //사용자 매핑
+        UserEntity userEntity = null;
+
+        // 1️⃣ username 우선 조회
+        if (dto.getUsername() != null && !dto.getUsername().isBlank()) {
+            userEntity = userRepository.findByUsername(dto.getUsername()).orElse(null);
+            log.debug("🔍 findByUsername 결과: {}", userEntity);
+        }
+
+        // 2️⃣ fallback: username이 없거나 매칭 실패 시 userId로 조회
+        if (userEntity == null && dto.getUserId() != null) {
+            userEntity = userRepository.findById(dto.getUserId())
+                    .orElseThrow(() -> new VerificationFailedException("작성자(UserEntity)를 찾을 수 없습니다."));
+        }
+
+        // 3️⃣ 그래도 못 찾으면 예외 처리
+        if (userEntity == null) {
+            throw new VerificationFailedException("작성자(UserEntity) 정보를 확인할 수 없습니다.");
+        }
 
         // ✅ 부서 자동 연결
         Department dept;
@@ -471,9 +550,16 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
                 new UserDTO(
                         userEntity.getUserId(),
                         userEntity.getEmployee().getEmpId(),
+                        userEntity.getUsername(),
+                        userEntity.getPwHash() != null ? userEntity.getPwHash() : "N/A",
                         userEntity.getEmpName(),
-                        dept.getDeptCode(),
-                        userEntity.getUsername()
+                        true,
+                        true,
+                        userEntity.getEmail(),
+                        null,
+                        null,
+                        List.of()
+
                 )
         );
 
@@ -508,6 +594,7 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
                 .departmentName(entity.getDepartment() != null ? entity.getDepartment().getDeptName() : null)
                 .finalDocNumber(entity.getFinalDocNumber())
                 .userId(user != null ? user.getUserId() : null)
+                .username(user != null ? user.getUsername() : null)
                 .authorName(user != null ? user.getEmpName() : "-")   // ✅ users.emp_name 사용
                 .departmentCode(user != null ? user.getDeptCode() : null)
                 .docContent(entity.getDocContent())

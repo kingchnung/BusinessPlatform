@@ -1,15 +1,21 @@
 package com.bizmate.hr.security;
 
+import com.bizmate.hr.domain.Permission;
+import com.bizmate.hr.domain.Role;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import com.bizmate.hr.security.UserPrincipal;
 
 import com.bizmate.hr.domain.UserEntity;
-import com.bizmate.hr.dto.user.UserDTO;
 import com.bizmate.hr.repository.UserRepository; // 가정된 Repository 경로
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * [CustomUserDetailsService]
@@ -28,21 +34,50 @@ public class CustomUserDetailsService implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         log.info("▶▶▶ loadUserByUsername: 사용자 정보를 로드합니다. [입력된 ID: {}] ", username);
 
-        // 1. username으로 DB에서 User 정보 및 연관 엔티티(Role, Permission, Employee)를 조회
-        UserEntity userEntity = userRepository.getWithRolesAndPermissions(username);
+        UserEntity user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
 
-        // 2. 조회 결과가 없을 경우 예외 처리
-        if (userEntity == null) {
-            log.warn("사용자 정보를 찾을 수 없습니다. [ID: {}]", username);
-            throw new UsernameNotFoundException("해당 로그인 ID의 사용자 정보를 찾을 수 없습니다.");
+        // 2) 권한 수집 (ROLE_x + PERM_x를 GrantedAuthority로)
+        List<SimpleGrantedAuthority> authorities = new ArrayList<>();
+        for (Role role : user.getRoles()) {
+            authorities.add(new SimpleGrantedAuthority("ROLE_" + role.getRoleName()));
+            // Permission이 Role에 매핑돼 있다면 퍼미션도 추가
+            for (Permission p : role.getPermissions()) {
+                authorities.add(new SimpleGrantedAuthority(p.getPermName()));
+            }
         }
 
-        // 3. User 엔티티를 UserDTO로 변환하여 Spring Security에 전달
-        // UserDTO의 fromEntity 메서드를 사용하여 권한 목록을 포함하여 객체 생성
-        UserDTO userDTO = UserDTO.fromEntity(userEntity);
+        // 3) 상태 값 매핑 (Entity의 필드명에 맞게)
+        boolean active = "Y".equalsIgnoreCase(user.getIsActive());   // 예: getIsActive()
+        boolean locked = "Y".equalsIgnoreCase(user.getIsLocked());   // 예: getIsLocked()
 
-        log.info("인증을 위해 DTO로 변환된 사용자 정보: {}", userDTO);
+        Long empId = null;
+        if(user.getEmployee() != null){
+            empId = user.getEmployee().getEmpId();
+        }
 
-        return userDTO;
+        // 4) UserPrincipal 생성
+        UserPrincipal principal = new UserPrincipal(
+                user.getUserId(),
+                empId,
+                user.getUsername(),
+                user.getPwHash(),      // 비밀번호 해시
+                active,
+                locked,
+                authorities
+        );
+// 5️⃣ ✅ 추가 정보 세팅 (JWT 클레임용)
+        if (user.getEmployee() != null) {
+            principal.setEmpName(user.getEmployee().getEmpName()); // ✅ 사원 이름
+        } else {
+            principal.setEmpName("미등록");
+        }
+
+        principal.setEmail(user.getEmail()); // ✅ 이메일 추가
+
+        log.info("✅ 로그인 사용자 로드 완료: userId={}, username={}, empName={}, email={}",
+                principal.getUserId(), principal.getUsername(), principal.getEmpName(), principal.getEmail());
+
+        return principal;
     }
 }

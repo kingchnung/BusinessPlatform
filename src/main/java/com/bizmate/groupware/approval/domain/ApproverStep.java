@@ -14,7 +14,7 @@ public record ApproverStep(
         int order,              // 결재 순서(1..n)
         @JsonProperty("approverId")
         @NotNull
-        Long approverId,      // 결재자 사용자ID
+        String approverId,      // 결재자 사용자ID
         @JsonProperty("approverName")
         @NotBlank
         String approverName,

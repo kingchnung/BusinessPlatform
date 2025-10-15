@@ -23,4 +23,13 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
     // ★ 수정: 특정 직원 조회 시에도 Position Fetch Join 적용
     @Query("SELECT e FROM Employee e JOIN FETCH e.department JOIN FETCH e.position WHERE e.empId = :empId")
     Optional<Employee> findByIdWithDepartmentAndPosition(@Param("empId") Long empId);
+
+    long countByDepartment_DeptCode(String deptCode);
+
+    @Query("SELECT e FROM Employee e LEFT JOIN FETCH e.department LEFT JOIN FETCH e.position WHERE e.empId = :empId")
+    Optional<Employee> findEmployeeDetailById(@Param("empId") Long empId);
+
+    @Query("SELECT MAX(e.empNo) FROM Employee e")
+    String findMaxEmpNO();
+
 }
