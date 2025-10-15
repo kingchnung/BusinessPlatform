@@ -10,6 +10,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
@@ -52,12 +53,15 @@ public class JWTCheckFilter extends OncePerRequestFilter {
             if (jwtProvider.validateToken(token)) {
                 Authentication authentication = jwtProvider.getAuthentication(token);
 
-                if (authentication instanceof org.springframework.security.authentication.UsernamePasswordAuthenticationToken authToken) {
+                if (authentication instanceof UsernamePasswordAuthenticationToken authToken) {
                     authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authToken);
-                    log.debug("JWT 인증 성공: {}", authToken.getName());
+                    log.debug("✅ JWT 인증 성공 - {}", authToken.getName());
+                } else {
+                    log.warn("⚠️ JWT 검증은 성공했지만 UsernamePasswordAuthenticationToken 아님: {}", authentication.getClass());
                 }
             }
+
         } catch (ExpiredJwtException e) {
             log.warn("JWT 만료됨: {}", e.getMessage());
             // Access Token 만료 → RefreshController에서 처리

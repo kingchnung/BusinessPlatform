@@ -68,6 +68,7 @@ public class JWTProvider {
     private String createToken(UserPrincipal principal, long validityMillis) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("uid", principal.getUserId());
+        claims.put("empId",principal.getEmpId());
         claims.put("roles", principal.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.toList()));
@@ -93,8 +94,10 @@ public class JWTProvider {
     public boolean validateToken(String token) {
         try {
             Jwts.parser().setSigningKey(ks).parseClaimsJws(token);
+            log.debug("✅ 토큰 검증 성공");
             return true;
-        } catch (JwtException | IllegalArgumentException e) {
+        } catch (JwtException e) {
+            log.warn("❌ 토큰 검증 실패: {}", e.getMessage());
             return false;
         }
     }
@@ -109,6 +112,7 @@ public class JWTProvider {
 
         String username = claims.getSubject();
         Long userId = claims.get("uid", Long.class);
+        Long empId = claims.get("empId", Long.class);
 
         @SuppressWarnings("unchecked")
         List<String> roles = (List<String>) claims.getOrDefault("roles", Collections.emptyList());
@@ -119,6 +123,7 @@ public class JWTProvider {
 
         UserPrincipal principal = new UserPrincipal(
                 userId,
+                empId,
                 username,
                 "",  // 비밀번호는 JWT 안에 없음
                 true,

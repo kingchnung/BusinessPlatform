@@ -63,15 +63,26 @@ public class DataInitializer implements CommandLineRunner {
     private void initBaseData() {
         log.info("▶ 기본 코드 데이터 확인 중...");
 
+        // ---- 권한 생성 ----
         Permission permSysAdmin = createPermission("sys:admin", "시스템 설정 및 관리 권한");
+        Permission permSysManage = createPermission("sys:manage", "시스템 자원 관리 권한");
         Permission permDataReadAll = createPermission("data:read:all", "모든 부서 및 직원 데이터 조회");
         Permission permDataWriteAll = createPermission("data:write:all", "모든 직원 데이터 수정/삭제");
         Permission permDataReadSelf = createPermission("data:read:self", "본인 정보만 조회/수정");
 
-        Role roleCEO = createRole("CEO", "최고 경영자 역할", Set.of(permSysAdmin, permDataReadAll, permDataWriteAll, permDataReadSelf));
-        Role roleMANAGER = createRole("MANAGER", "팀 관리자 및 1차 결재 역할", Set.of(permDataReadAll, permDataReadSelf));
-        Role roleEMPLOYEE = createRole("EMPLOYEE", "일반 직원 역할", Set.of(permDataReadSelf));
+        // ---- 역할 생성 ----
+        Role roleCEO = createRole("CEO", "최고 경영자 역할",
+                Set.of(permSysAdmin, permDataReadAll, permDataWriteAll, permDataReadSelf));
+        Role roleMANAGER = createRole("MANAGER", "팀 관리자 역할",
+                Set.of(permDataReadAll, permDataWriteAll, permDataReadSelf));
+        Role roleEMPLOYEE = createRole("EMPLOYEE", "일반 직원 역할",
+                Set.of(permDataReadSelf ));
 
+        // ---- admin 전용 역할 생성 ----
+        Role roleADMIN = createRole("ADMIN", "시스템 관리자",
+                Set.of(permSysAdmin, permSysManage, permDataReadAll, permDataWriteAll));
+
+        // ---- 코드 테이블 기본값 생성 ----
         createPosition("CEO", "최고 의사 결정권자");
         createPosition("팀장", "팀 운영 및 관리 책임");
         createPosition("사원", "일반 실무자");
@@ -91,6 +102,9 @@ public class DataInitializer implements CommandLineRunner {
         createDepartment("32", "개발2팀", deptDevelopment);
         createDepartment("33", "개발3팀", deptDevelopment);
 
+        // ---- 관리자 계정 생성 (직원 없음) ----
+        createAdminAccount(roleADMIN);
+
         log.info("✅ 기본 코드/부서 데이터 점검 완료");
     }
 
@@ -105,6 +119,7 @@ public class DataInitializer implements CommandLineRunner {
 //
 //        log.info("✅ 직원 관련 데이터 초기화 완료");
 //    }
+
 
     // =========================================================
     // 2️⃣ 직원/유저 정합성 점검 및 보정
@@ -241,8 +256,13 @@ public class DataInitializer implements CommandLineRunner {
         String email = empNo + "@bizmate.com";
         String phone = generateRandomPhone();
         String address = "서울특별시 강남구 테헤란로 100";
-        LocalDate birthDate = LocalDate.of(1990, random.nextInt(12) + 1, random.nextInt(28) + 1);
+        LocalDate birthDate = LocalDate.of(random.nextInt(26) + 1975, random.nextInt(12) + 1, random.nextInt(28) + 1);
         String gender = random.nextBoolean() ? "M" : "F";
+        final int MIN_AGE = 19;
+        final int MAX_AGE = 25;
+
+        int yearToHire = random.nextInt(MAX_AGE - MIN_AGE +1 ) + MIN_AGE;
+        LocalDate startDate = birthDate.plusYears(yearToHire);
 
 
         Employee emp = Employee.builder()
@@ -257,7 +277,7 @@ public class DataInitializer implements CommandLineRunner {
                 .address(address)
                 .birthDate(birthDate)
                 .gender(gender)
-                .startDate(LocalDate.now())
+                .startDate(startDate)
                 .creDate(LocalDateTime.now())
                 .build();
 
@@ -285,6 +305,29 @@ public class DataInitializer implements CommandLineRunner {
                 .build();
 
         return userRepository.save(user);
+    }
+
+    private void createAdminAccount(Role adminRole) {
+        String username = "admin";
+
+        if (userRepository.existsByUsername(username)) {
+            log.info("🔹 관리자 계정 '{}' 이미 존재", username);
+            return;
+        }
+
+        UserEntity adminUser = UserEntity.builder()
+                .employee(null) // 직원 연결 없음
+                .username(username)
+                .pwHash(passwordEncoder.encode("1234"))
+                .isActive("Y")
+                .isLocked("N")
+                .failedCount(0)
+                .creDate(LocalDateTime.now())
+                .roles(Set.of(adminRole))
+                .build();
+
+        userRepository.save(adminUser);
+        log.info("✅ 관리자 계정 '{}' 생성 완료", username);
     }
 
     // =========================================================
@@ -315,35 +358,35 @@ public class DataInitializer implements CommandLineRunner {
             Role roleEMPLOYEE = roleRepository.findByRoleName("EMPLOYEE").orElseThrow();
 
             // ===== CEO (1명) =====
-            Employee ceo = createEmployee(generateEmpNo("10"), "홍길동", deptMgmt, posCEO, gradeExec, "재직");
+            Employee ceo = createEmployee(generateEmpNo("10"), "홍길동", deptMgmt, posCEO, gradeExec, "ACTIVE");
             createUserAccount(ceo, roleCEO);  // 🔹 CEO 권한 부여
 
             // 팀장 6명
-            createUserAccount(createEmployee(generateEmpNo("11"), "김지원", deptSupport, posManager, gradeManager, "재직"), roleMANAGER);
-            createUserAccount(createEmployee(generateEmpNo("12"), "이회계", deptAccounting, posManager, gradeManager, "재직"), roleMANAGER);
-            createUserAccount(createEmployee(generateEmpNo("21"), "박영업", deptSales, posManager, gradeManager, "재직"), roleMANAGER);
-            createUserAccount(createEmployee(generateEmpNo("31"), "최개발", deptDev1, posManager, gradeManager, "재직"), roleMANAGER);
-            createUserAccount(createEmployee(generateEmpNo("32"), "정개발", deptDev2, posManager, gradeManager, "재직"), roleMANAGER);
-            createUserAccount(createEmployee(generateEmpNo("33"), "오개발", deptDev3, posManager, gradeManager, "재직"), roleMANAGER);
+            createUserAccount(createEmployee(generateEmpNo("11"), "김지원", deptSupport, posManager, gradeManager, "ACTIVE"), roleMANAGER);
+            createUserAccount(createEmployee(generateEmpNo("12"), "이회계", deptAccounting, posManager, gradeManager, "ACTIVE"), roleMANAGER);
+            createUserAccount(createEmployee(generateEmpNo("21"), "박영업", deptSales, posManager, gradeManager, "ACTIVE"), roleMANAGER);
+            createUserAccount(createEmployee(generateEmpNo("31"), "최개발", deptDev1, posManager, gradeManager, "ACTIVE"), roleMANAGER);
+            createUserAccount(createEmployee(generateEmpNo("32"), "정개발", deptDev2, posManager, gradeManager, "ACTIVE"), roleMANAGER);
+            createUserAccount(createEmployee(generateEmpNo("33"), "오개발", deptDev3, posManager, gradeManager, "ACTIVE"), roleMANAGER);
 
             // 일반 직원 (모두 EMPLOYEE)
             for (int i = 1; i <= 5; i++)
-                createUserAccount(createEmployee(generateEmpNo("11"), "경영사원" + i, deptSupport, posEmployee, gradeStaff, "재직"), roleEMPLOYEE);
+                createUserAccount(createEmployee(generateEmpNo("11"), "경영사원" + i, deptSupport, posEmployee, gradeStaff, "ACTIVE"), roleEMPLOYEE);
 
             for (int i = 1; i <= 3; i++)
-                createUserAccount(createEmployee(generateEmpNo("12"), "회계사원" + i, deptAccounting, posEmployee, gradeStaff, "재직"), roleEMPLOYEE);
+                createUserAccount(createEmployee(generateEmpNo("12"), "회계사원" + i, deptAccounting, posEmployee, gradeStaff, "ACTIVE"), roleEMPLOYEE);
 
             for (int i = 1; i <= 4; i++)
-                createUserAccount(createEmployee(generateEmpNo("21"), "영업사원" + i, deptSales, posEmployee, gradeStaff, "재직"), roleEMPLOYEE);
+                createUserAccount(createEmployee(generateEmpNo("21"), "영업사원" + i, deptSales, posEmployee, gradeStaff, "ACTIVE"), roleEMPLOYEE);
 
             for (int i = 1; i <= 4; i++)
-                createUserAccount(createEmployee(generateEmpNo("31"), "개발1팀사원" + i, deptDev1, posEmployee, gradeStaff, "재직"), roleEMPLOYEE);
+                createUserAccount(createEmployee(generateEmpNo("31"), "개발1팀사원" + i, deptDev1, posEmployee, gradeStaff, "ACTIVE"), roleEMPLOYEE);
 
             for (int i = 1; i <= 3; i++)
-                createUserAccount(createEmployee(generateEmpNo("32"), "개발2팀사원" + i, deptDev2, posEmployee, gradeStaff, "재직"), roleEMPLOYEE);
+                createUserAccount(createEmployee(generateEmpNo("32"), "개발2팀사원" + i, deptDev2, posEmployee, gradeStaff, "ACTIVE"), roleEMPLOYEE);
 
             for (int i = 1; i <= 4; i++)
-                createUserAccount(createEmployee(generateEmpNo("33"), "개발3팀사원" + i, deptDev3, posEmployee, gradeStaff, "재직"), roleEMPLOYEE);
+                createUserAccount(createEmployee(generateEmpNo("33"), "개발3팀사원" + i, deptDev3, posEmployee, gradeStaff, "ACTIVE"), roleEMPLOYEE);
 
             log.info("✅ 기본 직원(30명) + 권한 매핑 완료");
 

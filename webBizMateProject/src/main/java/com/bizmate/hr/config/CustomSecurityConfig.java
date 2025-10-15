@@ -80,6 +80,7 @@ public class CustomSecurityConfig {
                                 "/h2-console/**"
                         ).permitAll()
 
+                        .requestMatchers("/api/employees/me").authenticated()
                         // OPTIONS 메서드 허용 (CORS)
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
@@ -143,6 +144,7 @@ public class CustomSecurityConfig {
         // CEO → 시스템 관리자 전체 권한 포함
         StringBuilder hierarchy = new StringBuilder("""
         ROLE_CEO > ROLE_ADMIN
+        ROLE_ADMIN > ROLE_MANAGER > ROLE_EMPLOYEE
         ROLE_ADMIN > sys:admin
         """);
 
@@ -173,6 +175,7 @@ public class CustomSecurityConfig {
         data:write:all > emp:create
         data:write:all > emp:update
         data:write:all > emp:delete
+        data:write:all > project:write
         """);
 
         roleHierarchy.setHierarchy(hierarchy.toString());

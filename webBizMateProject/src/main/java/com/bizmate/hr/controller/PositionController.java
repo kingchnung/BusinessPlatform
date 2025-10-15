@@ -20,26 +20,26 @@ public class PositionController {
     private final PositionService positionService;
 
     @GetMapping
-//    @PreAuthorize("hasAuthority('pos:read')")
+    @PreAuthorize("hasRole('EMPLOYEE')")
     public List<PositionDTO> getAllPositions() {
         return positionService.getAllPositions();
     }
 
     @GetMapping("/{id}")
-//    @PreAuthorize("hasAuthority('pos:read')")
+    @PreAuthorize("hasRole('EMPLOYEE')")
     public ResponseEntity<PositionDTO> getPosition(@PathVariable("id") Long positionCode) {
         return ResponseEntity.ok(positionService.getPosition(positionCode));
     }
 
     @PostMapping
-    @PreAuthorize("hasAuthority('pos:create')")
+    @PreAuthorize("hasRole('MANAGER')")
     public ResponseEntity<PositionDTO> createPosition(@RequestBody @Valid PositionRequestDTO requestDTO) {
         PositionDTO created = positionService.savePosition(null, requestDTO);
         return new ResponseEntity<>(created, HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAuthority('pos:update')")
+    @PreAuthorize("hasRole('MANAGER')")
     public ResponseEntity<PositionDTO> updatePosition(@PathVariable("id") Long positionCode,
                                                       @RequestBody @Valid PositionRequestDTO requestDTO) {
         PositionDTO updated = positionService.savePosition(positionCode, requestDTO);
@@ -47,7 +47,7 @@ public class PositionController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAuthority('pos:delete')")
+    @PreAuthorize("hasRole('MANAGER')")
     public ResponseEntity<Void> deletePosition(@PathVariable("id") Long positionCode) {
         positionService.deletePosition(positionCode);
         return ResponseEntity.noContent().build();
