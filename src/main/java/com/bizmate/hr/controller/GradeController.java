@@ -21,21 +21,21 @@ public class GradeController {
 
     // READ - All
     @GetMapping
-    @PreAuthorize("hasAuthority('grade:read')")
+    @PreAuthorize("hasRole('EMPLOYEE')")
     public List<GradeDTO> getAllGrades() {
         return gradeService.getAllGrades();
     }
 
     // READ - One
     @GetMapping("/{id}")
-    @PreAuthorize("hasAuthority('grade:read')")
+    @PreAuthorize("hasRole('EMPLOYEE')")
     public ResponseEntity<GradeDTO> getGrade(@PathVariable("id") Long gradeCode) {
         return ResponseEntity.ok(gradeService.getGrade(gradeCode));
     }
 
     // CREATE
     @PostMapping
-    @PreAuthorize("hasAuthority('grade:create')")
+    @PreAuthorize("hasRole('MANAGER')")
     public ResponseEntity<GradeDTO> createGrade(@RequestBody @Valid GradeRequestDTO requestDTO) {
         GradeDTO created = gradeService.saveGrade(null, requestDTO);
         return new ResponseEntity<>(created, HttpStatus.CREATED);
@@ -43,7 +43,7 @@ public class GradeController {
 
     // UPDATE
     @PutMapping("/{id}")
-    @PreAuthorize("hasAuthority('grade:update')")
+    @PreAuthorize("hasRole('MANAGER')")
     public ResponseEntity<GradeDTO> updateGrade(@PathVariable("id") Long gradeCode,
                                                 @RequestBody @Valid GradeRequestDTO requestDTO) {
         GradeDTO updated = gradeService.saveGrade(gradeCode, requestDTO);
@@ -52,7 +52,7 @@ public class GradeController {
 
     // DELETE
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAuthority('grade:delete')")
+    @PreAuthorize("hasRole('MANAGER')")
     public ResponseEntity<Void> deleteGrade(@PathVariable("id") Long gradeCode) {
         gradeService.deleteGrade(gradeCode);
         return ResponseEntity.noContent().build();

@@ -95,6 +95,7 @@ public class APIRefreshController {
      */
     private UserPrincipal createPrincipalFromClaims(Claims claims) {
         Long userId = claims.get("uid", Long.class);
+        Long empId = claims.get("empId", Long.class);
         String username = claims.getSubject();
 
         @SuppressWarnings("unchecked")
@@ -106,6 +107,7 @@ public class APIRefreshController {
 
         return new UserPrincipal(
                 userId,
+                empId,
                 username,
                 "", // password는 JWT에 없음
                 true,

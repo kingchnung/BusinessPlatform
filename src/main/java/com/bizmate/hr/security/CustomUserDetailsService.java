@@ -51,9 +51,15 @@ public class CustomUserDetailsService implements UserDetailsService {
         boolean active = "Y".equalsIgnoreCase(user.getIsActive());   // 예: getIsActive()
         boolean locked = "Y".equalsIgnoreCase(user.getIsLocked());   // 예: getIsLocked()
 
+        Long empId = null;
+        if(user.getEmployee() != null){
+            empId = user.getEmployee().getEmpId();
+        }
+
         // 4) UserPrincipal 생성
         UserPrincipal principal = new UserPrincipal(
                 user.getUserId(),
+                empId,
                 user.getUsername(),
                 user.getPwHash(),      // 비밀번호 해시
                 active,

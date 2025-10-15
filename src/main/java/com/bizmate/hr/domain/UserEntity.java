@@ -30,7 +30,7 @@ public class UserEntity {
     // 2. 직원 ID (FK & Unique - 직원 당 하나의 계정)
     // EMPLOYEES와 1:1 관계 (FK)
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "emp_id", unique = true, nullable = false)
+    @JoinColumn(name = "emp_id", unique = true, nullable = true)
     private Employee employee;
 
     // 3. 사용자명 (로그인 ID)

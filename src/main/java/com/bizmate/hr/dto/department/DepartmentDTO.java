@@ -11,6 +11,7 @@ public class DepartmentDTO {
     private String deptName;
     private String deptCode;
 
+
     public static DepartmentDTO fromEntity(Department dept) {
         return DepartmentDTO.builder()
                 .deptId(dept.getDeptId())

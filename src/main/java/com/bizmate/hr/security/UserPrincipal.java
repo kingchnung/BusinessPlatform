@@ -19,6 +19,7 @@ import java.util.Collection;
 
 public class UserPrincipal implements UserDetails {
     private final Long userId;
+    private final Long empId;
     private final String username;
     @JsonIgnore
     private final String pwHash;
@@ -30,12 +31,14 @@ public class UserPrincipal implements UserDetails {
     private String email;
 
     public UserPrincipal(Long userId,
+                         Long empId,
                          String username,
                          String pwHash,
                          boolean active,
                          boolean locked,
                          Collection<? extends GrantedAuthority> authorities) {
         this.userId = userId;
+        this.empId = empId;
         this.username = username;
         this.pwHash = pwHash;
         this.active = active;

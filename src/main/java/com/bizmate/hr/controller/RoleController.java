@@ -23,20 +23,20 @@ public class RoleController {
 
     // 역할 관리는 최고 관리자(예: 'system:manage' 권한)만 가능하도록 설정
     @GetMapping
-    @PreAuthorize("hasAuthority('system:manage')")
+    @PreAuthorize("hasRole('EMPLOYEE')")
     public List<RoleDTO> getAllRoles() {
         return roleService.getAllRoles();
     }
 
     @PostMapping
-    @PreAuthorize("hasAuthority('system:manage')")
+    @PreAuthorize("hasRole('MANAGER')")
     public ResponseEntity<RoleDTO> createRole(@RequestBody @Valid RoleRequestDTO requestDTO) {
         RoleDTO createdDto = roleService.saveRole(null, requestDTO);
         return new ResponseEntity<>(createdDto, HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAuthority('system:manage')")
+    @PreAuthorize("hasRole('MANAGER')")
     public ResponseEntity<RoleDTO> updateRole(@PathVariable Long id,
                                               @RequestBody @Valid RoleRequestDTO requestDTO) {
         RoleDTO updatedDto = roleService.saveRole(id, requestDTO);

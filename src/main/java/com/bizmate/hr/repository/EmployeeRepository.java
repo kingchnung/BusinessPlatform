@@ -31,4 +31,5 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
 
     @Query("SELECT MAX(e.empNo) FROM Employee e")
     String findMaxEmpNO();
+
 }
