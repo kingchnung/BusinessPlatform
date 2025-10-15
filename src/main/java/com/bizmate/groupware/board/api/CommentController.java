@@ -2,6 +2,7 @@ package com.bizmate.groupware.board.api;
 
 import com.bizmate.groupware.board.dto.CommentDto;
 import com.bizmate.groupware.board.service.CommentService;
+import com.bizmate.hr.security.UserPrincipal;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;

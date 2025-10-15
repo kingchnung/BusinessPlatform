@@ -3,13 +3,13 @@ package com.bizmate.groupware.board.api;
 import com.bizmate.groupware.board.domain.BoardType;
 import com.bizmate.groupware.board.dto.BoardDto;
 import com.bizmate.groupware.board.service.BoardService;
+import com.bizmate.hr.security.UserPrincipal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import java.nio.file.attribute.UserPrincipal;
 import java.util.List;
 
 @RestController
