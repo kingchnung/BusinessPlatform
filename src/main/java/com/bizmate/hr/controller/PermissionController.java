@@ -20,19 +20,19 @@ public class PermissionController {
     private final PermissionService permissionService;
 
     @GetMapping
-    @PreAuthorize("hasRole('EMPLOYEE')")
+    @PreAuthorize("hasAuthority('system:manage')")
     public List<PermissionDTO> getAllPermissions() {
         return permissionService.getAllPermissions();
     }
     @PostMapping
-    @PreAuthorize("hasRole('MANAGER')")
+    @PreAuthorize("hasAuthority('system:manage')")
     public ResponseEntity<PermissionDTO> createPermission(@RequestBody @Valid PermissionRequestDTO requestDTO) {
         PermissionDTO createdDto = permissionService.savePermission(null, requestDTO);
         return new ResponseEntity<>(createdDto, HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('MANAGER')")
+    @PreAuthorize("hasAuthority('system:manage')")
     public ResponseEntity<PermissionDTO> updatePermission(@PathVariable Long id,
                                                           @RequestBody @Valid PermissionRequestDTO requestDTO) {
         PermissionDTO updatedDto = permissionService.savePermission(id, requestDTO);

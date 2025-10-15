@@ -30,7 +30,7 @@ public class UserEntity {
     // 2. 직원 ID (FK & Unique - 직원 당 하나의 계정)
     // EMPLOYEES와 1:1 관계 (FK)
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "emp_id", unique = true, nullable = true)
+    @JoinColumn(name = "emp_id", unique = true, nullable = false)
     private Employee employee;
 
     // 3. 사용자명 (로그인 ID)
@@ -42,12 +42,10 @@ public class UserEntity {
     private String pwHash;
 
     // 5. 계정 활성 여부 ('Y'/'N')
-    @Builder.Default
     @Column(name = "is_active", nullable = false, length = 1)
     private String isActive = "Y";
 
     // 6. 계정 잠금 여부 ('Y'/'N')
-    @Builder.Default
     @Column(name = "is_locked", nullable = false, length = 1)
     private String isLocked = "N";
 
@@ -66,16 +64,6 @@ public class UserEntity {
     // 10. 수정일
     @Column(name = "upd_date")
     private LocalDateTime updDate;
-
-    @PrePersist
-    public void prePersist() {
-        this.creDate = LocalDateTime.now();
-        this.updDate = LocalDateTime.now();
-    }
-    @PreUpdate
-    public void preUpdate() {
-        this.updDate = LocalDateTime.now();
-    }
 
     // 11~15. 조회 편의를 위한 직원 정보 복제 필드 (데이터 정합성 관리가 필요함)
     @Column(name = "emp_name", length = 50)

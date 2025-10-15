@@ -93,7 +93,7 @@ public class Employee {
     // 17. 생성자 (FK) -> User Entity 참조 (누가 데이터를 만들었는지)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cre_by")
-    private UserEntity creBy;
+    private UserEntity createdBy;
 
     // 18. 생성일
     @Column(name = "cre_date")
@@ -102,7 +102,7 @@ public class Employee {
     // 19. 수정자 (FK) -> User Entity 참조 (누가 데이터를 수정했는지)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "upd_by")
-    private UserEntity updBy;
+    private UserEntity updatedBy;
 
     // 20. 수정일
     @Column(name = "upd_date")

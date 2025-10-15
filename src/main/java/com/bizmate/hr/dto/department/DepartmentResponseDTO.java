@@ -25,11 +25,11 @@ public class DepartmentResponseDTO {
      */
     public static DepartmentResponseDTO fromEntity(Department department) {
 
-        String parentName = department.getParentDept() != null
-                ? department.getParentDept().getDeptName()
+        String parentName = department.getParentDepartment() != null
+                ? department.getParentDepartment().getDeptName()
                 : null;
-        Long parentId = department.getParentDept() != null
-                ? department.getParentDept().getDeptId()
+        Long parentId = department.getParentDepartment() != null
+                ? department.getParentDepartment().getDeptId()
                 : null;
 
         return DepartmentResponseDTO.builder()
