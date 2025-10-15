@@ -15,7 +15,7 @@ public interface UserService {
      * @return 생성된 사용자 계정 DTO
      */
     UserDTO createUserAccount(Employee employee, String initialPassword);
-    UserDTO createUserAccount(Employee employee);
+
     /**
      * 전체 사용자 계정 목록을 조회합니다. (관리자 기능: GET /api/users)
      * @return UserDTO 리스트
@@ -43,5 +43,4 @@ public interface UserService {
      * @param userId 삭제할 사용자 ID
      */
     void deleteUser(Long userId);
-
 }

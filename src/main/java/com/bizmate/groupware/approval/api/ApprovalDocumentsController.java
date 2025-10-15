@@ -6,16 +6,12 @@ import com.bizmate.common.exception.VerificationFailedException;
 import com.bizmate.groupware.approval.dto.ApprovalDocumentsDto;
 import com.bizmate.groupware.approval.service.ApprovalDocumentsService;
 import com.bizmate.hr.dto.user.UserDTO;
-import com.bizmate.hr.security.UserPrincipal;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 @Slf4j
@@ -59,31 +55,12 @@ public class ApprovalDocumentsController {
     @PostMapping("/draft")
     public ResponseEntity<ApprovalDocumentsDto> draftDocument(
             @RequestBody ApprovalDocumentsDto dto,
-            @AuthenticationPrincipal UserPrincipal principal) {
+            @AuthenticationPrincipal UserDTO loginUser) {
 
         try {
             log.info("💾 [임시저장 요청] {}", dto);
-
-            // ✅ UserPrincipal → UserDTO 변환
-            UserDTO loginUser = new UserDTO(
-                    principal.getUserId(),
-                    null,
-                    principal.getUsername(),
-                    "N/A",
-                    principal.getEmpName(),
-                    true,
-                    true,
-                    principal.getEmail(),
-                    null,
-                    null,
-                    List.of(new SimpleGrantedAuthority("ROLE_USER"))
-            );
-
-            // ✅ 수정된 Service 호출 방식 (인자 2개)
-            ApprovalDocumentsDto result = approvalDocumentsService.draft(dto, loginUser);
-
+            ApprovalDocumentsDto result = approvalDocumentsService.draft(dto);
             return ResponseEntity.ok(result);
-
         } catch (VerificationFailedException e) {
             log.warn("🚫 임시저장 실패: {}", e.getMessage());
             throw e;
@@ -99,28 +76,14 @@ public class ApprovalDocumentsController {
     @PostMapping("/submit")
     public ResponseEntity<ApprovalDocumentsDto> submitDocument(
             @RequestBody ApprovalDocumentsDto dto,
-            @AuthenticationPrincipal UserPrincipal principal) {
+            @AuthenticationPrincipal UserDTO loginUser) {
 
         try {
             log.info("🚀 [문서 상신 요청] {}", dto);
-
-            // ✅ UserPrincipal → UserDTO 변환
-            UserDTO loginUser = new UserDTO(
-                    principal.getUserId(),
-                    principal.getUsername(),
-                    principal.getEmpName(),
-                    principal.getEmail()
-            );
-
-            // ✅ 작성자 정보 세팅 (표시용)
             dto.setUserId(loginUser.getUserId());
-            dto.setAuthorName(loginUser.getEmpName());
-
-            // ✅ 수정된 Service 호출
-            ApprovalDocumentsDto result = approvalDocumentsService.submit(dto, loginUser);
-
+            dto.setEmpId(loginUser.getEmpId());
+            ApprovalDocumentsDto result = approvalDocumentsService.submit(dto);
             return ResponseEntity.ok(result);
-
         } catch (VerificationFailedException e) {
             log.warn("🚫 상신 실패: {}", e.getMessage());
             throw e;
@@ -131,68 +94,16 @@ public class ApprovalDocumentsController {
     }
 
     /* -------------------------------------------------------------
-        재상신 (SUBMIT)
-       ------------------------------------------------------------- */
-    @PutMapping("/{docId}/resubmit")
-    public ResponseEntity<ApprovalDocumentsDto> resubmitDocument(
-            @PathVariable String docId,
-            @RequestBody ApprovalDocumentsDto dto,
-            @AuthenticationPrincipal UserPrincipal principal) {
-
-        try {
-            log.info("🔁 [문서 재상신 요청] 문서ID={}, 사용자(사번)={}", docId, principal.getUsername());
-
-            // UserPrincipal → UserDTO 변환
-            UserDTO loginUser = new UserDTO(
-                    principal.getUserId(),
-                    null, // empId 사용 안함
-                    principal.getUsername(), // 사번 기준
-                    "N/A",
-                    principal.getEmpName(),
-                    true,
-                    true,
-                    principal.getEmail(),
-                    null,
-                    null,
-                    List.of(new SimpleGrantedAuthority("ROLE_USER"))
-            );
-
-            ApprovalDocumentsDto result = approvalDocumentsService.resubmit(docId, dto, loginUser);
-            return ResponseEntity.ok(result);
-
-        } catch (VerificationFailedException e) {
-            log.warn("🚫 재상신 실패: {}", e.getMessage());
-            throw e;
-        } catch (Exception e) {
-            log.error("❌ 재상신 중 예외 발생", e);
-            throw new VerificationFailedException("문서 재상신 처리 중 오류가 발생했습니다.");
-        }
-    }
-
-    /* -------------------------------------------------------------
  ✅ 5️⃣ 문서 승인 (Approve)
  ------------------------------------------------------------- */
     @PutMapping("/{docId}/approve")
     public ResponseEntity<ApprovalDocumentsDto> approveDocument(
             @PathVariable String docId,
-            @AuthenticationPrincipal UserPrincipal principal) {
+            @AuthenticationPrincipal UserDTO loginUser) {
 
         try {
-            log.info("✅ [문서 승인 요청] 문서ID={}, 승인자={}", docId, principal.getEmpName());
-
-            UserDTO loginUser = new UserDTO(
-                    principal.getUserId(),
-                    null,
-                    principal.getUsername(),
-                    "N/A",
-                    principal.getEmpName(),
-                    true,
-                    true,
-                    principal.getEmail(),
-                    null,
-                    null,
-                    List.of(new SimpleGrantedAuthority("ROLE_USER"))
-            );
+            log.info("✅ [문서 승인 요청] 문서ID={}, 승인자={}", docId,
+                    loginUser != null ? loginUser.getEmpName() : "anonymous");
 
             ApprovalDocumentsDto result = approvalDocumentsService.approve(docId, loginUser);
             return ResponseEntity.ok(result);
@@ -213,25 +124,10 @@ public class ApprovalDocumentsController {
     public ResponseEntity<ApprovalDocumentsDto> rejectDocument(
             @PathVariable String docId,
             @RequestBody(required = false) Map<String, String> body,
-            @AuthenticationPrincipal UserPrincipal principal) {
+            @AuthenticationPrincipal UserDTO loginUser) {
 
         try {
             String reason = (body != null) ? body.getOrDefault("reason", "") : "";
-            // ✅ UserPrincipal → UserDTO 변환
-            UserDTO loginUser = new UserDTO(
-                    principal.getUserId(),
-                    null,
-                    principal.getUsername(),
-                    "N/A",
-                    principal.getEmpName(),
-                    true,
-                    true,
-                    principal.getEmail(),
-                    null,
-                    null,
-                    List.of(new SimpleGrantedAuthority("ROLE_USER"))
-            );
-
             log.info("🔴 반려 요청: docId={}, user={}, reason={}", docId, loginUser.getEmpName(), reason);
 
             ApprovalDocumentsDto result = approvalDocumentsService.reject(docId, loginUser, reason);

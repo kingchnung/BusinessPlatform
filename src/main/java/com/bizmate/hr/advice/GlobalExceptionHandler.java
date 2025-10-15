@@ -1,6 +1,5 @@
 package com.bizmate.hr.advice;
 
-import io.jsonwebtoken.JwtException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -57,7 +56,7 @@ public class GlobalExceptionHandler {
     }
 
     // ★ 선택 사항: JWT 관련 예외 및 사용자 정의 예외 처리
-
+    /*
     @ExceptionHandler(JwtException.class)
     public ResponseEntity<Map<String, String>> handleJwtException(JwtException ex) {
         log.error("JWTException 발생: {}", ex.getMessage());
@@ -69,7 +68,7 @@ public class GlobalExceptionHandler {
         // 토큰 오류는 보통 403 Forbidden으로 처리될 수 있습니다. (인증은 통과했으나 접근 거부)
         return new ResponseEntity<>(error, HttpStatus.FORBIDDEN); // 403
     }
-
+    */
 
     /**
      * 기타 예상치 못한 모든 예외 처리 (HTTP 500 Internal Server Error)

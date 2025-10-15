@@ -1,8 +1,6 @@
 package com.bizmate.hr.dto.user;
 
-import com.bizmate.hr.domain.Role;
 import com.bizmate.hr.domain.UserEntity;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -14,7 +12,6 @@ import java.util.stream.Collectors;
  * [사용자 계정 조회 및 응답 DTO]
  * - 계정 목록 및 상세 정보를 프론트엔드로 전송할 때 사용
  */
-@JsonInclude(JsonInclude.Include.NON_NULL)
 @Getter
 @Builder
 public class UserResponseDTO {
@@ -23,8 +20,8 @@ public class UserResponseDTO {
     private final Long empId;
     private final String username;      // 로그인 ID
 
-    private final boolean Active;      // 계정 활성 여부
-    private final boolean Locked;      // 계정 잠금 여부
+    private final String isActive;      // 계정 활성 여부
+    private final String isLocked;      // 계정 잠금 여부
     private final LocalDateTime lastLogin;
     private final Integer failedCount;
 
@@ -46,17 +43,16 @@ public class UserResponseDTO {
      */
     public static UserResponseDTO fromEntity(UserEntity userEntity) {
         // user.getRoles()를 스트림으로 변환하여 역할 이름을 추출합니다.
-        List<String> roles = userEntity.getRoles() == null ? List.of() :
-                userEntity.getRoles().stream()
-                .map(Role::getRoleName)
+        List<String> roles = userEntity.getRoles().stream()
+                .map(role -> role.getRoleName())
                 .collect(Collectors.toList());
 
         return UserResponseDTO.builder()
                 .userId(userEntity.getUserId())
                 .empId(userEntity.getEmployee() != null ? userEntity.getEmployee().getEmpId() : null)
                 .username(userEntity.getUsername())
-                .Active("Y".equalsIgnoreCase(userEntity.getIsActive()))
-                .Locked("N".equalsIgnoreCase(userEntity.getIsLocked()))
+                .isActive(userEntity.getIsActive())
+                .isLocked(userEntity.getIsLocked())
                 .lastLogin(userEntity.getLastLogin())
                 .failedCount(userEntity.getFailedCount())
 

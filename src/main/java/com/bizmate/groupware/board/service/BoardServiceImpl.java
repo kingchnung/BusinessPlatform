@@ -7,13 +7,13 @@ import com.bizmate.groupware.board.domain.Comment;
 import com.bizmate.groupware.board.dto.BoardDto;
 import com.bizmate.groupware.board.repository.BoardRepository;
 import com.bizmate.groupware.board.repository.CommentRepository;
-import com.bizmate.hr.security.UserPrincipal;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.nio.file.attribute.UserPrincipal;
 import java.util.List;
 
 @Service
@@ -28,9 +28,9 @@ public class BoardServiceImpl implements BoardService {
     //게시글 등록
     @Override
     public BoardDto createBoard(BoardDto dto, UserPrincipal user) {
-//        if (dto.getType() == BoardType.NOTICE && !user.isAdmin()) {
-//            throw new VerificationFailedException("공지사항은 관리자만 등록할 수 있습니다.");
-//        }
+        if (dto.getType() == BoardType.NOTICE && !user.isAdmin()) {
+            throw new VerificationFailedException("공지사항은 관리자만 등록할 수 있습니다.");
+        }
 
         String displayName = (dto.getType() == BoardType.SUGGESTION)
                 ? "익명" : user.getEmpName();
@@ -54,9 +54,9 @@ public class BoardServiceImpl implements BoardService {
                 .orElseThrow(() -> new EntityNotFoundException("게시글을 찾을 수 없습니다."));
 
         // 논리 삭제
-//        if (!user.isAdmin() && !board.getAuthorName().equals(user.getUserId())) {
-//            throw new VerificationFailedException("삭제 권한이 없습니다.");
-//        }
+        if (!user.isAdmin() && !board.getAuthorName().equals(user.getUserId())) {
+            throw new VerificationFailedException("삭제 권한이 없습니다.");
+        }
 
         board.setIsDeleted(true);
     }
@@ -78,7 +78,7 @@ public class BoardServiceImpl implements BoardService {
         Comment comment = Comment.builder()
                 .board(board)
                 .content(content)
-                .authorId(user.getUserId())
+                .authorId(user.getUsername())
                 .authorName(displayName)
                 .build();
 
@@ -105,9 +105,9 @@ public class BoardServiceImpl implements BoardService {
         Board board = boardRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("게시글을 찾을 수 없습니다."));
 
-//        if (!user.isAdmin() && !board.getAuthorId().equals(user.getUserId())) {
-//            throw new VerificationFailedException("수정 권한이 없습니다.");
-//        }
+        if (!user.isAdmin() && !board.getAuthorId().equals(user.getUserId())) {
+            throw new VerificationFailedException("수정 권한이 없습니다.");
+        }
 
         board.setTitle(dto.getTitle());
         board.setContent(dto.getContent());

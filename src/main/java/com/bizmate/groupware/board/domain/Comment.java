@@ -31,6 +31,5 @@ public class Comment extends BaseEntity {
     private String authorName; //익명 게시판의 경우 '익명' 표시
 
     @Column(nullable = false)
-    @Builder.Default
     private Boolean isDeleted = false;
 }
