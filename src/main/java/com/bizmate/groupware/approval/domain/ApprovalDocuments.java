@@ -60,15 +60,15 @@ public class ApprovalDocuments extends BaseEntity {
     private Department department;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "USER_ID")
+    @JoinColumn(name = "USER_REF_ID")
     private UserEntity authorUser;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ROLE_ID")
+    @JoinColumn(name = "ROLE_REF_ID")
     private Role authorRole;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "EMP_ID")
+    @JoinColumn(name = "EMP_REF_ID")
     private Employee authorEmployee;
 
 

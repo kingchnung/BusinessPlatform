@@ -4,12 +4,12 @@ import com.bizmate.groupware.board.domain.Board;
 import com.bizmate.groupware.board.domain.BoardType;
 import com.bizmate.groupware.board.domain.Comment;
 import com.bizmate.groupware.board.dto.BoardDto;
-import com.bizmate.hr.security.UserPrincipal;
 
+import java.nio.file.attribute.UserPrincipal;
 import java.util.List;
 
 public interface BoardService {
-    BoardDto createBoard(BoardDto dto, UserPrincipal user);
+    Board createBoard(BoardDto dto, UserPrincipal user);
     void deleteBoard(Long boardId, UserPrincipal user);
     Comment addComment(Long boardId, String content, UserPrincipal user);
 

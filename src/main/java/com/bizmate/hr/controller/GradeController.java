@@ -1,4 +1,4 @@
-package com.bizmate.hr.controller.code;
+package com.bizmate.hr.controller;
 
 import com.bizmate.hr.dto.code.GradeDTO;
 import com.bizmate.hr.dto.code.GradeRequestDTO;
@@ -19,42 +19,47 @@ public class GradeController {
 
     private final GradeService gradeService;
 
-    // READ - All
+    /**
+     * 직급 전체 조회 API
+     * 권한: data:read:all
+     */
     @GetMapping
-    @PreAuthorize("hasRole('EMPLOYEE')")
+    @PreAuthorize("hasAuthority('data:read:all')")
     public List<GradeDTO> getAllGrades() {
         return gradeService.getAllGrades();
     }
 
-    // READ - One
-    @GetMapping("/{id}")
-    @PreAuthorize("hasRole('EMPLOYEE')")
-    public ResponseEntity<GradeDTO> getGrade(@PathVariable("id") Long gradeCode) {
-        return ResponseEntity.ok(gradeService.getGrade(gradeCode));
-    }
-
-    // CREATE
+    /**
+     * 신규 직급 등록 API
+     * 권한: dept:manage
+     */
     @PostMapping
-    @PreAuthorize("hasRole('MANAGER')")
+    @PreAuthorize("hasAuthority('dept:manage')")
     public ResponseEntity<GradeDTO> createGrade(@RequestBody @Valid GradeRequestDTO requestDTO) {
-        GradeDTO created = gradeService.saveGrade(null, requestDTO);
-        return new ResponseEntity<>(created, HttpStatus.CREATED);
+        GradeDTO createdDto = gradeService.saveGrade(null, requestDTO);
+        return new ResponseEntity<>(createdDto, HttpStatus.CREATED);
     }
 
-    // UPDATE
-    @PutMapping("/{id}")
-    @PreAuthorize("hasRole('MANAGER')")
-    public ResponseEntity<GradeDTO> updateGrade(@PathVariable("id") Long gradeCode,
+    /**
+     * 직급 정보 수정 API
+     * 권한: dept:manage
+     */
+    @PutMapping("/{code}")
+    @PreAuthorize("hasAuthority('dept:manage')")
+    public ResponseEntity<GradeDTO> updateGrade(@PathVariable("code") Long code,
                                                 @RequestBody @Valid GradeRequestDTO requestDTO) {
-        GradeDTO updated = gradeService.saveGrade(gradeCode, requestDTO);
-        return ResponseEntity.ok(updated);
+        GradeDTO updatedDto = gradeService.saveGrade(code, requestDTO);
+        return ResponseEntity.ok(updatedDto);
     }
 
-    // DELETE
-    @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('MANAGER')")
-    public ResponseEntity<Void> deleteGrade(@PathVariable("id") Long gradeCode) {
-        gradeService.deleteGrade(gradeCode);
+    /**
+     * 직급 삭제 API
+     * 권한: dept:manage
+     */
+    @DeleteMapping("/{code}")
+    @PreAuthorize("hasAuthority('dept:manage')")
+    public ResponseEntity<Void> deleteGrade(@PathVariable("code") Long code) {
+        gradeService.deleteGrade(code);
         return ResponseEntity.noContent().build();
     }
 }
