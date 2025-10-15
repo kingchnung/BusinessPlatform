@@ -1,5 +1,6 @@
 package com.bizmate.salesPages.management.order.order.service;
 
+import com.bizmate.hr.dto.user.UserDTO;
 import com.bizmate.salesPages.common.dto.PageRequestDTO;
 import com.bizmate.salesPages.common.dto.PageResponseDTO;
 import com.bizmate.salesPages.management.order.order.domain.Order;
@@ -13,6 +14,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -54,6 +56,14 @@ public class OrderServiceImpl implements OrderService {
         String sequencePart = String.format("%04d", nextSequence);
         String finalOrderId = datePart + "-" + sequencePart;
         orderDTO.setOrderId(finalOrderId);
+
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if(principal instanceof UserDTO userDTO){
+            orderDTO.setUserId(userDTO.getUsername());
+            orderDTO.setWriter(userDTO.getEmpName());
+        } else {
+            throw new IllegalStateException("주문 등록을 위한 사용자 인증 정보를 찾을 수 없습니다. (비정상 접근)");
+        }
 
         Order order = modelMapper.map(orderDTO, Order.class);
 

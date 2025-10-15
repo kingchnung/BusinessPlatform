@@ -88,6 +88,31 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
+    @Transactional
+    public EmployeeDTO updateMyInfo(Long empId, EmployeeUpdateRequestDTO requestDTO) {
+        // 1. 기존 직원 조회 (getEmployee 메서드에서 이미 이 로직을 사용하고 있음)
+        Employee employee = employeeRepository.findById(empId)
+                .orElseThrow(() -> new EntityNotFoundException("사원 ID " + empId + "를 찾을 수 없습니다."));
+
+        // 2. 본인 수정 가능 필드만 반영
+        // 💡 null 체크를 통해 전송된 값만 반영되도록 할 수 있지만, DTO에서 @NotNull을 사용했다면 생략 가능합니다.
+        employee.setPhone(requestDTO.getPhone());
+        employee.setEmail(requestDTO.getEmail());
+        employee.setAddress(requestDTO.getAddress());
+
+        // 3. 관리자 전용 필드 (부서, 직급, 직책, 상태 등)는 아예 건드리지 않음
+        // **[핵심] FK 변경 로직 및 관리자 항목 로직 모두 제거**
+
+        // 4. 저장
+        Employee updated = employeeRepository.save(employee);
+
+        // 5. User 정보 동기화 로직 (syncUserInfo)도 제거
+        // **[핵심] 전화번호, 이메일, 주소 변경은 사용자 인증 정보와 무관하므로 동기화 불필요**
+
+        return EmployeeDTO.fromEntity(updated);
+    }
+
+    @Override
     public EmployeeDTO updateEmployee(Long empId, EmployeeUpdateRequestDTO requestDTO) {
         // 🔹 기존 직원 조회
         Employee employee = employeeRepository.findById(empId)

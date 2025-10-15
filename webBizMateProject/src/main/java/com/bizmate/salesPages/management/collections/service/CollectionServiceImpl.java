@@ -1,5 +1,6 @@
 package com.bizmate.salesPages.management.collections.service;
 
+import com.bizmate.hr.dto.user.UserDTO;
 import com.bizmate.salesPages.client.domain.Client;
 import com.bizmate.salesPages.client.repository.ClientRepository;
 import com.bizmate.salesPages.common.dto.PageRequestDTO;
@@ -81,6 +82,15 @@ public class CollectionServiceImpl implements CollectionService{
         String datePart = today.format(DATE_FORMAT);
         String sequencePart = String.format("%04d", nextSequence);
         String finalCollectionId = datePart + "-" + sequencePart;
+
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        if(principal instanceof UserDTO userDTO){
+            collectionDTO.setUserId(userDTO.getUsername());
+            collectionDTO.setWriter(userDTO.getEmpName());
+        } else {
+            throw new IllegalStateException("주문 등록을 위한 사용자 인증 정보를 찾을 수 없습니다. (비정상 접근)");
+        }
 
         // 3. Collection 엔티티를 수동으로 Builder를 사용하여 생성
         // ModelMapper의 충돌을 방지하고, DB에서 조회한 Client 엔티티를 직접 주입

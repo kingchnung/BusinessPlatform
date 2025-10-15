@@ -20,26 +20,26 @@ public class DepartmentController {
     private final DepartmentService departmentService; // ★ 인터페이스 주입
 
     @GetMapping
-    @PreAuthorize("hasAuthority('dept:read')")
+    @PreAuthorize("hasRole('EMPLOYEE')")
     public List<DepartmentDTO> getAllDepartments() {
         return departmentService.getAllDepartments();
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAuthority('dept:read')")
+    @PreAuthorize("hasRole('EMPLOYEE')")
     public ResponseEntity<DepartmentDTO> getDepartment(@PathVariable Long id) {
         return ResponseEntity.ok(departmentService.getDepartment(id));
     }
 
     @PostMapping("/add")
-    @PreAuthorize("hasAuthority('dept:create')")
+    @PreAuthorize("hasRole('MANAGER')")
     public ResponseEntity<DepartmentDTO> createDepartment(@RequestBody @Valid DepartmentRequestDTO requestDTO) {
         DepartmentDTO createdDto = departmentService.saveDepartment(null, requestDTO);
         return new ResponseEntity<>(createdDto, HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAuthority('dept:update')")
+    @PreAuthorize("hasRole('MANAGER')")
     public ResponseEntity<DepartmentDTO> updateDepartment(@PathVariable Long id,
                                                     @RequestBody @Valid DepartmentRequestDTO requestDTO) {
         DepartmentDTO updatedDto = departmentService.saveDepartment(id, requestDTO);
@@ -47,7 +47,7 @@ public class DepartmentController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAuthority('dept:delete')")
+    @PreAuthorize("hasRole('MANAGER')")
     public ResponseEntity<Void> deleteDepartment(@PathVariable Long id) {
         departmentService.deleteDepartment(id);
         return ResponseEntity.noContent().build();

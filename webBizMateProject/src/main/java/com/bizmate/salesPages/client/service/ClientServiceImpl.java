@@ -1,5 +1,6 @@
 package com.bizmate.salesPages.client.service;
 
+import com.bizmate.hr.dto.user.UserDTO;
 import com.bizmate.salesPages.common.dto.PageRequestDTO;
 import com.bizmate.salesPages.common.dto.PageResponseDTO;
 import com.bizmate.salesPages.client.domain.Client;
@@ -28,7 +29,16 @@ public class ClientServiceImpl implements ClientService{
 
     @Override
     public Long clientRegister(ClientDTO clientDTO) {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if(principal instanceof UserDTO userDTO){
+            clientDTO.setUserId(userDTO.getUsername());
+            clientDTO.setWriter(userDTO.getEmpName());
+        } else {
+            throw new IllegalStateException("주문 등록을 위한 사용자 인증 정보를 찾을 수 없습니다. (비정상 접근)");
+        }
+
         Client client = modelMapper.map(clientDTO, Client.class);
+
         Client savedClient = clientRepository.save(client);
         return savedClient.getClientNo();
     }

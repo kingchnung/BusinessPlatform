@@ -70,10 +70,15 @@ public class SalesItem {
 
     public void calculateAmount() {
         if(this.unitPrice != null && this.quantity != null && this.quantity > 0){
-            if(this.unitVat == null || this.unitVat.compareTo(BigDecimal.ZERO) == 0){
+            if(this.unitVat == null || this.unitVat.compareTo(BigDecimal.ZERO) == 0) {
                 BigDecimal tenPercent = new BigDecimal("0.1");
-                this.unitVat = this.unitPrice.multiply(tenPercent)
-                        .setScale(2, BigDecimal.ROUND_HALF_UP);
+
+                if (this.unitPrice.compareTo(BigDecimal.ZERO) > 0) {
+                    this.unitVat = this.unitPrice.multiply(tenPercent)
+                            .setScale(2, BigDecimal.ROUND_HALF_UP);
+                } else {
+                    this.unitVat = BigDecimal.ZERO;
+                }
             }
             BigDecimal subTotal = this.unitPrice.multiply(BigDecimal.valueOf(this.quantity));
             BigDecimal totalVat = this.unitVat.multiply(BigDecimal.valueOf(this.quantity));

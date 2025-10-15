@@ -1,5 +1,6 @@
 package com.bizmate.salesPages.report.salesTarget.service;
 
+import com.bizmate.hr.dto.user.UserDTO;
 import com.bizmate.salesPages.common.dto.PageRequestDTO;
 import com.bizmate.salesPages.common.dto.PageResponseDTO;
 import com.bizmate.salesPages.report.salesTarget.domain.SalesTarget;
@@ -30,6 +31,14 @@ public class SalesTargetServiceImpl implements SalesTargetService{
 
     @Override
     public Long register(SalesTargetDTO salesTargetDTO) {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if(principal instanceof UserDTO userDTO){
+            salesTargetDTO.setUserId(userDTO.getUsername());
+            salesTargetDTO.setWriter(userDTO.getEmpName());
+        } else {
+            throw new IllegalStateException("주문 등록을 위한 사용자 인증 정보를 찾을 수 없습니다. (비정상 접근)");
+        }
+
         SalesTarget salesTarget = modelMapper.map(salesTargetDTO, SalesTarget.class);
         SalesTarget savedSalesTarget = salesTargetRepository.save(salesTarget);
         return savedSalesTarget.getTargetId();
