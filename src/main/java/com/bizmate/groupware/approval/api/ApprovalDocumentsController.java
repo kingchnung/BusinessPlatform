@@ -107,16 +107,9 @@ public class ApprovalDocumentsController {
             // ✅ UserPrincipal → UserDTO 변환
             UserDTO loginUser = new UserDTO(
                     principal.getUserId(),
-                    null, // empId는 service 내부에서 employee 관계로 자동 매핑됨
                     principal.getUsername(),
-                    "N/A",
                     principal.getEmpName(),
-                    true,
-                    true,
-                    principal.getEmail(),
-                    null,
-                    null,
-                    List.of(new SimpleGrantedAuthority("ROLE_USER"))
+                    principal.getEmail()
             );
 
             // ✅ 작성자 정보 세팅 (표시용)

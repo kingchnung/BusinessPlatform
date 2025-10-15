@@ -76,6 +76,29 @@ public class UserDTO extends User {
         this.permissionNames = permissionNames;
     }
 
+    /**
+     * ✅ “비밀번호 불필요한” 경량 생성자 (컨트롤러 등에서 간단히 생성할 때)
+     */
+    public UserDTO(Long userId, String username, String empName, String email) {
+        super(
+                username != null ? username : "anonymous",
+                "dummy-password",
+                true, true, true,
+                true,
+                List.of(new SimpleGrantedAuthority("ROLE_USER"))
+        );
+        this.userId = userId;
+        this.empId = null;
+        this.username = username;
+        this.pwHash = "dummy-password";
+        this.empName = empName;
+        this.email = email;
+        this.isAccountNonLocked = true;
+        this.isActive = true;
+        this.roleNames = List.of("USER");
+        this.permissionNames = List.of();
+    }
+
     // --- Private Static 헬퍼 메서드 영역 ---
 
     /**

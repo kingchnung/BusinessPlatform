@@ -2,6 +2,7 @@ package com.bizmate.groupware.approval.dto;
 
 import com.bizmate.groupware.approval.domain.*;
 import com.bizmate.hr.domain.Department;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
@@ -39,6 +40,7 @@ public class ApprovalDocumentsDto {
 
     @NotNull(message = "작성자 ID는 필수입니다.")
     private Long userId;
+    @JsonProperty("username")
     private String username; //작성자 아이디(사번)
     private String authorName;
 

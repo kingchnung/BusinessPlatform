@@ -464,6 +464,7 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
     }
 
     private ApprovalDocuments mapDtoToEntity(ApprovalDocumentsDto dto, DocumentStatus status) {
+        log.info("🧾 [mapDtoToEntity] 시작: username={}, userId={}", dto.getUsername(), dto.getUserId());
         ApprovalDocuments entity = new ApprovalDocuments();
 
         // 기본 필드
@@ -477,12 +478,12 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
         if (dto.getApprovalLine() != null && !dto.getApprovalLine().isEmpty()) {
             List<ApproverStep> fixedLine = dto.getApprovalLine().stream()
                     .map(step -> {
-                        String approverUserName = step.approverId() != null ? step.approverId() : null;
+                        String approverUsername = step.approverId() != null ? step.approverId() : null;
                         String approverName = step.approverName();
 
                         // approverName이 비어있다면 DB에서 가져오기
-                        if ((approverName == null || approverName.isBlank()) && approverUserName != null) {
-                            approverName = userRepository.findByUsername(approverUserName)
+                        if ((approverName == null || approverName.isBlank()) && approverUsername != null) {
+                            approverName = userRepository.findByUsername(approverUsername)
                                     .map(UserEntity::getEmpName)
                                     .orElse("미등록 사용자");
                         }
@@ -490,7 +491,7 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
                         // ✅ record는 불변이라 새 객체 생성 필요
                         return new ApproverStep(
                                 step.order(),
-                                approverUserName != null ? approverUserName : "-",
+                                approverUsername != null ? approverUsername : "-",
                                 approverName,
                                 step.decision(),
                                 step.comment(),
@@ -506,11 +507,13 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
 
         entity.setCurrentApproverIndex(0);
 
+        //사용자 매핑
         UserEntity userEntity = null;
 
         // 1️⃣ username 우선 조회
         if (dto.getUsername() != null && !dto.getUsername().isBlank()) {
             userEntity = userRepository.findByUsername(dto.getUsername()).orElse(null);
+            log.debug("🔍 findByUsername 결과: {}", userEntity);
         }
 
         // 2️⃣ fallback: username이 없거나 매칭 실패 시 userId로 조회
