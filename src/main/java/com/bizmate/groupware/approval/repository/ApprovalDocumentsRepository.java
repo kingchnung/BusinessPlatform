@@ -2,8 +2,10 @@ package com.bizmate.groupware.approval.repository;
 
 import com.bizmate.groupware.approval.domain.ApprovalDocuments;
 import com.bizmate.groupware.approval.domain.DocumentStatus;
+import com.bizmate.groupware.approval.dto.ApprovalDocumentsDto;
 import com.bizmate.hr.domain.Department;
 import com.bizmate.hr.domain.UserEntity;
+import com.bizmate.hr.dto.user.UserDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -39,4 +41,5 @@ public interface ApprovalDocumentsRepository extends JpaRepository<ApprovalDocum
 
     /** 페이징 검색 */
     Page<ApprovalDocuments> findAll(Pageable pageable);
+
 }

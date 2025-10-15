@@ -34,9 +34,14 @@ public class Board extends BaseEntity {
     private String authorName;
 
     @Column(nullable = false)
+    private Long authorId;
+
+    @Column(nullable = false)
+    @Builder.Default
     private Boolean isDeleted = false;
 
     @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
     private List<Comment> comments = new ArrayList<>();
 
 }
