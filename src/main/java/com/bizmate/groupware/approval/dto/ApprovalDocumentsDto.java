@@ -39,6 +39,7 @@ public class ApprovalDocumentsDto {
 
     @NotNull(message = "작성자 ID는 필수입니다.")
     private Long userId;
+    private String username; //작성자 아이디(사번)
     private String authorName;
 
     @NotNull(message = "역할 ID는 필수입니다.")
@@ -84,6 +85,7 @@ public class ApprovalDocumentsDto {
                 .departmentName(entity.getDepartment() != null ? entity.getDepartment().getDeptName() : null)
                 .finalDocNumber(entity.getFinalDocNumber())
                 .userId(entity.getAuthorUser() != null ? entity.getAuthorUser().getUserId() : null)
+                .username(entity.getAuthorUser() != null ? entity.getAuthorUser().getUsername() : null)
                 .empId(entity.getAuthorEmployee() != null ? entity.getAuthorEmployee().getEmpId() : null)
                 .roleId(entity.getAuthorRole() != null ? entity.getAuthorRole().getRoleId() : null)
                 .docContent(entity.getDocContent())

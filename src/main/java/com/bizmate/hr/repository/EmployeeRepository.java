@@ -29,5 +29,6 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
     @Query("SELECT e FROM Employee e LEFT JOIN FETCH e.department LEFT JOIN FETCH e.position WHERE e.empId = :empId")
     Optional<Employee> findEmployeeDetailById(@Param("empId") Long empId);
 
+    @Query("SELECT MAX(e.empNo) FROM Employee e")
     String findMaxEmpNO();
 }

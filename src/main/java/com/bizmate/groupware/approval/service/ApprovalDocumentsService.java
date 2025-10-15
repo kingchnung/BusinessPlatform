@@ -16,9 +16,9 @@ import java.util.List;
 public interface ApprovalDocumentsService {
 
     /* ----------------------------- 작성/상신 ------------------------------ */
-    ApprovalDocumentsDto draft(ApprovalDocumentsDto dto) throws JsonProcessingException;
+    ApprovalDocumentsDto draft(ApprovalDocumentsDto dto, UserDTO loginUser) throws JsonProcessingException;
 
-    ApprovalDocumentsDto submit(ApprovalDocumentsDto dto) throws JsonProcessingException;
+    ApprovalDocumentsDto submit(ApprovalDocumentsDto dto, UserDTO loginUser) throws JsonProcessingException;
 
     /* ----------------------------- 결재/반려/삭제 ------------------------------ */
     ApprovalDocumentsDto approve(String docId, UserDTO loginUser);
@@ -43,4 +43,5 @@ public interface ApprovalDocumentsService {
 
     List<ApprovalDocumentsDto> findByStatus(DocumentStatus status);
 
+    ApprovalDocumentsDto resubmit(String docId, ApprovalDocumentsDto dto, UserDTO loginUser);
 }

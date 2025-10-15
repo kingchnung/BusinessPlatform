@@ -43,11 +43,16 @@ public class DataInitializer implements CommandLineRunner {
         // 1️⃣ 기본 코드 데이터 세팅 (중복 방지)
         initBaseData();
 
-        // 2️⃣ Employee ↔ User 정합성 점검 및 보정
+        // 2️⃣ 직원이 없을 경우 샘플 데이터 자동 생성
+        initDefaultEmployeesAndUsers();
+
+        // 3️⃣ Employee ↔ User 정합성 점검
         syncEmployeesAndUsers();
 
         log.info("✅ DataInitializer 실행 완료 (코드 + 정합성 보정 완료)");
     }
+
+
 
     // =========================================================
     // 1️⃣ 기본 코드/부서 초기화 (중복 방지 로직 유지)
@@ -86,6 +91,44 @@ public class DataInitializer implements CommandLineRunner {
     }
 
     // =========================================================
+    // 2️⃣ 직원(Employee) + 사용자(UserEntity) 자동 생성 (비어있을 때만)
+    // =========================================================
+    private void initDefaultEmployeesAndUsers() {
+        if (employeeRepository.count() > 0) {
+            log.info("✅ 기존 직원 데이터가 존재하므로 샘플 생성 생략");
+            return;
+        }
+
+        log.info("🚀 직원 데이터가 없으므로 기본 샘플 3명을 생성합니다.");
+
+        Department deptMgmt = departmentRepository.findByDeptCode("10").orElseThrow();
+        Department deptDev1 = departmentRepository.findByDeptCode("31").orElseThrow();
+        Position posCEO = positionRepository.findByPositionName("CEO").orElseThrow();
+        Position posManager = positionRepository.findByPositionName("팀장").orElseThrow();
+        Position posStaff = positionRepository.findByPositionName("사원").orElseThrow();
+        Grade gradeExec = gradeRepository.findByGradeName("임원").orElseThrow();
+        Grade gradeStaff = gradeRepository.findByGradeName("사원/대리").orElseThrow();
+
+        Role roleCEO = roleRepository.findByRoleName("CEO").orElseThrow();
+        Role roleManager = roleRepository.findByRoleName("MANAGER").orElseThrow();
+        Role roleEmployee = roleRepository.findByRoleName("EMPLOYEE").orElseThrow();
+
+        // 👔 CEO
+        Employee ceo = createEmployee("5010001", "김철수", deptMgmt, posCEO, gradeExec, "ACTIVE");
+        createUserAccount(ceo, roleCEO, "ceo");
+
+        // 👩‍💼 팀장
+        Employee manager = createEmployee("5031001", "이영희", deptDev1, posManager, gradeStaff, "ACTIVE");
+        createUserAccount(manager, roleManager, null);
+
+        // 👨‍💻 사원
+        Employee staff = createEmployee("5031002", "박민수", deptDev1, posStaff, gradeStaff, "ACTIVE");
+        createUserAccount(staff, roleEmployee, null);
+
+        log.info("✅ 기본 직원 3명 및 UserEntity 생성 완료");
+    }
+
+    // =========================================================
     // 2️⃣ Employee ↔ User 동기화 (누락 생성 + 복제 필드 업데이트)
     // =========================================================
     private void syncEmployeesAndUsers() {
@@ -108,7 +151,7 @@ public class DataInitializer implements CommandLineRunner {
 
             if (optUser.isEmpty()) {
                 // 🟢 직원은 있는데 User가 없을 경우 → 자동 생성
-                createUserAccount(emp, defaultRole);
+                createUserAccount(emp, defaultRole, null);
                 created++;
             } else {
                 // 🟢 둘 다 있을 경우 → 복제 필드 동기화
@@ -258,7 +301,7 @@ public class DataInitializer implements CommandLineRunner {
         return employeeRepository.save(emp);
     }
 
-    private UserEntity createUserAccount(Employee employee, Role role) {
+    private UserEntity createUserAccount(Employee employee, Role role, String fixedUsername) {
         Set<Role> roles = new HashSet<>(Collections.singletonList(role));
 
         UserEntity user = UserEntity.builder()

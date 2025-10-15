@@ -28,7 +28,7 @@ public class JWTProvider {
 
     // ★★★ 1. 설정값 (코드 내장) ★★★
     // 비밀 키: 보안상 32바이트 이상 권장. (테스트용)
-    private static final String SECRET_KEY = "1234567890123456789012345678901234567890";
+    private static final String SECRET_KEY = "bizmate-jwt-secret-key-very-long-unique-string-2025!";
     private static final Key ks = Keys.hmacShaKeyFor(SECRET_KEY.getBytes(StandardCharsets.UTF_8));
     private final long accessTokenValidityMillis = 1000L * 60 * 60;    // 1시간
     private final long refreshTokenValidityMillis = 1000L * 60 * 60 * 24 * 7; // 7일
@@ -40,7 +40,28 @@ public class JWTProvider {
      * Access Token을 생성합니다.
      */
     public String createAccessToken(UserPrincipal principal) {
-        return createToken(principal, accessTokenValidityMillis);
+        log.info("🔐 SECRET_KEY length: {}", SECRET_KEY.length());
+        Map<String, Object> claims = new HashMap<>();
+
+        claims.put("uid", principal.getUserId());
+        claims.put("username", principal.getUsername()); // ✅ 추가: username
+        claims.put("empName", principal.getEmpName());// ✅ 추가: empName
+        claims.put("email", principal.getEmail());//추가: email
+        claims.put("roles", principal.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.toList()));
+        claims.put("type", "access");
+
+        Date now = new Date();
+        Date expiry = new Date(now.getTime() + accessTokenValidityMillis);
+
+        return Jwts.builder()
+                .setClaims(claims)
+                .setSubject(principal.getUsername()) // ✅ 여전히 subject도 username으로 유지
+                .setIssuedAt(now)
+                .setExpiration(expiry)
+                .signWith(ks, SignatureAlgorithm.HS256)
+                .compact();
     }
 
     /**
@@ -50,6 +71,7 @@ public class JWTProvider {
     public String createRefreshToken(UserPrincipal principal) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("uid", principal.getUserId());
+        claims.put("username", principal.getUsername());
         claims.put("type", "refresh");
 
         Date now = new Date();
@@ -65,8 +87,18 @@ public class JWTProvider {
     }
 
     private String createToken(UserPrincipal principal, long validityMillis) {
+        log.info("🔍 createAccessToken() principal 정보 확인:");
+        log.info(" - userId: {}", principal.getUserId());
+        log.info(" - username: {}", principal.getUsername());
+        log.info(" - empName: {}", principal.getEmpName());
+        log.info(" - email: {}", principal.getEmail());
+
         Map<String, Object> claims = new HashMap<>();
+
         claims.put("uid", principal.getUserId());
+        claims.put("username", principal.getUsername());
+        claims.put("empName", principal.getEmpName());
+        claims.put("email", principal.getEmail());
         claims.put("roles", principal.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.toList()));
@@ -106,7 +138,13 @@ public class JWTProvider {
         Claims claims = parseClaims(token);
 
         String username = claims.getSubject();
+        if(username == null) {
+            username = claims.getSubject();
+        }
+
         Long userId = claims.get("uid", Long.class);
+        String empName = claims.get("empName", String.class);
+        String email = claims.get("email", String.class);
 
         @SuppressWarnings("unchecked")
         List<String> roles = (List<String>) claims.getOrDefault("roles", Collections.emptyList());
@@ -123,6 +161,8 @@ public class JWTProvider {
                 false,
                 authorities
         );
+        principal.setEmpName(empName);
+        principal.setEmail(email);
 
         return new UsernamePasswordAuthenticationToken(principal, null, authorities);
     }
