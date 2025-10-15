@@ -3,8 +3,8 @@ package com.bizmate.project.domain;
 
 import com.bizmate.hr.domain.UserEntity;
 import com.bizmate.project.domain.auditings.BaseTimeEntity;
-import com.bizmate.project.domain.enums.ProjectImportance;
-import com.bizmate.project.domain.enums.ProjectStatus;
+import com.bizmate.project.domain.enums.project.ProjectImportance;
+import com.bizmate.project.domain.enums.project.ProjectStatus;
 import com.bizmate.salesPages.client.domain.Client;
 import jakarta.persistence.*;
 import lombok.*;

@@ -7,10 +7,10 @@ import org.springframework.stereotype.Service;
 
 @Service
 public interface SalesService {
-    public String register(SalesDTO salesDTO);
-    public SalesDTO get(String salesId);
-    public void modify(SalesDTO salesDTO);
-    public void remove(String salesId);
-    public PageResponseDTO<SalesDTO> list(PageRequestDTO pageRequestDTO);
+    String register(SalesDTO salesDTO);
+    SalesDTO get(String salesId);
+    void modify(SalesDTO salesDTO);
+    void remove(String salesId);
+    PageResponseDTO<SalesDTO> list(PageRequestDTO pageRequestDTO);
 }
 

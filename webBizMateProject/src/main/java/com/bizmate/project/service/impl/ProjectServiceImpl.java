@@ -3,8 +3,8 @@ package com.bizmate.project.service.impl;
 import com.bizmate.hr.domain.UserEntity;
 import com.bizmate.hr.repository.UserRepository;
 import com.bizmate.project.domain.Project;
-import com.bizmate.project.domain.enums.ProjectImportance;
-import com.bizmate.project.domain.enums.ProjectStatus;
+import com.bizmate.project.domain.enums.project.ProjectImportance;
+import com.bizmate.project.domain.enums.project.ProjectStatus;
 import com.bizmate.project.dto.PageRequestDTO;
 import com.bizmate.project.dto.PageResponseDTO;
 import com.bizmate.project.dto.request.ProjectRequestDTO;
@@ -137,7 +137,7 @@ public class ProjectServiceImpl implements ProjectService {
                 project.setProjectStatus(ProjectStatus.valueOf(requestDTO.getProjectStatus()));
             }
         } catch (IllegalArgumentException e) {
-            throw new RuntimeException("유효하지 않은 프로젝트 상태 값입니다: " + requestDTO.getProjectStatus());
+            throw new RuntimeException("유효하지 않은 프로젝트 상태 값입니다: " + requestDTO.getProjectStatus(),e);
         }
 
         try {
@@ -146,7 +146,7 @@ public class ProjectServiceImpl implements ProjectService {
             }
         }
         catch (IllegalArgumentException e) {
-            throw new RuntimeException("유효하지 않은 프로젝트 중요도 값입니다: " + requestDTO.getProjectImportance());
+            throw new RuntimeException("유효하지 않은 프로젝트 중요도 값입니다: " + requestDTO.getProjectImportance(),e);
         }
     }
 

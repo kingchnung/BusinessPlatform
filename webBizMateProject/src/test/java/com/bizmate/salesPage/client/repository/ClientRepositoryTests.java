@@ -22,7 +22,7 @@ public class ClientRepositoryTests {
 
     @Test
     public void testInsert(){
-        for(int i = 1; i <= 10; i++){
+        for(int i = 11; i <= 30; i++){
             Client client = Client.builder()
                     .clientId("132-86-18174-" + i)
                     .clientCompany("테스트용" + i)
@@ -35,11 +35,11 @@ public class ClientRepositoryTests {
 
     @Test
     public void testRead() {
-        Long clientNo = 21L;
+        Long clientNo = 10L;
 
         Optional<Client> result = clientRepository.findById(clientNo);
         Client client = result.orElseThrow();
-        log.info("데이터조회(21L): {}",client);
+        log.info("데이터조회(10L): {}",client);
     }
 
     @Test

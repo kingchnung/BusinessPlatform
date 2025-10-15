@@ -1,4 +1,4 @@
-package com.bizmate.project.domain.enums;
+package com.bizmate.project.domain.enums.project;
 
 import lombok.Getter;
 

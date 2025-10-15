@@ -8,15 +8,15 @@ import com.bizmate.project.dto.response.ProjectResponseDTO;
 
 public interface ProjectService {
 
-    public Long register(ProjectRequestDTO projectRequestDTO);
+    Long register(ProjectRequestDTO projectRequestDTO);
 
-    public String getProjectNo(UserEntity userEntity);
+    String getProjectNo(UserEntity userEntity);
 
-    public ProjectResponseDTO get(Long no);
+    ProjectResponseDTO get(Long no);
 
-    public void modify(ProjectRequestDTO requestDTO, Long id);
+    void modify(ProjectRequestDTO requestDTO, Long id);
 
-    public void remove(Long no);
+    void remove(Long no);
 
-    public PageResponseDTO<ProjectResponseDTO> list (PageRequestDTO RequestDTO);
+    PageResponseDTO<ProjectResponseDTO> list(PageRequestDTO RequestDTO);
 }

@@ -9,13 +9,13 @@ import java.util.List;
 
 @Service
 public interface ClientService {
-    public Long clientRegister(ClientDTO clientDTO);
+    Long clientRegister(ClientDTO clientDTO);
 
 //    List<String> register(List<ClientDTO> clientDTOList);
 
-    public ClientDTO clientGet(Long clientNo);
-    public void clientModify(ClientDTO clientDTO);
-    public void clientRemove(Long clientNo);
-    public PageResponseDTO<ClientDTO> clientList(PageRequestDTO pageRequestDTO);
+    ClientDTO clientGet(Long clientNo);
+    void clientModify(ClientDTO clientDTO);
+    void clientRemove(Long clientNo);
+    PageResponseDTO<ClientDTO> clientList(PageRequestDTO pageRequestDTO);
 
 }

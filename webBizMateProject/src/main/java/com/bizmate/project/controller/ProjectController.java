@@ -36,16 +36,16 @@ public class ProjectController {
     // DB 입력
     @PostMapping(value = "/")
     //@PreAuthorize() 나중에  관리자 로그인 권한 추가
-    public Map<String, Long> register(@RequestBody ProjectRequestDTO RequestDTO){
-        Long id =  projectService.register(RequestDTO);
-        return Map.of("NO",id);
+    public Map<String, Long> register(@RequestBody ProjectRequestDTO requestDTO){
+        Long id =  projectService.register(requestDTO);
+        return Map.of("정상 id: ",id);
     }
 
     // 수정
     @PutMapping("/{id}")
-    //@PreAuthorize() 나중에 관리자 로그인 권한 추가
-    public Map<String,String> modify (@PathVariable(name = "id") Long id,
-                                      @RequestBody ProjectRequestDTO requestDTO){
+    //@PreAuthorize(hashRole ) 나중에 관리자 로그인 권한 추가
+    public Map<String,String> modify (@RequestBody ProjectRequestDTO requestDTO,
+                                      @PathVariable(name = "id") Long id){
         projectService.modify(requestDTO, id);
         return Map.of("RESULT","SUCCESS");
     }

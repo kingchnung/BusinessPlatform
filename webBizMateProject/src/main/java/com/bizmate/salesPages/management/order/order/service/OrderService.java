@@ -7,9 +7,9 @@ import org.springframework.stereotype.Service;
 
 @Service
 public interface OrderService {
-    public String register(OrderDTO orderDTO);
-    public OrderDTO get(String orderId);
-    public void modify(OrderDTO orderDTO);
-    public void remove(String orderId);
-    public PageResponseDTO<OrderDTO> list(PageRequestDTO pageRequestDTO);
+    String register(OrderDTO orderDTO);
+    OrderDTO get(String orderId);
+    void modify(OrderDTO orderDTO);
+    void remove(String orderId);
+    PageResponseDTO<OrderDTO> list(PageRequestDTO pageRequestDTO);
 }

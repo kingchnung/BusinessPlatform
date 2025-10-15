@@ -1,6 +1,7 @@
 package com.bizmate.project.domain;
 
-import com.bizmate.project.domain.enums.AssignStatus;
+import com.bizmate.project.domain.enums.task.TaskPriority;
+import com.bizmate.project.domain.enums.task.TaskStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -17,7 +18,7 @@ import java.time.LocalDateTime;
         sequenceName = "assign_seq",
         initialValue = 1,
         allocationSize = 1)
-public class Assign {
+public class Task {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE , generator = "assign_generator")
@@ -28,10 +29,11 @@ public class Assign {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    @Builder.Default
-    private AssignStatus taskPriority = AssignStatus.BEFORE_START;
+    private TaskStatus status;
 
-
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private TaskPriority priority;
 
     @Column
     private LocalDateTime taskStartDate;
@@ -41,7 +43,12 @@ public class Assign {
 
     @PrePersist
     public void PrePersist() {
-
+        if(status == null){
+            status = TaskStatus.BEFORE_START;
+        }
+        if(priority == null){
+            priority = TaskPriority.LOW;
+        }
     }
 
 

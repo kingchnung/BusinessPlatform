@@ -1,9 +1,9 @@
-package com.bizmate.project.domain.enums;
+package com.bizmate.project.domain.enums.task;
 
 import lombok.Getter;
 
 @Getter
-public enum AssignStatus {
+public enum TaskStatus {
     BEFORE_START("업무 시작 전"),
     IN_PROGRESS("업무 진행 중"),
     COMPLETED("업무 완료");
@@ -12,7 +12,7 @@ public enum AssignStatus {
     private final String status;
 
 
-    AssignStatus(String status){
+    TaskStatus(String status) {
         this.status = status;
     }
 

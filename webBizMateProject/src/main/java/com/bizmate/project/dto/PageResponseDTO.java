@@ -53,7 +53,7 @@ public class PageResponseDTO<E> {
         this.prev = start > 1;
         // ture면 "이전"버튼 활성화
         // 즉 시작번호가 1보타 크면 이전 그룹이 존재한다는 뜻
-        this.next = totalCount > end * pageRequestDTO.getSize();
+        this.next = totalCount > (long) end * pageRequestDTO.getSize();
         // true면 "다음"버튼 활성화
         // 현재 그룹의 끝(end)페이지까지 보여주되 데이터 남아있으면 "다음"이 있다
         this.pageNumList = IntStream.rangeClosed(start, end).boxed().collect(Collectors.toList());

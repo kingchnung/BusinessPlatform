@@ -141,41 +141,41 @@ public class CustomSecurityConfig {
         RoleHierarchyImpl roleHierarchy = new RoleHierarchyImpl();
         // === [1️⃣ 최상위 계층] ===
         // CEO → 시스템 관리자 전체 권한 포함
-        StringBuilder hierarchy = new StringBuilder("""
-        ROLE_CEO > ROLE_ADMIN
-        ROLE_ADMIN > sys:admin
-        """);
 
         // === [2️⃣ 시스템 관리 계층] ===
-        hierarchy.append("""
-        sys:admin > sys:manage
-        sys:manage > data:write:all
-        sys:manage > data:read:all
-        """);
 
-        // === [3️⃣ 일반 역할 계층] ===
-        hierarchy.append("""
-        ROLE_MANAGER > ROLE_EMPLOYEE
-        """);
+        String hierarchy = """
+                ROLE_CEO > ROLE_ADMIN
+                ROLE_ADMIN > sys:admin
+                """ + """
+                sys:admin > sys:manage
+                sys:manage > data:write:all
+                sys:manage > data:read:all
+                """ +
 
-        // === [4️⃣ 읽기 권한 계층] ===
-        hierarchy.append("""
-        data:read:all > data:read:self
-        data:read:all > emp:read
-        data:read:all > dept:read
-        data:read:all > pos:read
-        data:read:all > grade:read
-        """);
+                // === [3️⃣ 일반 역할 계층] ===
+                """
+                        ROLE_MANAGER > ROLE_EMPLOYEE
+                        """ +
 
-        // === [5️⃣ 쓰기 권한 계층] ===
-        hierarchy.append("""
-        data:write:all > data:write:self
-        data:write:all > emp:create
-        data:write:all > emp:update
-        data:write:all > emp:delete
-        """);
+                // === [4️⃣ 읽기 권한 계층] ===
+                """
+                        data:read:all > data:read:self
+                        data:read:all > emp:read
+                        data:read:all > dept:read
+                        data:read:all > pos:read
+                        data:read:all > grade:read
+                        """ +
 
-        roleHierarchy.setHierarchy(hierarchy.toString());
+                // === [5️⃣ 쓰기 권한 계층] ===
+                """
+                        data:write:all > data:write:self
+                        data:write:all > emp:create
+                        data:write:all > emp:update
+                        data:write:all > emp:delete
+                        """;
+
+        roleHierarchy.setHierarchy(hierarchy);
         return roleHierarchy;
     }
 }
