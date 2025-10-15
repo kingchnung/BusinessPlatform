@@ -67,17 +67,13 @@ public class ApprovalDocumentsController {
             // ✅ UserPrincipal → UserDTO 변환
             UserDTO loginUser = new UserDTO(
                     principal.getUserId(),
-                    null,
                     principal.getUsername(),
-                    "N/A",
                     principal.getEmpName(),
-                    true,
-                    true,
-                    principal.getEmail(),
-                    null,
-                    null,
-                    List.of(new SimpleGrantedAuthority("ROLE_USER"))
+                    principal.getEmail()
             );
+
+            dto.setUserId(loginUser.getUserId());
+            dto.setAuthorName(loginUser.getEmpName());
 
             // ✅ 수정된 Service 호출 방식 (인자 2개)
             ApprovalDocumentsDto result = approvalDocumentsService.draft(dto, loginUser);
@@ -142,20 +138,17 @@ public class ApprovalDocumentsController {
         try {
             log.info("🔁 [문서 재상신 요청] 문서ID={}, 사용자(사번)={}", docId, principal.getUsername());
 
-            // UserPrincipal → UserDTO 변환
+            // ✅ UserPrincipal → UserDTO 변환
             UserDTO loginUser = new UserDTO(
                     principal.getUserId(),
-                    null, // empId 사용 안함
-                    principal.getUsername(), // 사번 기준
-                    "N/A",
+                    principal.getUsername(),
                     principal.getEmpName(),
-                    true,
-                    true,
-                    principal.getEmail(),
-                    null,
-                    null,
-                    List.of(new SimpleGrantedAuthority("ROLE_USER"))
+                    principal.getEmail()
             );
+
+            // ✅ 작성자 정보 세팅 (표시용)
+            dto.setUserId(loginUser.getUserId());
+            dto.setAuthorName(loginUser.getEmpName());
 
             ApprovalDocumentsDto result = approvalDocumentsService.resubmit(docId, dto, loginUser);
             return ResponseEntity.ok(result);
@@ -180,18 +173,12 @@ public class ApprovalDocumentsController {
         try {
             log.info("✅ [문서 승인 요청] 문서ID={}, 승인자={}", docId, principal.getEmpName());
 
+            // ✅ UserPrincipal → UserDTO 변환
             UserDTO loginUser = new UserDTO(
                     principal.getUserId(),
-                    null,
                     principal.getUsername(),
-                    "N/A",
                     principal.getEmpName(),
-                    true,
-                    true,
-                    principal.getEmail(),
-                    null,
-                    null,
-                    List.of(new SimpleGrantedAuthority("ROLE_USER"))
+                    principal.getEmail()
             );
 
             ApprovalDocumentsDto result = approvalDocumentsService.approve(docId, loginUser);
@@ -220,16 +207,9 @@ public class ApprovalDocumentsController {
             // ✅ UserPrincipal → UserDTO 변환
             UserDTO loginUser = new UserDTO(
                     principal.getUserId(),
-                    null,
                     principal.getUsername(),
-                    "N/A",
                     principal.getEmpName(),
-                    true,
-                    true,
-                    principal.getEmail(),
-                    null,
-                    null,
-                    List.of(new SimpleGrantedAuthority("ROLE_USER"))
+                    principal.getEmail()
             );
 
             log.info("🔴 반려 요청: docId={}, user={}, reason={}", docId, loginUser.getEmpName(), reason);
@@ -244,6 +224,28 @@ public class ApprovalDocumentsController {
             log.error("❌ 반려 처리 중 예외 발생", e);
             throw new VerificationFailedException("문서 반려 처리 중 오류가 발생했습니다.");
         }
+    }
+
+    @DeleteMapping("/{docId}")
+    public ResponseEntity<?> deleteDocument(
+            @PathVariable String docId,
+            @RequestParam(required = false) String reason,
+            @AuthenticationPrincipal UserPrincipal principal) {
+
+        UserDTO user = new UserDTO(
+                principal.getUserId(),
+                principal.getEmpId(),
+                principal.getUsername(),
+                principal.getPassword(),
+                principal.getEmpName(),
+                true, true,
+                principal.getEmail(),
+                null, null,
+                List.of()
+        );
+
+        approvalDocumentsService.logicalDelete(docId, user, reason != null ? reason : "삭제 사유 없음");
+        return ResponseEntity.ok(Map.of("message", "문서가 논리적으로 삭제되었습니다."));
     }
 
 }

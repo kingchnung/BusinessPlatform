@@ -57,8 +57,8 @@ public class JWTProvider {
         Date expiry = new Date(now.getTime() + refreshTokenValidityMillis);
 
         return Jwts.builder()
-                .setSubject(principal.getUsername())
                 .setClaims(claims)
+                .setSubject(principal.getUsername())
                 .setIssuedAt(now)
                 .setExpiration(expiry)
                 .signWith(ks, SignatureAlgorithm.HS256 )
@@ -120,8 +120,8 @@ public class JWTProvider {
     public Authentication getAuthentication(String token) {
         Claims claims = parseClaims(token);
 
-        String username = claims.getSubject();
-        if(username == null) {
+        String username = claims.get("username", String.class);
+        if (username == null) {
             username = claims.getSubject();
         }
 

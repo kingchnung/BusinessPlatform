@@ -35,12 +35,12 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
 
     private final ApprovalDocumentsRepository approvalDocumentsRepository;
@@ -237,6 +237,7 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
    ✅ ③ 승인 (APPROVE) - 결재선 순서 기반 다단계 승인
    ------------------------------------------------------------- */
     @Override
+    @Transactional
     public ApprovalDocumentsDto approve(String docId, UserDTO loginUser) {
         ApprovalDocuments document = approvalDocumentsRepository.findById(docId)
                 .orElseThrow(() -> new VerificationFailedException("문서를 찾을 수 없습니다."));
@@ -261,7 +262,7 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
                 current.approverId(),
                 current.approverName(),
                 Decision.APPROVED,
-                "", // 코멘트 없음
+                "",
                 LocalDateTime.now()
         );
         line.set(idx, approved);
@@ -274,13 +275,15 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
         // 🔹 변경점: 다음 결재자 존재 여부에 따라 상태 및 인덱스 이동
         if (idx + 1 < line.size()) {
             document.setCurrentApproverIndex(idx + 1);
-            document.setStatus(DocumentStatus.IN_PROGRESS);
-            log.info("🟢 {} 승인 완료 → 다음 결재자 대기 (idx={})", loginUser.getEmpName(), idx + 1);
         } else {
             document.setStatus(DocumentStatus.APPROVED);
+            document.setApprovedBy(loginUser.getEmpName());
+            document.setApprovedDate(LocalDateTime.now());
+            document.setApprovedEmpId(loginUser.getEmpId());
             log.info("✅ 모든 결재자 승인 완료 → 문서 최종 승인됨");
         }
 
+        document.setApprovalLine(line);
         document.markUpdated(loginUser);
 
         // 🔹 변경점: 즉시 DB 반영 (Dirty Checking 방지)
@@ -296,6 +299,7 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
    ✅ ④ 반려 (REJECT) - 결재선 순서 기반 반려 처리
    ------------------------------------------------------------- */
     @Override
+    @Transactional
     public ApprovalDocumentsDto reject(String docId, UserDTO loginUser, String reason) {
         log.info("🔴 [반려 처리] 문서ID={}, 반려자={}, 사유={}", docId, loginUser.getEmpName(), reason);
 
@@ -344,17 +348,18 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
        ⑤ 논리삭제 (DELETE)
        ------------------------------------------------------------- */
     @Override
+    @Transactional
     public void logicalDelete(String docId, UserDTO loginUser, String reason) {
         log.info("🗑️ [문서 삭제] 문서ID={}, 삭제자={}, 사유={}", docId, loginUser.getEmpName(), reason);
 
         ApprovalDocuments doc = approvalDocumentsRepository.findById(docId)
                 .orElseThrow(() -> new VerificationFailedException("문서를 찾을 수 없습니다."));
 
-        if (!doc.isDeletable())
-            throw new VerificationFailedException("DRAFT/REJECTED 상태만 삭제 가능합니다.");
 
         doc.markDeleted(loginUser, reason);
         approvalDocumentsRepository.save(doc);
+
+        log.info("✅ 문서 논리삭제 완료: docId={}, 상태={}", docId, doc.getStatus());
     }
 
     /* -------------------------------------------------------------
@@ -464,7 +469,7 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
     }
 
     private ApprovalDocuments mapDtoToEntity(ApprovalDocumentsDto dto, DocumentStatus status) {
-        log.info("🧾 [mapDtoToEntity] 시작: username={}, userId={}", dto.getUsername(), dto.getUserId());
+        log.info("🧾 [mapDtoToEntity] 결재선 원본: {}", dto.getApprovalLine());
         ApprovalDocuments entity = new ApprovalDocuments();
 
         // 기본 필드
@@ -484,6 +489,14 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
                         // approverName이 비어있다면 DB에서 가져오기
                         if ((approverName == null || approverName.isBlank()) && approverUsername != null) {
                             approverName = userRepository.findByUsername(approverUsername)
+                                    .or(() -> {
+                                        try {
+                                            Long idAsNumber = Long.parseLong(approverUsername);
+                                            return userRepository.findById(idAsNumber);
+                                        } catch (NumberFormatException e) {
+                                            return Optional.empty();
+                                        }
+                                    })
                                     .map(UserEntity::getEmpName)
                                     .orElse("미등록 사용자");
                         }
@@ -499,6 +512,7 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
                         );
                     })
                     .toList();
+            log.info("📋 [결재선 보정 완료] {}", fixedLine);
 
             entity.setApprovalLine(fixedLine);
         } else {
@@ -569,6 +583,8 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
         dto.setDepartmentId(dept.getDeptId());
         dto.setDepartmentName(dept.getDeptName());
         dto.setDepartmentCode(dept.getDeptCode());
+
+
 
         log.info("📋 DTO departmentCode={}, departmentId={}, userId={}, empId={}",
                 dto.getDepartmentCode(), dto.getDepartmentId(), dto.getUserId(), dto.getEmpId());

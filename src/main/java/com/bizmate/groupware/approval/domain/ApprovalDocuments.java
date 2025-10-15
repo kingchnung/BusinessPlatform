@@ -201,6 +201,7 @@ public class ApprovalDocuments extends BaseEntity {
         if (!isDeletable())
             throw new IllegalStateException("DRAFT 또는 REJECTED 상태의 문서만 삭제할 수 있습니다.");
 
+        this.currentApproverIndex = 0;
         this.status = DocumentStatus.DELETED;
         this.deletedBy = user.getEmpName();
         this.deletedEmpId = user.getEmpId();

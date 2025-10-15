@@ -24,4 +24,11 @@ public record ApproverStep(
         String comment,         // 코멘트(반려사유 포함)
         @JsonProperty("decidedAt")
         LocalDateTime decidedAt
-) {}
+) {
+    public ApproverStep {
+        approverId = (approverId == null || approverId.isBlank()) ? "-" : approverId;
+        approverName = (approverName == null || approverName.isBlank()) ? "미등록 사용자" : approverName;
+        decision = (decision == null) ? Decision.PENDING : decision;
+        comment = (comment == null) ? "" : comment;
+    }
+}
