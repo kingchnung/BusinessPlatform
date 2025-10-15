@@ -13,15 +13,16 @@ import java.time.LocalDate;
 @NoArgsConstructor
 public class EmployeeCreateRequestDTO {
 
+    private String empNo;           // 사번 (필수)
     private String empName;         // 직원명 (필수)
     private String gender;          // 성별
     private LocalDate birthDate;    // 생년월일
     private String phone;           // 전화번호 (필수)
     private String email;           // 이메일 (필수)
     private String address;         // 주소
-    private String deptCode;
-    private Long positionCode;        // 직위
-    private Long gradeCode;           // 직급 (필수)
+    private Long deptId;            // 부서 ID (FK)
+    private String position;        // 직위
+    private Integer rank;           // 직급 (필수)
     private LocalDate startDate;    // 입사일 (필수)
 
     // *관리자가 직접 입력하지 않는 필드: 퇴사일, 상태, 경력연수, 주민번호 마스킹 등은 제외*

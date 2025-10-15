@@ -37,11 +37,6 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public UserDTO createUserAccount(Employee employee, String initialPassword) {
-
-        if (userRepository.existsByUsername(employee.getEmpNo())) {
-            throw new IllegalStateException("이미 존재하는 사용자 계정명입니다: " + employee.getEmpNo());
-        }
-
         // 1. 비밀번호 암호화
         String encodedPassword = passwordEncoder.encode(initialPassword);
 
@@ -51,25 +46,14 @@ public class UserServiceImpl implements UserService {
         user.setPwHash(encodedPassword);
         user.setEmployee(employee);
         user.setIsLocked("N"); // 초기에는 잠금 해제 상태
-        user.setEmpName(employee.getEmpName());
-        user.setEmail(employee.getEmail());
-        user.setPhone(employee.getPhone());
-        user.setDeptName(employee.getDepartment().getDeptName());
-        user.setPositionName(employee.getPosition().getPositionName());
-        user.setDeptCode(employee.getDepartment().getDeptCode());
 
         // 3. 역할 초기 설정: 'EMPLOYEE' 역할을 부여합니다.
         Role employeeRole = roleRepository.findByRoleName("EMPLOYEE")
-                .orElseGet(() -> {
-                    Role newRole = new Role();
-                    newRole.setRoleName("EMPLOYEE");
-                    newRole.setDescription("기본 직원 역할");
-                    return roleRepository.save(newRole);
-                });
-
-        user.setRoles(new HashSet<>(Collections.singletonList(employeeRole)));
+                .orElseThrow(() -> new EntityNotFoundException("기본 역할 'EMPLOYEE'를 찾을 수 없습니다. Role 테이블 확인 필요."));
 
         // UserEntity의 @ManyToMany 관계 필드를 초기화하고 역할 추가
+        Set<Role> roles = new HashSet<>(Collections.singletonList(employeeRole));
+        user.setRoles(roles);
 
         // 4. 저장
         UserEntity savedUser = userRepository.save(user);
@@ -79,12 +63,6 @@ public class UserServiceImpl implements UserService {
         // savedUser 엔티티에는 영속성 컨텍스트에서 Role 및 Employee 정보가 로드되어야 UserDTO 변환이 정상 작동합니다.
         return UserDTO.fromEntity(savedUser);
     }
-    @Transactional
-    public UserDTO createUserAccount(Employee employee) {
-        // 내부에서 자동으로 "0000"을 초기 비밀번호로 지정
-        return createUserAccount(employee, "0000");
-    }
-
 
     /**
      * 전체 사용자 계정 목록을 조회합니다. (관리자 기능)

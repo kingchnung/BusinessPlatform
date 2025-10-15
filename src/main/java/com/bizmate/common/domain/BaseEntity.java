@@ -4,7 +4,6 @@ import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.MappedSuperclass;
 import lombok.Getter;
-import lombok.Setter;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
@@ -14,9 +13,6 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.time.LocalDateTime;
 
 /**
- * 모든 도메인 엔티티가 상속받는 기본 엔티티 클래스.
- * 데이터 생성 및 수정 시각과 작업자를 자동으로 기록(Auditing)합니다.
- * 이를 통해 모든 데이터에 대한 메타데이터 관리 및 추적이 용이해집니다.
  * ✅ BaseEntity
  * 모든 도메인 엔티티가 상속받는 공통 부모 클래스.
  * Auditing(Auto create/update tracking) + 도메인 내부 제어용 protected setter 제공.
@@ -24,7 +20,6 @@ import java.time.LocalDateTime;
 @Getter
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
-@Setter
 public abstract class BaseEntity {
 
     /** 생성 시각 */
