@@ -5,7 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Table(name = "comments")
+@Table(name = "BOARD_COMMENT")
 @Getter
 @Setter
 @Builder
@@ -18,19 +18,21 @@ public class Comment extends BaseEntity {
     private Long commentNo;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "board_id")
+    @JoinColumn(name = "board_no")
     private Board board;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 1000)
     private String content;
 
     @Column(nullable = false)
-    private Long authorId;
+    private String authorId;
 
     @Column(nullable = false)
     private String authorName; //익명 게시판의 경우 '익명' 표시
 
     @Column(nullable = false)
     @Builder.Default
-    private Boolean isDeleted = false;
+    private boolean isDeleted = false;
+
+    private boolean anonymous = false;
 }

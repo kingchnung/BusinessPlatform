@@ -14,5 +14,5 @@ public interface BoardRepository extends JpaRepository<Board, Long> {
     @Query("SELECT b FROM Board b WHERE b.isDeleted = false")
     List<Board> boardList();
 
-    List<Board> findByTypeAndIsDeletedFalseOrderByCreatedAtDesc(BoardType type);
+    List<Board> findByBoardTypeAndIsDeletedFalse(BoardType boardType);
 }

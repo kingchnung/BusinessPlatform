@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "boards")
+@Table(name = "BOARD")
 @Getter
 @Setter
 @Builder
@@ -22,7 +22,7 @@ public class Board extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private BoardType type;
+    private BoardType boardType;
 
     @Column(nullable = false)
     private String title;
@@ -34,11 +34,11 @@ public class Board extends BaseEntity {
     private String authorName;
 
     @Column(nullable = false)
-    private Long authorId;
+    private String authorId;
 
     @Column(nullable = false)
     @Builder.Default
-    private Boolean isDeleted = false;
+    private boolean isDeleted = false;
 
     @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default

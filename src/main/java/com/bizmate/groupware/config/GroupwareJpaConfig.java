@@ -1,4 +1,4 @@
-package com.bizmate.groupware;
+package com.bizmate.groupware.config;
 
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.annotation.Configuration;
