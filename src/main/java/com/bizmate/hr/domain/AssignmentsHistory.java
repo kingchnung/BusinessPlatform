@@ -87,8 +87,13 @@ public class AssignmentsHistory {
     private UserEntity createdBy;
 
     // 12. 등록일
-    @Column(name = "cre_date")
+    @Column(name = "cre_date", updatable = false)
     private LocalDateTime creDate = LocalDateTime.now(); // 객체 생성 시 현재 시간으로 기본값 설정
+
+    @PrePersist
+    public void prePersist(){
+        if(this.creDate == null) this.creDate = LocalDateTime.now();
+    }
 
     // 참고: 이 엔티티는 이력 기록용이므로 Setter는 사용하지 않고 Getter만 유지하는 것을 권장합니다.
     // Lombok의 @Builder를 사용하여 필요한 모든 필드를 초기화합니다.

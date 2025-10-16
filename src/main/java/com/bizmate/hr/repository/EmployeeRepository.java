@@ -29,6 +29,42 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
     @Query("SELECT e FROM Employee e LEFT JOIN FETCH e.department LEFT JOIN FETCH e.position WHERE e.empId = :empId")
     Optional<Employee> findEmployeeDetailById(@Param("empId") Long empId);
 
+    /**
+     * 📊 나이대별 인원 통계 (JPQL 표준 함수 사용)
+     * - JQL에서 지원하는 함수로 Oracle 환경에서 오류 해결
+     */
+    /**
+     * 📊 나이대별 인원 통계 (JPQL 수정)
+     */
+    @Query("""
+    SELECT
+        CASE
+            WHEN (EXTRACT(YEAR FROM CURRENT_DATE) - EXTRACT(YEAR FROM e.birthDate)) < 20 THEN '20대 미만'
+            WHEN (EXTRACT(YEAR FROM CURRENT_DATE) - EXTRACT(YEAR FROM e.birthDate)) >= 50 THEN '50대 이상'
+            ELSE CONCAT(FLOOR((EXTRACT(YEAR FROM CURRENT_DATE) - EXTRACT(YEAR FROM e.birthDate)) / 10) * 10, '대')
+        END AS age_group,
+        COUNT(e)
+    FROM Employee e
+    WHERE e.birthDate IS NOT NULL
+    GROUP BY age_group
+    ORDER BY age_group
+    """)
+    List<Object[]> getAgeStatistics();
+
+    /**
+     * 🎖️ 직급별 인원 통계
+     */
+    @Query("""
+            SELECT g.gradeName AS label, COUNT(e)
+            FROM Employee e
+            JOIN e.grade g
+            GROUP BY g.gradeName
+            ORDER BY g.gradeName
+            """)
+    List<Object[]> getGradeStatistics();
+
+    List<Employee> findByDepartment_DeptId(Long deptId);
+
     @Query("SELECT MAX(e.empNo) FROM Employee e")
     String findMaxEmpNO();
 

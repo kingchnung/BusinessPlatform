@@ -98,10 +98,12 @@ public class EmployeeController {
         return ResponseEntity.ok(employee);
     }
 
-    @GetMapping("/me/test")
-    public ResponseEntity<String> test(){
-        return ResponseEntity.ok("test");
+    @PreAuthorize("hasRole('ROLE_EMPLOYEE')")
+    @GetMapping("/byDepartment/{deptId}")
+    public List<EmployeeDTO> getEmployeesByDepartment(@PathVariable Long deptId) {
+        return employeeService.getEmployeesByDepartment(deptId);
     }
+
 
 
     // ★ 권한 설정: 'emp:delete' 권한이 있는 사용자만 접근 가능

@@ -21,6 +21,7 @@ public class EmployeeDTO {
     private String empNo;
     private String empName;
     private String deptName; // 부서명 (Dept 엔티티에서 추출)
+    private Long deptId;
     private Long positionCode;    // 직급 ID
     private String positionName;
     private String gender;
@@ -47,6 +48,7 @@ public class EmployeeDTO {
                 .email(employee.getEmail())
                 .address(employee.getAddress())
                 .gender(employee.getGender())
+                .deptId(employee.getDepartment() != null ? employee.getDepartment().getDeptId() : null)
                 .deptName(employee.getDepartment() != null ? employee.getDepartment().getDeptName() : null)
                 .positionCode(position != null ? position.getPositionCode() : null)
                 .positionName(position != null ? position.getPositionName() : null)
