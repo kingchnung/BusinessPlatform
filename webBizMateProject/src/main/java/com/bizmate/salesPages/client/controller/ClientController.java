@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/client")
+@RequestMapping("/sales/client")
 @RequiredArgsConstructor
 public class ClientController {
     private final ClientService clientService;

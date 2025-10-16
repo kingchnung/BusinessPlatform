@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/collection")
+@RequestMapping("/sales/collection")
 @RequiredArgsConstructor
 public class CollectionController {
     private final CollectionService collectionService;
