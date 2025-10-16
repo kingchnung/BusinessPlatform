@@ -123,6 +123,11 @@ public class EmployeeServiceImpl implements EmployeeService {
         employee.setEmail(requestDTO.getEmail());
         employee.setAddress(requestDTO.getAddress());
 
+        // ✅ 🔹 상태값(status) 갱신 추가
+        if (requestDTO.getStatus() != null) {
+            employee.setStatus(requestDTO.getStatus());
+        }
+
         // 🔹 FK 변경(선택적)
         if (requestDTO.getDeptCode() != null) {
             Department dept = departmentRepository.findByDeptCode(requestDTO.getDeptCode())
@@ -151,9 +156,29 @@ public class EmployeeServiceImpl implements EmployeeService {
         return EmployeeDTO.fromEntity(updatedEmployee);
     }
 
+    @Override
+    public List<EmployeeStatisticDTO> getAgeStatistics() {
+        List<Object[]> result = employeeRepository.getAgeStatistics();
+        return result.stream()
+                .map(r -> new EmployeeStatisticDTO((String) r[0], ((Number) r[1]).longValue()))
+                .collect(Collectors.toList());
+    }
 
+    @Override
+    public List<EmployeeStatisticDTO> getGradeStatistics() {
+        List<Object[]> result = employeeRepository.getGradeStatistics();
+        return result.stream()
+                .map(r -> new EmployeeStatisticDTO((String) r[0], ((Number) r[1]).longValue()))
+                .collect(Collectors.toList());
+    }
 
-
+    @Override
+    @Transactional(readOnly = true)
+    public List<EmployeeDTO> getEmployeesByDepartment(Long deptId) {
+        return employeeRepository.findByDepartment_DeptId(deptId).stream()
+                .map(EmployeeDTO::fromEntity)
+                .collect(Collectors.toList());
+    }
 
     @Override
     public void deleteEmployee(Long empId) {

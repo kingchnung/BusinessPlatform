@@ -1,9 +1,6 @@
 package com.bizmate.hr.service;
 
-import com.bizmate.hr.dto.employee.EmployeeCreateRequestDTO;
-import com.bizmate.hr.dto.employee.EmployeeDTO;
-import com.bizmate.hr.dto.employee.EmployeeDetailDTO;
-import com.bizmate.hr.dto.employee.EmployeeUpdateRequestDTO;
+import com.bizmate.hr.dto.employee.*;
 
 import java.util.List;
 
@@ -17,4 +14,8 @@ public interface EmployeeService { // ★ 인터페이스 이름 변경
     EmployeeDetailDTO getEmployeeDetail(Long empId);
     EmployeeDTO updateMyInfo(Long empId, EmployeeUpdateRequestDTO requestDTO);
     String generateEmpNo(String deptCode);
+    List<EmployeeStatisticDTO> getAgeStatistics();
+    List<EmployeeStatisticDTO> getGradeStatistics();
+    List<EmployeeDTO> getEmployeesByDepartment(Long deptId);
+
 }

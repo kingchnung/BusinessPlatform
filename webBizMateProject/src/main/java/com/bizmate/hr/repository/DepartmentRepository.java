@@ -9,9 +9,7 @@ import java.util.Optional;
 
 @Repository
 public interface DepartmentRepository extends JpaRepository<Department, Long> {
-    // 부서명으로 조회하는 메서드를 추가할 수 있습니다.
-    Optional<Department> findByDeptName(String deptName);
     List<Department> findAllByOrderByDeptCodeAsc();
-    Optional<Department> findByDeptCode(String code);
-
+    Optional<Department> findByDeptCode(String deptCode);
+    List<Department> findByParentDept_DeptId(Long parentDeptId);
 }

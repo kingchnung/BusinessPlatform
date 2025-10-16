@@ -73,7 +73,6 @@ public class CustomSecurityConfig {
                         // 인증 없이 접근 가능한 경로들
                         .requestMatchers(
                                 "/api/auth/**",       // 로그인, 회원가입
-                                "/api/member/refresh",// 토큰 재발급
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
                                 "/swagger-resources/**",
