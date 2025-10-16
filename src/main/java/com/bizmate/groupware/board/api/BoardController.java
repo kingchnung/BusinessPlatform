@@ -33,7 +33,7 @@ public class BoardController {
     }
 
     // ✅ 게시글 등록
-    @PostMapping
+    @PostMapping("/write")
     public ResponseEntity<BoardDto> createBoard(
             @RequestBody BoardDto dto,
             @AuthenticationPrincipal UserPrincipal user
