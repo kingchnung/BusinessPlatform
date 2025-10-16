@@ -24,7 +24,7 @@ public class ClientRepositoryTests {
     public void testInsert(){
         for(int i = 1; i <= 10; i++){
             Client client = Client.builder()
-                    .clientId("132-86-18174-" + i)
+                    .clientId("132861817" + i)
                     .clientCompany("테스트용" + i)
                     .registrationDate(LocalDate.now())
                     .userId("user00" + i)
@@ -49,7 +49,7 @@ public class ClientRepositoryTests {
         Optional<Client> result = clientRepository.findById(clientNo);
 
         Client client = result.orElseThrow();
-        client.changeClientId("111-22-33333");
+        client.changeClientId("1112233333");
         client.changeClientCeo("한유주");
         client.changeClientCompany("유주짱");
 

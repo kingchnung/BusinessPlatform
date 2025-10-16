@@ -1,11 +1,13 @@
 package com.bizmate.salesPages.management.order.order.dto;
 
+import com.bizmate.salesPages.management.order.orderItem.dto.OrderItemDTO;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.Entity;
 import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
 @Setter
 @Getter
@@ -23,10 +25,14 @@ public class OrderDTO {
     private LocalDate orderDueDate;
 
     private BigDecimal orderAmount;
+    private BigDecimal totalSubAmount;
+    private BigDecimal totalVatAmount;
     private String userId;
     private String writer;
     private String clientId;
     private String clientCompany;
     private String orderNote;
     private String orderStatus;
+
+    private List<OrderItemDTO> orderItems;
 }

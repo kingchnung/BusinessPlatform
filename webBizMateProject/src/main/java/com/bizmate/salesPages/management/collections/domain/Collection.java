@@ -28,10 +28,13 @@ public class Collection {
 
     private BigDecimal collectionMoney;
     private String collectionNote;
+    private String writer;
+    private String userId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "client_id", referencedColumnName = "clientId")
-   private Client client;
+    @JoinColumn(name = "client_no", referencedColumnName = "clientNo",
+            foreignKey = @ForeignKey(name = "FK_COLLECTION_CLIENT_NO"))
+    private Client client;
 
     public void changeCollectionMoney(BigDecimal collectionMoney) {
         this.collectionMoney = collectionMoney;

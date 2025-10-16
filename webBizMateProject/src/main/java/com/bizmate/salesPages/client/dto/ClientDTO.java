@@ -27,7 +27,7 @@ public class ClientDTO {
     private String clientNote;
     private String businessLicenseFile;
     private Boolean validationStatus;
-    private String empName;
+    private String writer;
     private String clientEmail;
     private String userId;
 }

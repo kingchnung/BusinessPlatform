@@ -40,7 +40,7 @@ public class OrderItemRepositoryTests {
                 .itemName("orderItem 테스트 품목1")
                 .quantity(2L)
                 .unitPrice(new BigDecimal("2504000"))
-                .vat(new BigDecimal("25040"))
+                .unitVat(new BigDecimal("25040"))
                 .totalAmount(new BigDecimal("2754400"))
                 .build();
         order.addOrderItem(orderItem);
@@ -51,7 +51,7 @@ public class OrderItemRepositoryTests {
                 .itemName("orderItem 테스트 품목2")
                 .quantity(1L)
                 .unitPrice(new BigDecimal("2504000"))
-                .vat(new BigDecimal("25040"))
+                .unitVat(new BigDecimal("25040"))
                 .totalAmount(new BigDecimal("2754400"))
                 .build();
         order.addOrderItem(orderItem1);
@@ -62,7 +62,7 @@ public class OrderItemRepositoryTests {
                 .itemName("orderItem 테스트 품목3")
                 .quantity(11L)
                 .unitPrice(new BigDecimal("2504000"))
-                .vat(new BigDecimal("25040"))
+                .unitVat(new BigDecimal("25040"))
                 .totalAmount(new BigDecimal("2754400"))
                 .build();
         order.addOrderItem(orderItem2);

@@ -60,7 +60,6 @@ public class OrderRepositoryTests {
         order.changeClientCompany("유주컴퍼니");
         order.changeClientId("111-22-111111");
         order.changeOrderAmount(new BigDecimal("132000000"));
-        order.changeWriter("봄이");
 
         Order orderResult = orderRepository.save(order);
         log.info("수정된 데이터: {}", orderResult);

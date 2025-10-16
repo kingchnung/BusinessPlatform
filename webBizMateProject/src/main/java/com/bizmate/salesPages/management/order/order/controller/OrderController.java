@@ -1,16 +1,17 @@
 package com.bizmate.salesPages.management.order.order.controller;
 
-import com.bizmate.salesPages.common.dto.PageRequestDTO;
-import com.bizmate.salesPages.common.dto.PageResponseDTO;
+import com.bizmate.common.dto.PageRequestDTO;
+import com.bizmate.common.dto.PageResponseDTO;
 import com.bizmate.salesPages.management.order.order.dto.OrderDTO;
 import com.bizmate.salesPages.management.order.order.service.OrderService;
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
 @RestController
-@RequestMapping("/order")
+@RequestMapping("/sales/order")
 @RequiredArgsConstructor
 public class OrderController {
     private final OrderService orderService;

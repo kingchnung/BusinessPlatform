@@ -1,9 +1,10 @@
 package com.bizmate.salesPages.management.collections.service;
 
+import com.bizmate.hr.dto.user.UserDTO;
 import com.bizmate.salesPages.client.domain.Client;
 import com.bizmate.salesPages.client.repository.ClientRepository;
-import com.bizmate.salesPages.common.dto.PageRequestDTO;
-import com.bizmate.salesPages.common.dto.PageResponseDTO;
+import com.bizmate.common.dto.PageRequestDTO;
+import com.bizmate.common.dto.PageResponseDTO;
 import com.bizmate.salesPages.management.collections.domain.Collection;
 import com.bizmate.salesPages.management.collections.dto.CollectionDTO;
 import com.bizmate.salesPages.management.collections.repository.CollectionRepository;
@@ -15,6 +16,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -47,6 +49,8 @@ public class CollectionServiceImpl implements CollectionService{
                 .collectionDate(collection.getCollectionDate())
                 .collectionMoney(collection.getCollectionMoney())
                 .collectionNote(collection.getCollectionNote())
+                .userId(collection.getUserId())
+                .writer(collection.getWriter())
                 .clientId(client.getClientId())
                 .clientCompany(client.getClientCompany())
                 .build();
@@ -60,6 +64,8 @@ public class CollectionServiceImpl implements CollectionService{
         String clientId = collectionDTO.getClientId();
         Client client = clientRepository.findByClientId(clientId)
                 .orElseThrow(() -> new NoSuchElementException("Client with ID " + clientId + " not found."));
+
+        collectionDTO.setClientCompany(client.getClientCompany());
 
         String maxCollectionId = collectionRepository.findMaxCollectionIdByCollectionDate(today).orElse(null);
 
@@ -77,12 +83,23 @@ public class CollectionServiceImpl implements CollectionService{
         String sequencePart = String.format("%04d", nextSequence);
         String finalCollectionId = datePart + "-" + sequencePart;
 
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        if(principal instanceof UserDTO userDTO){
+            collectionDTO.setUserId(userDTO.getUsername());
+            collectionDTO.setWriter(userDTO.getEmpName());
+        } else {
+            throw new IllegalStateException("주문 등록을 위한 사용자 인증 정보를 찾을 수 없습니다. (비정상 접근)");
+        }
+
         // 3. Collection 엔티티를 수동으로 Builder를 사용하여 생성
         // ModelMapper의 충돌을 방지하고, DB에서 조회한 Client 엔티티를 직접 주입
         Collection collection = Collection.builder()
                 .collectionId(finalCollectionId)
                 .collectionMoney(collectionDTO.getCollectionMoney())
                 .collectionNote(collectionDTO.getCollectionNote())
+                .writer(collectionDTO.getWriter())
+                .userId(collectionDTO.getUserId())
                 .client(client)
                 .build();
 

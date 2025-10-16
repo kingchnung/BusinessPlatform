@@ -1,21 +1,31 @@
 package com.bizmate.salesPages.management.order.order.service;
 
-import com.bizmate.salesPages.common.dto.PageRequestDTO;
-import com.bizmate.salesPages.common.dto.PageResponseDTO;
+import com.bizmate.hr.dto.user.UserDTO;
+
+import com.bizmate.common.dto.PageRequestDTO;
+import com.bizmate.common.dto.PageResponseDTO;
 import com.bizmate.salesPages.management.order.order.domain.Order;
 import com.bizmate.salesPages.management.order.order.dto.OrderDTO;
 import com.bizmate.salesPages.management.order.order.repository.OrderRepository;
+
+import com.bizmate.salesPages.management.order.orderItem.domain.OrderItem;
+import com.bizmate.salesPages.management.order.orderItem.dto.OrderItemDTO;
+
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -31,14 +41,10 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public String register(OrderDTO orderDTO) {
         LocalDate today = LocalDate.now();
-
-        // 1. 주문 일자 설정
         orderDTO.setOrderDate(today);
 
-        // 2. 당일의 가장 큰 orderId 조회
         String maxOrderId = orderRepository.findMaxOrderIdByOrderDate(today).orElse(null);
 
-        // 3. 다음 일련번호 계산
         int nextSequence = 1;
         if(maxOrderId != null) {
             try {
@@ -51,15 +57,28 @@ public class OrderServiceImpl implements OrderService {
             }
         }
 
-        // 4. 최종 orderId 생성
         String datePart = today.format(DATE_FORMAT);
         String sequencePart = String.format("%04d", nextSequence);
         String finalOrderId = datePart + "-" + sequencePart;
-
         orderDTO.setOrderId(finalOrderId);
 
-        // 5. Order 객체 저장
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if(principal instanceof UserDTO userDTO){
+            orderDTO.setUserId(userDTO.getUsername());
+            orderDTO.setWriter(userDTO.getEmpName());
+        } else {
+            throw new IllegalStateException("주문 등록을 위한 사용자 인증 정보를 찾을 수 없습니다. (비정상 접근)");
+        }
+
         Order order = modelMapper.map(orderDTO, Order.class);
+
+        List<OrderItem> newOrderItem = orderDTO.getOrderItems().stream()
+                        .map(itemDTO -> modelMapper.map(itemDTO, OrderItem.class))
+                                .collect(Collectors.toList());
+        order.updateOrderItems(newOrderItem);
+
+        order.calculateOrderAmount();
+
         Order savedOrder = orderRepository.save(order);
         return savedOrder.getOrderId();
     }
@@ -77,15 +96,45 @@ public class OrderServiceImpl implements OrderService {
         Optional<Order> result = orderRepository.findById(orderDTO.getOrderId());
         Order order = result.orElseThrow();
 
-        order.changeUserId(orderDTO.getUserId());
-        order.changeWriter(orderDTO.getWriter());
-        order.changeOrderAmount(orderDTO.getOrderAmount());
         order.changeClientId(orderDTO.getClientId());
-        order.changeClientCompany(orderDTO.getClientCompany());
         order.changeOrderDueDate(orderDTO.getOrderDueDate());
         order.changeOrderNote(orderDTO.getOrderNote());
         order.changeProjectId(orderDTO.getProjectId());
-        order.changeProjectName(orderDTO.getProjectName());
+
+        List<OrderItemDTO> newItemDto = orderDTO.getOrderItems();
+        List<OrderItem> mergedItem = new ArrayList<>();
+
+        for(OrderItemDTO itemDTO : newItemDto){
+            if(itemDTO.getOrderItemId() != null){
+                OrderItem existingItem = order.getOrderItems().stream()
+                        .filter(item -> itemDTO.getOrderItemId().equals(item.getOrderItemId()))
+                        .findFirst()
+                        .orElse(null);
+
+                if(existingItem != null){
+                    existingItem.changeItemName(itemDTO.getItemName());
+                    existingItem.changeQuantity(itemDTO.getQuantity());
+                    existingItem.changeUnitPrice(itemDTO.getUnitPrice());
+                    existingItem.changeUnitVat(itemDTO.getUintVat());
+                    existingItem.changeItemNote(itemDTO.getItemNote());
+
+                    existingItem.calculateAmount();
+                    mergedItem.add(existingItem);
+                }
+            } else {
+                OrderItem newItem = modelMapper.map(itemDTO, OrderItem.class);
+
+                newItem.calculateAmount();
+                mergedItem.add(newItem);
+            }
+        }
+
+        order.updateOrderItems(mergedItem);
+        order.calculateOrderAmount();
+        order.changeClientId(orderDTO.getClientId());
+        order.changeOrderDueDate(orderDTO.getOrderDueDate());
+        order.changeOrderNote(orderDTO.getOrderNote());
+        order.changeProjectId(orderDTO.getProjectId());
 
         orderRepository.save(order);
     }

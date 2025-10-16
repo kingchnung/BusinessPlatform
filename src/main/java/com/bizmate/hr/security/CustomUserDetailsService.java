@@ -56,6 +56,11 @@ public class CustomUserDetailsService implements UserDetailsService {
             empId = user.getEmployee().getEmpId();
         }
 
+        Long empId = null;
+        if(user.getEmployee() != null){
+            empId = user.getEmployee().getEmpId();
+        }
+
         // 4) UserPrincipal 생성
         UserPrincipal principal = new UserPrincipal(
                 user.getUserId(),

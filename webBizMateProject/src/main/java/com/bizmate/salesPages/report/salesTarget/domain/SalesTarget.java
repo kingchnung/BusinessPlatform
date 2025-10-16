@@ -28,7 +28,7 @@ public class SalesTarget {
             strategy = GenerationType.SEQUENCE,
             generator = "SALES_TARGET_SEQ_GENERATOR"
     )
-    private String targetId;
+    private Long targetId;
 
     @CreationTimestamp
     @Temporal(TemporalType.DATE)
@@ -37,6 +37,8 @@ public class SalesTarget {
     private Integer targetYear;
     private Integer targetMonth;
     private BigDecimal targetAmount;
+    private String userId;
+    private String writer;
 
     public void changTargetYear(Integer targetYear){
         this.targetYear = targetYear;
