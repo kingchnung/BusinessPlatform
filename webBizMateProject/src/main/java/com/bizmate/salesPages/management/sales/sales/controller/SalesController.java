@@ -5,9 +5,7 @@ import com.bizmate.common.dto.PageResponseDTO;
 import com.bizmate.salesPages.management.sales.sales.dto.SalesDTO;
 import com.bizmate.salesPages.management.sales.sales.service.SalesService;
 import lombok.RequiredArgsConstructor;
-<<<<<<< HEAD
-=======
->>>>>>> 7e631613e802f528445a8f222c1ec078e9c8bda3
+
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;

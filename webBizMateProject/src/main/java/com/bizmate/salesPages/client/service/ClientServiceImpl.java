@@ -1,9 +1,7 @@
 package com.bizmate.salesPages.client.service;
 
-<<<<<<< HEAD
+import com.bizmate.common.dto.PageRequestDTO;
 import com.bizmate.hr.dto.user.UserDTO;
-=======
->>>>>>> 7e631613e802f528445a8f222c1ec078e9c8bda3
 import com.bizmate.common.dto.PageResponseDTO;
 import com.bizmate.salesPages.client.domain.Client;
 import com.bizmate.salesPages.client.dto.ClientDTO;
@@ -14,14 +12,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-<<<<<<< HEAD
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-=======
-
->>>>>>> 7e631613e802f528445a8f222c1ec078e9c8bda3
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -33,7 +27,6 @@ public class ClientServiceImpl implements ClientService{
     private final ClientRepository clientRepository;
     private final ModelMapper modelMapper;
 
-<<<<<<< HEAD
     @Override
     public Long clientRegister(ClientDTO clientDTO) {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -46,25 +39,6 @@ public class ClientServiceImpl implements ClientService{
 
         Client client = modelMapper.map(clientDTO, Client.class);
 
-=======
-//    @Override
-//    public List<String> register(List<ClientDTO> clientDTOList) {
-//        List<String> registeredClientIds = new ArrayList<>();
-//
-//        for (ClientDTO clientDTO : clientDTOList) {
-//            Client client = modelMapper.map(clientDTO, Client.class);
-//
-//            Client savedClient = clientRepository.save(client);
-//            registeredClientIds.add(savedClient.getClientId());
-//        }
-//
-//        return registeredClientIds;
-//    }
-
-    @Override
-    public Long clientRegister(ClientDTO clientDTO) {
-        Client client = modelMapper.map(clientDTO, Client.class);
->>>>>>> 7e631613e802f528445a8f222c1ec078e9c8bda3
         Client savedClient = clientRepository.save(client);
         return savedClient.getClientNo();
     }
@@ -90,13 +64,7 @@ public class ClientServiceImpl implements ClientService{
         client.changeClientContact(clientDTO.getClientContact());
         client.changeClientNote(clientDTO.getClientNote());
         client.changeBusinessLicenseFile(clientDTO.getBusinessLicenseFile());
-<<<<<<< HEAD
         client.changeClientEmail(clientDTO.getClientEmail());
-=======
-        client.changeEmpName(clientDTO.getEmpName());
-        client.changeClientEmail(clientDTO.getClientEmail());
-        client.changeUserId(clientDTO.getUserId());
->>>>>>> 7e631613e802f528445a8f222c1ec078e9c8bda3
 
         clientRepository.save(client);
     }
@@ -128,14 +96,8 @@ public class ClientServiceImpl implements ClientService{
             case "clientContact" :
                 result = clientRepository.findByClientContactContaining(pageRequestDTO.getKeyword(),pageable);
                 break;
-<<<<<<< HEAD
             case  "userId" :
                 result = clientRepository.findByUserIdContaining(pageRequestDTO.getKeyword(),pageable);
-=======
-            case  "empName" :
-                result = clientRepository.findByEmpNameContaining(pageRequestDTO.getKeyword(),pageable);
->>>>>>> 7e631613e802f528445a8f222c1ec078e9c8bda3
-                break;
             default:
                 result = clientRepository.findAll(pageable);
                 break;

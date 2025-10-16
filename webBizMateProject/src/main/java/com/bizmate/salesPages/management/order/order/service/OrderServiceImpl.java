@@ -1,38 +1,31 @@
 package com.bizmate.salesPages.management.order.order.service;
 
-<<<<<<< HEAD
 import com.bizmate.hr.dto.user.UserDTO;
-=======
->>>>>>> 7e631613e802f528445a8f222c1ec078e9c8bda3
+
 import com.bizmate.common.dto.PageRequestDTO;
 import com.bizmate.common.dto.PageResponseDTO;
 import com.bizmate.salesPages.management.order.order.domain.Order;
 import com.bizmate.salesPages.management.order.order.dto.OrderDTO;
 import com.bizmate.salesPages.management.order.order.repository.OrderRepository;
-<<<<<<< HEAD
+
 import com.bizmate.salesPages.management.order.orderItem.domain.OrderItem;
 import com.bizmate.salesPages.management.order.orderItem.dto.OrderItemDTO;
-=======
->>>>>>> 7e631613e802f528445a8f222c1ec078e9c8bda3
+
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-<<<<<<< HEAD
+
 import org.springframework.security.core.context.SecurityContextHolder;
-=======
->>>>>>> 7e631613e802f528445a8f222c1ec078e9c8bda3
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-<<<<<<< HEAD
+
 import java.util.ArrayList;
-=======
->>>>>>> 7e631613e802f528445a8f222c1ec078e9c8bda3
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -47,23 +40,11 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public String register(OrderDTO orderDTO) {
-<<<<<<< HEAD
-       LocalDate today = LocalDate.now();
-        orderDTO.setOrderDate(today);
-
-        String maxOrderId = orderRepository.findMaxOrderIdByOrderDate(today).orElse(null);
-
-=======
         LocalDate today = LocalDate.now();
-
-        // 1. 주문 일자 설정
         orderDTO.setOrderDate(today);
 
-        // 2. 당일의 가장 큰 orderId 조회
         String maxOrderId = orderRepository.findMaxOrderIdByOrderDate(today).orElse(null);
 
-        // 3. 다음 일련번호 계산
->>>>>>> 7e631613e802f528445a8f222c1ec078e9c8bda3
         int nextSequence = 1;
         if(maxOrderId != null) {
             try {
@@ -76,7 +57,6 @@ public class OrderServiceImpl implements OrderService {
             }
         }
 
-<<<<<<< HEAD
         String datePart = today.format(DATE_FORMAT);
         String sequencePart = String.format("%04d", nextSequence);
         String finalOrderId = datePart + "-" + sequencePart;
@@ -99,17 +79,6 @@ public class OrderServiceImpl implements OrderService {
 
         order.calculateOrderAmount();
 
-=======
-        // 4. 최종 orderId 생성
-        String datePart = today.format(DATE_FORMAT);
-        String sequencePart = String.format("%04d", nextSequence);
-        String finalOrderId = datePart + "-" + sequencePart;
-
-        orderDTO.setOrderId(finalOrderId);
-
-        // 5. Order 객체 저장
-        Order order = modelMapper.map(orderDTO, Order.class);
->>>>>>> 7e631613e802f528445a8f222c1ec078e9c8bda3
         Order savedOrder = orderRepository.save(order);
         return savedOrder.getOrderId();
     }
@@ -127,7 +96,6 @@ public class OrderServiceImpl implements OrderService {
         Optional<Order> result = orderRepository.findById(orderDTO.getOrderId());
         Order order = result.orElseThrow();
 
-<<<<<<< HEAD
         order.changeClientId(orderDTO.getClientId());
         order.changeOrderDueDate(orderDTO.getOrderDueDate());
         order.changeOrderNote(orderDTO.getOrderNote());
@@ -163,19 +131,12 @@ public class OrderServiceImpl implements OrderService {
 
         order.updateOrderItems(mergedItem);
         order.calculateOrderAmount();
-=======
-        order.changeUserId(orderDTO.getUserId());
-        order.changeWriter(orderDTO.getWriter());
-        order.changeOrderAmount(orderDTO.getOrderAmount());
         order.changeClientId(orderDTO.getClientId());
-        order.changeClientCompany(orderDTO.getClientCompany());
         order.changeOrderDueDate(orderDTO.getOrderDueDate());
         order.changeOrderNote(orderDTO.getOrderNote());
         order.changeProjectId(orderDTO.getProjectId());
-        order.changeProjectName(orderDTO.getProjectName());
 
         orderRepository.save(order);
->>>>>>> 7e631613e802f528445a8f222c1ec078e9c8bda3
     }
 
     @Override

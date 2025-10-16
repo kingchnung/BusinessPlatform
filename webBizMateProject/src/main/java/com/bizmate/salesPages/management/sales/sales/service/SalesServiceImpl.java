@@ -1,6 +1,5 @@
 package com.bizmate.salesPages.management.sales.sales.service;
 
-<<<<<<< HEAD
 import com.bizmate.hr.dto.user.UserDTO;
 import com.bizmate.common.dto.PageRequestDTO;
 import com.bizmate.common.dto.PageResponseDTO;
@@ -12,27 +11,22 @@ import com.bizmate.salesPages.management.sales.sales.dto.SalesDTO;
 import com.bizmate.salesPages.management.sales.sales.repository.SalesRepository;
 import com.bizmate.salesPages.management.sales.salesItem.domain.SalesItem;
 import com.bizmate.salesPages.management.sales.salesItem.dto.SalesItemDTO;
-=======
->>>>>>> 7e631613e802f528445a8f222c1ec078e9c8bda3
+
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-<<<<<<< HEAD
+
 import org.springframework.security.core.context.SecurityContextHolder;
-=======
->>>>>>> 7e631613e802f528445a8f222c1ec078e9c8bda3
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-<<<<<<< HEAD
+
 import java.util.ArrayList;
-=======
->>>>>>> 7e631613e802f528445a8f222c1ec078e9c8bda3
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -43,20 +37,13 @@ import java.util.stream.Collectors;
 @Transactional
 public class SalesServiceImpl implements SalesService{
     private final SalesRepository salesRepository;
-<<<<<<< HEAD
     private final OrderRepository orderRepository;
-=======
->>>>>>> 7e631613e802f528445a8f222c1ec078e9c8bda3
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyyMMdd");
     private final ModelMapper modelMapper;
 
     @Override
     public String register(SalesDTO salesDTO) {
         LocalDate today = LocalDate.now();
-<<<<<<< HEAD
-=======
-
->>>>>>> 7e631613e802f528445a8f222c1ec078e9c8bda3
         salesDTO.setSalesDate(today);
 
         String maxSalesId = salesRepository.findMaxSalesIdBySalesDate(today).orElse(null);
@@ -74,7 +61,6 @@ public class SalesServiceImpl implements SalesService{
         String datePart = today.format(DATE_FORMAT);
         String sequencePart = String.format("%04d", nextSequence);
         String finalSalesId = datePart + "-" + sequencePart;
-<<<<<<< HEAD
         salesDTO.setSalesId(finalSalesId);
 
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -129,14 +115,6 @@ public class SalesServiceImpl implements SalesService{
         sales.calculateSalesAmount();
 
         Sales savedSales = salesRepository.save(sales);
-=======
-
-        salesDTO.setSalesId(finalSalesId);
-
-        Sales sales = modelMapper.map(salesDTO, Sales.class);
-        Sales savedSales = salesRepository.save(sales);
-
->>>>>>> 7e631613e802f528445a8f222c1ec078e9c8bda3
         return savedSales.getSalesId();
     }
 
@@ -154,7 +132,6 @@ public class SalesServiceImpl implements SalesService{
         Sales sales = result.orElseThrow(()->
                 new NoSuchElementException("Sales ID ["+ salesDTO.getOrderId()+ "]을 찾을 수 없습니다."));
 
-<<<<<<< HEAD
         sales.changeClientId(salesDTO.getClientId());
         sales.changeDeploymentDate(salesDTO.getDeploymentDate());
         sales.changeSalesNote(salesDTO.getSalesNote());
@@ -190,19 +167,12 @@ public class SalesServiceImpl implements SalesService{
 
         sales.updateSalesItems(mergedItem);
         sales.calculateSalesAmount();
-=======
-        sales.changeSalesAmount(salesDTO.getSalesAmount());
         sales.changeDeploymentDate(salesDTO.getDeploymentDate());
-        sales.changeUserId(salesDTO.getUserId());
-        sales.changeWriter(salesDTO.getWriter());
         sales.changeClientId(salesDTO.getClientId());
-        sales.changeClientCompany(salesDTO.getClientCompany());
         sales.changeSalesNote(salesDTO.getSalesNote());
         sales.changeProjectId(salesDTO.getProjectId());
-        sales.changeProjectName(salesDTO.getProjectName());
 
         salesRepository.save(sales);
->>>>>>> 7e631613e802f528445a8f222c1ec078e9c8bda3
     }
 
     @Override
