@@ -4,6 +4,7 @@ import com.bizmate.common.domain.BaseEntity;
 import com.bizmate.groupware.approval.infrastructure.ApproverLineJsonConverter;
 import com.bizmate.groupware.approval.infrastructure.JsonMapConverter;
 import com.bizmate.groupware.approval.infrastructure.DocumentTypeConverter;
+import com.bizmate.groupware.approval.listener.ApprovalDocumentsListener;
 import com.bizmate.hr.domain.Department;
 import com.bizmate.hr.domain.Employee;
 import com.bizmate.hr.domain.Role;
@@ -24,6 +25,9 @@ import java.util.*;
  * - markApproved(), markRejected(), markDeleted() 포함
  */
 @Entity
+@EntityListeners({
+        ApprovalDocumentsListener.class
+})
 @Getter
 @Setter
 @Table(name = "APPROVAL_DOCUMENTS")

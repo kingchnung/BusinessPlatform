@@ -1,7 +1,6 @@
 package com.bizmate.groupware.board.domain;
 
 import com.bizmate.common.domain.BaseEntity;
-import com.bizmate.groupware.approval.domain.DocumentStatus;
 import com.bizmate.hr.dto.user.UserDTO;
 import jakarta.persistence.*;
 import lombok.*;

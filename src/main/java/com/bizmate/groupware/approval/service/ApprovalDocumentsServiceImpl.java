@@ -7,6 +7,7 @@ import com.bizmate.groupware.approval.domain.*;
 import com.bizmate.groupware.approval.dto.ApprovalDocumentsDto;
 import com.bizmate.groupware.approval.dto.DocumentSearchRequestDto;
 import com.bizmate.groupware.approval.dto.FileAttachmentDto;
+import com.bizmate.groupware.approval.infrastructure.JsonMapConverter;
 import com.bizmate.groupware.approval.notification.NotificationService;
 import com.bizmate.groupware.approval.repository.ApprovalDocumentsRepository;
 import com.bizmate.groupware.approval.repository.ApprovalFileAttachmentRepository;
@@ -42,8 +43,8 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
     private final ApprovalFileAttachmentRepository fileAttachmentRepository;
     private final UserRepository userRepository;
     private final ApprovalIdGenerator approvalIdGenerator;
-    private final EmployeeRepository employeeRepository;
     private final NotificationService notificationService;
+    private final ApprovalHistoryService historyService;
 
     /* -------------------------------------------------------------
        ① 임시저장 (DRAFT)
@@ -91,6 +92,7 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
         // ✅ 첨부파일 처리
         handleFileAttachments(dto, saved, loginUser);
 
+        historyService.saveHistory(saved, loginUser, DocumentStatus.DRAFT.name(), dto.getTitle());
         log.info("✅ 임시저장 완료: 문서ID={}", saved.getDocId());
         return mapEntityToDto(saved);
     }
@@ -176,6 +178,8 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
             });
         }
 
+
+        historyService.saveHistory(saved, loginUser, DocumentStatus.IN_PROGRESS.name(), dto.getTitle());
         log.info("✅ 상신 완료 및 메일 발송: 문서ID={}", saved.getDocId());
         return mapEntityToDto(saved);
     }
@@ -252,6 +256,8 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
         } catch (Exception e) {
             log.error("❌ 재상신 알림 메일 발송 실패: {}", e.getMessage(), e);
         }
+
+        historyService.saveHistory(document, loginUser, DocumentStatus.IN_PROGRESS.name(), dto.getTitle());
 
         log.info("✅ 재상신 완료: 문서ID={}, 상태={}, 첫 결재자={}",
                 docId,
@@ -336,6 +342,7 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
 
         // 🔹 변경점: 즉시 DB 반영 (Dirty Checking 방지)
         approvalDocumentsRepository.saveAndFlush(document);
+        historyService.saveHistory(document, loginUser, DocumentStatus.APPROVED.name(), document.getTitle());
 
         return mapEntityToDto(document);
     }
@@ -387,6 +394,7 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
 
         document.markUpdated(loginUser);
         approvalDocumentsRepository.saveAndFlush(document);
+        historyService.saveHistory(document, loginUser, DocumentStatus.REJECTED.name(), document.getTitle());
 
         // ✅ 반려 메일 발송
         UserEntity author = document.getAuthorUser();
@@ -419,6 +427,7 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
 
         doc.markDeleted(loginUser, reason);
         approvalDocumentsRepository.save(doc);
+        historyService.saveHistory(doc, loginUser, DocumentStatus.DELETED.name(), doc.getTitle());
 
         log.info("✅ 문서 논리삭제 완료: docId={}, 상태={}", docId, doc.getStatus());
     }

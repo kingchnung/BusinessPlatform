@@ -8,5 +8,5 @@ import java.util.List;
 
 @Repository
 public interface ApprovalHistoryRepository extends JpaRepository<ApprovalHistory, Long> {
-    List<ApprovalHistory> findByDocIdOrderByActionTimestampAsc(String docId);
+
 }

@@ -1,10 +1,9 @@
 package com.bizmate.common.domain;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.EntityListeners;
-import jakarta.persistence.MappedSuperclass;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
@@ -25,6 +24,7 @@ import java.time.LocalDateTime;
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
 @Setter
+@Slf4j
 public abstract class BaseEntity {
 
     /** 생성 시각 */
@@ -46,6 +46,20 @@ public abstract class BaseEntity {
     @LastModifiedBy
     @Column(name = "updated_by")
     private String updatedBy;
+
+    /* ✅ 엔티티가 처음 저장될 때 로그 출력 */
+    @PostPersist
+    protected void onPostPersist() {
+        log.info("📘 [Entity Created] {} | createdBy={} | createdAt={}",
+                this.getClass().getSimpleName(), createdBy, createdAt);
+    }
+
+    /* ✅ 엔티티가 수정될 때 로그 출력 */
+    @PostUpdate
+    protected void onPostUpdate() {
+        log.info("✏️ [Entity Updated] {} | updatedBy={} | updatedAt={}",
+                this.getClass().getSimpleName(), updatedBy, updatedAt);
+    }
 
     /* ✅ 도메인 내부(Aggregate Root 내부)에서만 접근 가능한 Setter */
     protected void setCreatedBy(String empName) { this.createdBy = empName; }

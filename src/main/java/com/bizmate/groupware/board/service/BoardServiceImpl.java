@@ -5,8 +5,10 @@ import com.bizmate.groupware.board.domain.Board;
 import com.bizmate.groupware.board.domain.BoardType;
 import com.bizmate.groupware.board.domain.Comment;
 import com.bizmate.groupware.board.dto.BoardDto;
+import com.bizmate.groupware.board.repository.BoardHistoryRepository;
 import com.bizmate.groupware.board.repository.BoardRepository;
 import com.bizmate.groupware.board.repository.CommentRepository;
+import com.bizmate.hr.dto.user.UserDTO;
 import com.bizmate.hr.security.UserPrincipal;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -18,15 +20,16 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 @Slf4j
 public class BoardServiceImpl implements BoardService {
 
     private final BoardRepository boardRepository;
     private final CommentRepository commentRepository;
+    private final BoardHistoryService boardHistoryService;
 
     //게시글 등록
     @Override
+    @Transactional
     public BoardDto createBoard(BoardDto dto, UserPrincipal user) {
 //        if (dto.getBoardType() == BoardType.NOTICE && !user.isAdmin()) {
 //            throw new VerificationFailedException("공지사항은 관리자만 등록할 수 있습니다.");
@@ -44,21 +47,73 @@ public class BoardServiceImpl implements BoardService {
                 .isDeleted(false)
                 .build();
 
+        UserDTO userDTO = new UserDTO(
+                user.getUserId(),
+                user.getUsername(),
+                user.getEmpName(),
+                user.getEmail()
+        );
+
+        board.markCreated(userDTO);
+
+        Board saved = boardRepository.save(board);
+        boardHistoryService.saveHistory(saved, user, "등록", "게시글 생성");
         return toDto(boardRepository.save(board));
+    }
+
+    //게시글 수정
+    @Override
+    @Transactional
+    public BoardDto updateBoard(Long id, BoardDto dto, UserPrincipal user) {
+        Board board = boardRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("게시글을 찾을 수 없습니다."));
+
+//        if (!user.isAdmin() && !board.getAuthorId().equals(user.getUserId())) {
+//            throw new VerificationFailedException("수정 권한이 없습니다.");
+//        }
+
+        board.setTitle(dto.getTitle());
+        board.setContent(dto.getContent());
+
+        UserDTO userDTO = new UserDTO(
+                user.getUserId(),
+                user.getUsername(),
+                user.getEmpName(),
+                user.getEmail()
+        );
+
+        board.markUpdated(userDTO);
+
+        Board updated = boardRepository.save(board);
+        boardHistoryService.saveHistory(updated, user, "수정", "게시글 수정");
+        return toDto(updated);
     }
 
     //게시글 삭제
     @Override
+    @Transactional
     public void deleteBoard(Long boardId, UserPrincipal user) {
         Board board = boardRepository.findById(boardId)
                 .orElseThrow(() -> new EntityNotFoundException("게시글을 찾을 수 없습니다."));
+
+        board.setDeleted(true);
+        boardRepository.save(board);
 
         // 논리 삭제
 //        if (!user.isAdmin() && !board.getAuthorName().equals(user.getUserId())) {
 //            throw new VerificationFailedException("삭제 권한이 없습니다.");
 //        }
 
-        board.setDeleted(true);
+        UserDTO userDTO = new UserDTO(
+                user.getUserId(),
+                user.getUsername(),
+                user.getEmpName(),
+                user.getEmail()
+        );
+
+        board.markUpdated(userDTO);
+        boardRepository.save(board);
+        boardHistoryService.saveHistory(board, user, "삭제", "게시글 삭제");
     }
 
     //댓글 등록
@@ -97,20 +152,6 @@ public class BoardServiceImpl implements BoardService {
     public BoardDto getBoard(Long id) {
         Board board = boardRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("게시글을 찾을 수 없습니다."));
-        return toDto(board);
-    }
-
-    @Override
-    public BoardDto updateBoard(Long id, BoardDto dto, UserPrincipal user) {
-        Board board = boardRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("게시글을 찾을 수 없습니다."));
-
-//        if (!user.isAdmin() && !board.getAuthorId().equals(user.getUserId())) {
-//            throw new VerificationFailedException("수정 권한이 없습니다.");
-//        }
-
-        board.setTitle(dto.getTitle());
-        board.setContent(dto.getContent());
         return toDto(board);
     }
 
