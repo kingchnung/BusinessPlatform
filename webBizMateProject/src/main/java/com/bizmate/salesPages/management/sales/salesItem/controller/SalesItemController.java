@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/sales/salesItems")
+@RequestMapping("/api/sales/salesItems")
 @RequiredArgsConstructor
 public class SalesItemController {
     private final SalesItemService salesItemService;
@@ -23,7 +23,7 @@ public class SalesItemController {
         return salesItemList;
     }
 
-    @PostMapping(value = "/salesItemInsert", consumes = "application/json", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/insert", consumes = "application/json", produces = MediaType.APPLICATION_JSON_VALUE)
     public SalesItem salesItemInsert(@RequestBody SalesItem salesItem){
         SalesItem result = salesItemService.salesItemInsert(salesItem);
         return result;

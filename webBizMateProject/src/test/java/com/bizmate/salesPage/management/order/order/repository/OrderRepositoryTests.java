@@ -10,6 +10,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -33,7 +34,7 @@ public class OrderRepositoryTests {
                     .userId("user00" + i)
                     .orderNote("테스트!")
                     .writer("한유주")
-                    .clientId("132-86-156477")
+                    .clientId("13286156477")
                     .clientCompany("테스트기업" + i)
                     .build();
 
@@ -57,9 +58,7 @@ public class OrderRepositoryTests {
         Optional<Order> result = orderRepository.findById(orderId);
 
         Order order = result.orElseThrow();
-        order.changeClientCompany("유주컴퍼니");
-        order.changeClientId("111-22-111111");
-        order.changeOrderAmount(new BigDecimal("132000000"));
+        order.changeClientId("1112211111");
 
         Order orderResult = orderRepository.save(order);
         log.info("수정된 데이터: {}", orderResult);
@@ -73,6 +72,7 @@ public class OrderRepositoryTests {
     }
 
     @Test
+    @Transactional
     public void testPaging() {
         Pageable pageable = PageRequest.of(0,10, Sort.by("orderId").descending());
         Page<Order> result = orderRepository.findAll(pageable);

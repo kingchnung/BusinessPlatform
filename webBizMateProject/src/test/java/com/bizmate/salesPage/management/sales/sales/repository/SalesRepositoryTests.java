@@ -30,7 +30,7 @@ public class SalesRepositoryTests {
                     .userId("user00" + i)
                     .salesNote("테스트!")
                     .writer("한유주")
-                    .clientId("132-86-156477")
+                    .clientId("13286156477")
                     .clientCompany("테스트기업" + i)
                     .build();
 

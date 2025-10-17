@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/sales/salesTarget")
+@RequestMapping("/api/sales/salesTarget")
 @RequiredArgsConstructor
 public class SalesTargetController {
     private final SalesTargetService salesTargetService;
@@ -20,7 +20,7 @@ public class SalesTargetController {
         return salesTargetService.get(targetId);
     }
 
-    @GetMapping("/salesTargetList")
+    @GetMapping("/list")
     public PageResponseDTO<SalesTargetDTO> list(PageRequestDTO pageRequestDTO){
         return salesTargetService.list(pageRequestDTO);
     }

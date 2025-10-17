@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/sales/sales")
+@RequestMapping("/api/sales/sales")
 @RequiredArgsConstructor
 public class SalesController {
     private final SalesService salesService;
@@ -21,7 +21,7 @@ public class SalesController {
         return salesService.get(salesId);
     }
 
-    @GetMapping("/salesList")
+    @GetMapping("/list")
     public PageResponseDTO<SalesDTO> List(PageRequestDTO pageRequestDTO){
         return salesService.list(pageRequestDTO);
     }

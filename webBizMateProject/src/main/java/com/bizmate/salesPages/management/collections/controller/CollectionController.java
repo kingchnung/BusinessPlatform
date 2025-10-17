@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/sales/collection")
+@RequestMapping("/api/sales/collection")
 @RequiredArgsConstructor
 public class CollectionController {
     private final CollectionService collectionService;
@@ -22,7 +22,7 @@ public class CollectionController {
         return collectionService.get(collectionId);
     }
 
-    @GetMapping("/collectionList")
+    @GetMapping("/list")
     public PageResponseDTO<CollectionDTO> List(PageRequestDTO pageRequestDTO){
         return collectionService.list(pageRequestDTO);
     }

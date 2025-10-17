@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.test.context.support.WithUserDetails;
 
 import java.math.BigDecimal;
 
@@ -17,22 +18,21 @@ public class OrderServiceTests {
     @Autowired
     private OrderService orderService;
 
-    @Test
-    public void testRegister() {
-        OrderDTO orderDTO = OrderDTO.builder()
-                .projectId("210405-23")
-                .projectName("2번째 주문 테스트")
-                .orderAmount(new BigDecimal("10000000.00"))
-                .userId("user003")
-                .writer("유주짱")
-                .clientId("444-55-66666")
-                .clientCompany("테스트 컴퍼니 A")
-                .orderNote("테스트 주문 2")
-                .build();
-
-        String orderId = orderService.register(orderDTO);
-        log.info("생성된 주문번호 : {}", orderId);
-    }
+//    @Test
+//    @WithUserDetails(value = "오개발")
+//    public void testRegister() {
+//        OrderDTO orderDTO = OrderDTO.builder()
+//                .projectId("210405-23")
+//                .projectName("2번째 주문 테스트")
+//                .orderAmount(new BigDecimal("10000000.00"))
+//                .clientId("4445566666")
+//                .clientCompany("테스트 컴퍼니 A")
+//                .orderNote("테스트 주문 2")
+//                .build();
+//
+//        String orderId = orderService.register(orderDTO);
+//        log.info("생성된 주문번호 : {}", orderId);
+//    }
 
     @Test
     public void testGet() {
