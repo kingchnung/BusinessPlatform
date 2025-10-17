@@ -33,7 +33,7 @@ public class AssignmentsHistoryController {
     @GetMapping("/employee/{empId}")
     @PreAuthorize("hasAuthority('assignment:read')")
     public List<AssignmentHistoryDTO> getEmployeeAssignments(@PathVariable Long empId) {
-        return assignmentService.getHistoriesByEmployee(empId);
+        return assignmentService.getHistoryByEmployee(empId);
     }
 
     // 발령 등록 (관리자만 가능)

@@ -1,7 +1,7 @@
 package com.bizmate.groupware.approval.dto;
 
 import com.bizmate.groupware.approval.domain.ApprovalDocuments;
-import com.bizmate.groupware.approval.domain.FileAttachment;
+import com.bizmate.groupware.approval.domain.ApprovalFileAttachment;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -22,7 +22,7 @@ public class FileAttachmentDto {
     private String uploaderName;
     private LocalDateTime uploadedAt;
 
-    public static FileAttachmentDto fromEntity(FileAttachment entity) {
+    public static FileAttachmentDto fromEntity(ApprovalFileAttachment entity) {
         return FileAttachmentDto.builder()
                 .id(entity.getId())
                 .originalName(entity.getOriginalName())
@@ -36,8 +36,8 @@ public class FileAttachmentDto {
                 .build();
     }
 
-    public FileAttachment toEntity(ApprovalDocuments document) {
-        FileAttachment entity = new FileAttachment();
+    public ApprovalFileAttachment toEntity(ApprovalDocuments document) {
+        ApprovalFileAttachment entity = new ApprovalFileAttachment();
         entity.setId(this.id);
         entity.setDocument(document);
         entity.setOriginalName(this.originalName);

@@ -406,125 +406,125 @@ public class DataInitializer implements CommandLineRunner {
 
     }
 
-    // =========================================================
-// 6️⃣ 게시판 & 전자결재 더미 데이터
-// =========================================================
-
-    private BoardRepository boardRepository;
-    private ApprovalDocumentsRepository approvalDocumentsRepository;
-
-    private void initBoardDummy(List<UserEntity> users) {
-        if (boardRepository.count() > 0) {
-            log.info("📘 게시판 데이터 이미 존재 — skip");
-            return;
-        }
-
-        String[] titles = {
-                "업무 공지", "개발 회의", "사내 공모전", "보안 점검 안내", "팀 프로젝트 공유",
-                "주간 업무 보고", "사내 이벤트", "제안사항", "시스템 점검 안내", "신입 환영 게시글"
-        };
-
-        String[] contents = {
-                "이번 주 중으로 처리 예정입니다.",
-                "회의록을 공유드립니다.",
-                "검토 후 의견 부탁드립니다.",
-                "협조 바랍니다.",
-                "좋은 하루 보내세요!"
-        };
-
-        BoardType[] types = BoardType.values();
-        List<Board> boards = new ArrayList<>();
-
-        for (int i = 1; i <= 32; i++) {
-            UserEntity author = users.get(random.nextInt(users.size()));
-            BoardType type = types[random.nextInt(types.length)];
-
-            Board board = new Board();
-            board.setBoardType(type);
-            board.setTitle(titles[random.nextInt(titles.length)] + " #" + i);
-            board.setContent(contents[random.nextInt(contents.length)]);
-            board.setAuthorId(author.getUsername());
-            board.setAuthorName(type == BoardType.SUGGESTION ? "익명" : author.getEmpName());
-            board.setDeleted(false);
-
-            // 감사정보 (UserDTO 직접 생성)
-            UserDTO dto = new UserDTO(
-                    author.getUserId(),
-                    author.getUsername(),
-                    author.getEmpName(),
-                    author.getEmail()
-            );
-            board.markCreated(dto);
-
-            boards.add(board);
-        }
-
-        boardRepository.saveAll(boards);
-        log.info("✅ 게시판 더미데이터 32건 생성 완료");
-    }
-
-    // =========================================================
-    // 2️⃣ 전자결재 더미 데이터 생성
-    // =========================================================
-    private void initApprovalDummy(List<UserEntity> users, List<Department> depts) {
-        if (approvalDocumentsRepository.count() > 0) {
-            log.info("📄 전자결재 데이터 이미 존재 — skip");
-            return;
-        }
-
-        String[] docTitles = {
-                "품의서", "프로젝트 기획안", "견적서/제안서 발송 품의서", "지출결의서", "구매 품의서"
-                , "휴가 신청서", "퇴직서", "인사발령"
-        };
-
-        List<ApprovalDocuments> docs = new ArrayList<>();
-
-        for (int i = 1; i <= 32; i++) {
-            UserEntity author = users.get(random.nextInt(users.size()));
-            Department dept = depts.get(random.nextInt(depts.size()));
-
-            ApprovalDocuments doc = new ApprovalDocuments();
-            doc.setDocId(depts.contains(users.));
-            doc.setDocId("DOC-" + String.format("%03d", i));
-            doc.setDocType(DocumentType.APPROVAL);
-            doc.setTitle(docTitles[random.nextInt(docTitles.length)] + " #" + i);
-            doc.setDepartment(dept);
-            doc.setAuthorUser(author);
-            doc.setAuthorEmployee(author.getEmployee());
-            doc.setAuthorRole(author.getRoles().stream().findFirst().orElse(null));
-
-            // 상태는 초안/진행/완료 랜덤
-            DocumentStatus[] statuses = DocumentStatus.values();
-            doc.setStatus(statuses[random.nextInt(statuses.length)]);
-
-            // 결재선 3단계 생성
-            List<ApproverStep> approvers = new ArrayList<>();
-            for (int step = 1; step <= 3; step++) {
-                UserEntity approver = users.get(random.nextInt(users.size()));
-                approvers.add(new ApproverStep(
-                        step,
-                        approver.getEmpName(),
-                        approver.getUsername(),
-                        step == 3 ? Decision.APPROVED : "검토",
-                        step <= 1 ? "완료" : "대기중"
-                ));
-            }
-            doc.setApprovalLine(approvers);
-
-            // 내용 데이터 (JSON)
-            Map<String, Object> content = new LinkedHashMap<>();
-            content.put("항목", "테스트 데이터");
-            content.put("금액", random.nextInt(1000000) + "원");
-            content.put("비고", "자동생성 더미");
-            doc.setDocContent(content);
-
-            // 감사정보
-            doc.markCreated(UserDTO.from(author));
-
-            docs.add(doc);
-        }
-
-        approvalRepository.saveAll(docs);
-        log.info("✅ 전자결재 더미데이터 32건 생성 완료");
-    }
+//    // =========================================================
+//// 6️⃣ 게시판 & 전자결재 더미 데이터
+//// =========================================================
+//
+//    private BoardRepository boardRepository;
+//    private ApprovalDocumentsRepository approvalDocumentsRepository;
+//
+//    private void initBoardDummy(List<UserEntity> users) {
+//        if (boardRepository.count() > 0) {
+//            log.info("📘 게시판 데이터 이미 존재 — skip");
+//            return;
+//        }
+//
+//        String[] titles = {
+//                "업무 공지", "개발 회의", "사내 공모전", "보안 점검 안내", "팀 프로젝트 공유",
+//                "주간 업무 보고", "사내 이벤트", "제안사항", "시스템 점검 안내", "신입 환영 게시글"
+//        };
+//
+//        String[] contents = {
+//                "이번 주 중으로 처리 예정입니다.",
+//                "회의록을 공유드립니다.",
+//                "검토 후 의견 부탁드립니다.",
+//                "협조 바랍니다.",
+//                "좋은 하루 보내세요!"
+//        };
+//
+//        BoardType[] types = BoardType.values();
+//        List<Board> boards = new ArrayList<>();
+//
+//        for (int i = 1; i <= 32; i++) {
+//            UserEntity author = users.get(random.nextInt(users.size()));
+//            BoardType type = types[random.nextInt(types.length)];
+//
+//            Board board = new Board();
+//            board.setBoardType(type);
+//            board.setTitle(titles[random.nextInt(titles.length)] + " #" + i);
+//            board.setContent(contents[random.nextInt(contents.length)]);
+//            board.setAuthorId(author.getUsername());
+//            board.setAuthorName(type == BoardType.SUGGESTION ? "익명" : author.getEmpName());
+//            board.setDeleted(false);
+//
+//            // 감사정보 (UserDTO 직접 생성)
+//            UserDTO dto = new UserDTO(
+//                    author.getUserId(),
+//                    author.getUsername(),
+//                    author.getEmpName(),
+//                    author.getEmail()
+//            );
+//            board.markCreated(dto);
+//
+//            boards.add(board);
+//        }
+//
+//        boardRepository.saveAll(boards);
+//        log.info("✅ 게시판 더미데이터 32건 생성 완료");
+//    }
+//
+//    // =========================================================
+//    // 2️⃣ 전자결재 더미 데이터 생성
+//    // =========================================================
+//    private void initApprovalDummy(List<UserEntity> users, List<Department> depts) {
+//        if (approvalDocumentsRepository.count() > 0) {
+//            log.info("📄 전자결재 데이터 이미 존재 — skip");
+//            return;
+//        }
+//
+//        String[] docTitles = {
+//                "품의서", "프로젝트 기획안", "견적서/제안서 발송 품의서", "지출결의서", "구매 품의서"
+//                , "휴가 신청서", "퇴직서", "인사발령"
+//        };
+//
+//        List<ApprovalDocuments> docs = new ArrayList<>();
+//
+//        for (int i = 1; i <= 32; i++) {
+//            UserEntity author = users.get(random.nextInt(users.size()));
+//            Department dept = depts.get(random.nextInt(depts.size()));
+//
+//            ApprovalDocuments doc = new ApprovalDocuments();
+//            doc.setDocId(depts.contains(users.));
+//            doc.setDocId("DOC-" + String.format("%03d", i));
+//            doc.setDocType(DocumentType.APPROVAL);
+//            doc.setTitle(docTitles[random.nextInt(docTitles.length)] + " #" + i);
+//            doc.setDepartment(dept);
+//            doc.setAuthorUser(author);
+//            doc.setAuthorEmployee(author.getEmployee());
+//            doc.setAuthorRole(author.getRoles().stream().findFirst().orElse(null));
+//
+//            // 상태는 초안/진행/완료 랜덤
+//            DocumentStatus[] statuses = DocumentStatus.values();
+//            doc.setStatus(statuses[random.nextInt(statuses.length)]);
+//
+//            // 결재선 3단계 생성
+//            List<ApproverStep> approvers = new ArrayList<>();
+//            for (int step = 1; step <= 3; step++) {
+//                UserEntity approver = users.get(random.nextInt(users.size()));
+//                approvers.add(new ApproverStep(
+//                        step,
+//                        approver.getEmpName(),
+//                        approver.getUsername(),
+//                        step == 3 ? Decision.APPROVED : "검토",
+//                        step <= 1 ? "완료" : "대기중"
+//                ));
+//            }
+//            doc.setApprovalLine(approvers);
+//
+//            // 내용 데이터 (JSON)
+//            Map<String, Object> content = new LinkedHashMap<>();
+//            content.put("항목", "테스트 데이터");
+//            content.put("금액", random.nextInt(1000000) + "원");
+//            content.put("비고", "자동생성 더미");
+//            doc.setDocContent(content);
+//
+//            // 감사정보
+//            doc.markCreated(UserDTO.from(author));
+//
+//            docs.add(doc);
+//        }
+//
+//        approvalRepository.saveAll(docs);
+//        log.info("✅ 전자결재 더미데이터 32건 생성 완료");
+//    }
 }

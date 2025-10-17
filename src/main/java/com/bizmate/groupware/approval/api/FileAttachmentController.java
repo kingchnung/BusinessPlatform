@@ -2,10 +2,10 @@ package com.bizmate.groupware.approval.api;
 
 import com.bizmate.common.exception.VerificationFailedException;
 import com.bizmate.groupware.approval.domain.ApprovalDocuments;
-import com.bizmate.groupware.approval.domain.FileAttachment;
+import com.bizmate.groupware.approval.domain.ApprovalFileAttachment;
 import com.bizmate.groupware.approval.dto.FileAttachmentDto;
 import com.bizmate.groupware.approval.repository.ApprovalDocumentsRepository;
-import com.bizmate.groupware.approval.repository.FileAttachmentRepository;
+import com.bizmate.groupware.approval.repository.ApprovalFileAttachmentRepository;
 import com.bizmate.hr.domain.UserEntity;
 import com.bizmate.hr.repository.UserRepository;
 import io.jsonwebtoken.io.IOException;
@@ -39,7 +39,7 @@ import java.util.stream.Collectors;
 public class FileAttachmentController {
 
     private final EntityManager entityManager;
-    private final FileAttachmentRepository fileAttachmentRepository;
+    private final ApprovalFileAttachmentRepository approvalFileAttachmentRepository;
     private final ApprovalDocumentsRepository approvalDocumentsRepository;
     private final UserRepository userRepository;
 
@@ -77,7 +77,7 @@ public class FileAttachmentController {
         file.transferTo(filePath.toFile());
 
         // DB 저장
-        FileAttachment entity = FileAttachment.builder()
+        ApprovalFileAttachment entity = ApprovalFileAttachment.builder()
                 .document(document)               // ✅ 문서가 없으면 null로 저장
                 .uploader(uploader)
                 .originalName(file.getOriginalFilename())
@@ -88,7 +88,7 @@ public class FileAttachmentController {
                 .uploadedAt(LocalDateTime.now())
                 .build();
 
-        FileAttachment saved = fileAttachmentRepository.saveAndFlush(entity);
+        ApprovalFileAttachment saved = approvalFileAttachmentRepository.saveAndFlush(entity);
         FileAttachmentDto dto = FileAttachmentDto.fromEntity(saved);
 
         log.info("✅ 업로드 완료: {} (문서ID: {})", saved.getOriginalName(), document != null ? document.getDocId() : "임시");
@@ -100,7 +100,7 @@ public class FileAttachmentController {
      */
     @GetMapping("/list/{docId}")
     public ResponseEntity<List<FileAttachmentDto>> getFileList(@PathVariable String docId) {
-        List<FileAttachmentDto> dtoList = fileAttachmentRepository.findByDocument_DocId(docId)
+        List<FileAttachmentDto> dtoList = approvalFileAttachmentRepository.findByDocument_DocId(docId)
                 .stream()
                 .map(FileAttachmentDto::fromEntity)
                 .collect(Collectors.toList());
@@ -112,7 +112,7 @@ public class FileAttachmentController {
     // ✅ 미리보기
     @GetMapping("/preview/{id}")
     public ResponseEntity<Resource> preview(@PathVariable Long id) throws IOException {
-        FileAttachment file = fileAttachmentRepository.findById(id)
+        ApprovalFileAttachment file = approvalFileAttachmentRepository.findById(id)
                 .orElseThrow(() -> new IllegalStateException("파일을 찾을 수 없습니다."));
 
         Path path = Paths.get(file.getFilePath());
@@ -136,7 +136,7 @@ public class FileAttachmentController {
     // ✅ 다운로드
     @GetMapping("/download/{id}")
     public ResponseEntity<Resource> download(@PathVariable Long id) throws IOException {
-        FileAttachment file = fileAttachmentRepository.findById(id)
+        ApprovalFileAttachment file = approvalFileAttachmentRepository.findById(id)
                 .orElseThrow(() -> new IllegalStateException("파일을 찾을 수 없습니다."));
 
         Path path = Paths.get(file.getFilePath());

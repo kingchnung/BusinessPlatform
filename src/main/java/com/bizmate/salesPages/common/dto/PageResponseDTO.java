@@ -1,9 +1,10 @@
-package com.bizmate.common.dto;
+package com.bizmate.salesPages.common.dto;
 
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import com.bizmate.salesPages.common.dto.PageRequestDTO;
 import lombok.Builder;
 import lombok.Data;
 

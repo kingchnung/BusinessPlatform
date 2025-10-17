@@ -1,7 +1,7 @@
 package com.bizmate.groupware.approval.service;
 
-import com.bizmate.common.dto.PageRequestDTO;
-import com.bizmate.common.dto.PageResponseDTO;
+
+
 import com.bizmate.common.exception.VerificationFailedException;
 import com.bizmate.groupware.approval.domain.*;
 import com.bizmate.groupware.approval.dto.ApprovalDocumentsDto;
@@ -9,13 +9,15 @@ import com.bizmate.groupware.approval.dto.DocumentSearchRequestDto;
 import com.bizmate.groupware.approval.dto.FileAttachmentDto;
 import com.bizmate.groupware.approval.notification.NotificationService;
 import com.bizmate.groupware.approval.repository.ApprovalDocumentsRepository;
-import com.bizmate.groupware.approval.repository.FileAttachmentRepository;
+import com.bizmate.groupware.approval.repository.ApprovalFileAttachmentRepository;
 import com.bizmate.hr.domain.Department;
 import com.bizmate.hr.domain.UserEntity;
 import com.bizmate.hr.dto.user.UserDTO;
 import com.bizmate.hr.repository.DepartmentRepository;
 import com.bizmate.hr.repository.EmployeeRepository;
 import com.bizmate.hr.repository.UserRepository;
+import com.bizmate.project.dto.PageRequestDTO;
+import com.bizmate.project.dto.PageResponseDTO;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,7 +39,7 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
 
     private final ApprovalDocumentsRepository approvalDocumentsRepository;
     private final DepartmentRepository departmentRepository;
-    private final FileAttachmentRepository fileAttachmentRepository;
+    private final ApprovalFileAttachmentRepository fileAttachmentRepository;
     private final UserRepository userRepository;
     private final ApprovalIdGenerator approvalIdGenerator;
     private final EmployeeRepository employeeRepository;
@@ -490,7 +492,7 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
        ------------------------------------------------------------- */
     private void handleFileAttachments(ApprovalDocumentsDto dto, ApprovalDocuments saved, UserDTO loginUser) {
         if (dto.getAttachments() != null && !dto.getAttachments().isEmpty()) {
-            List<FileAttachment> newAttachments = dto.getAttachments().stream()
+            List<ApprovalFileAttachment> newAttachments = dto.getAttachments().stream()
                     .filter(a -> a.getId() == null)
                     .map(a -> a.toEntity(saved))
                     .toList();
@@ -512,7 +514,7 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
             return;
         }
 
-        List<FileAttachment> list = attachmentDtos.stream()
+        List<ApprovalFileAttachment> list = attachmentDtos.stream()
                 .map(dto -> dto.toEntity(document))
                 .toList();
 

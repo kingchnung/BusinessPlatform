@@ -1,10 +1,14 @@
 package com.bizmate.salesPages.client.service;
 
-import com.bizmate.salesPages.common.dto.PageRequestDTO;
-import com.bizmate.salesPages.common.dto.PageResponseDTO;
+
+
+
+
 import com.bizmate.salesPages.client.domain.Client;
 import com.bizmate.salesPages.client.dto.ClientDTO;
 import com.bizmate.salesPages.client.repository.ClientRepository;
+import com.bizmate.salesPages.common.dto.PageRequestDTO;
+import com.bizmate.salesPages.common.dto.PageResponseDTO;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
@@ -57,22 +61,22 @@ public class ClientServiceImpl implements ClientService{
 
     @Override
     public void clientModify(ClientDTO clientDTO) {
-        Optional<Client> result = clientRepository.findById(clientDTO.getClientNo());
-        Client client = result.orElseThrow();
-
-        client.changeClientId(clientDTO.getClientId());
-        client.changeClientCompany(clientDTO.getClientCompany());
-        client.changeClientCeo(clientDTO.getClientCeo());
-        client.changeClientBusinessType(clientDTO.getClientBusinessType());
-        client.changeClientAddress(clientDTO.getClientAddress());
-        client.changeClientContact(clientDTO.getClientContact());
-        client.changeClientNote(clientDTO.getClientNote());
-        client.changeBusinessLicenseFile(clientDTO.getBusinessLicenseFile());
-        client.changeEmpName(clientDTO.getEmpName());
-        client.changeClientEmail(clientDTO.getClientEmail());
-        client.changeUserId(clientDTO.getUserId());
-
-        clientRepository.save(client);
+//        Optional<Client> result = clientRepository.findById(clientDTO.getClientNo());
+//        Client client = result.orElseThrow();
+//
+//        client.changeClientId(clientDTO.getClientId());
+//        client.changeClientCompany(clientDTO.getClientCompany());
+//        client.changeClientCeo(clientDTO.getClientCeo());
+//        client.changeClientBusinessType(clientDTO.getClientBusinessType());
+//        client.changeClientAddress(clientDTO.getClientAddress());
+//        client.changeClientContact(clientDTO.getClientContact());
+//        client.changeClientNote(clientDTO.getClientNote());
+//        client.changeBusinessLicenseFile(clientDTO.getBusinessLicenseFile());
+//        client.changeEmpName(clientDTO.getEmpName());
+//        client.changeClientEmail(clientDTO.getClientEmail());
+//        client.changeUserId(clientDTO.getUserId());
+//
+//        clientRepository.save(client);
     }
 
     @Override
@@ -103,7 +107,7 @@ public class ClientServiceImpl implements ClientService{
                 result = clientRepository.findByClientContactContaining(pageRequestDTO.getKeyword(),pageable);
                 break;
             case  "empName" :
-                result = clientRepository.findByEmpNameContaining(pageRequestDTO.getKeyword(),pageable);
+                result = clientRepository.findByUserIdContaining(pageRequestDTO.getKeyword(),pageable);
                 break;
             default:
                 result = clientRepository.findAll(pageable);

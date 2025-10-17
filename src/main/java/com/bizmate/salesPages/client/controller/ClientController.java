@@ -1,9 +1,13 @@
 package com.bizmate.salesPages.client.controller;
 
-import com.bizmate.salesPages.common.dto.PageRequestDTO;
-import com.bizmate.salesPages.common.dto.PageResponseDTO;
+
+
+
+
 import com.bizmate.salesPages.client.dto.ClientDTO;
 import com.bizmate.salesPages.client.service.ClientService;
+import com.bizmate.salesPages.common.dto.PageRequestDTO;
+import com.bizmate.salesPages.common.dto.PageResponseDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 

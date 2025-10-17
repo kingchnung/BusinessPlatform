@@ -1,4 +1,4 @@
-package com.bizmate.common.dto;
+package com.bizmate.project.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

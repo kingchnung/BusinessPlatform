@@ -1,8 +1,9 @@
 package com.bizmate.groupware.approval.service;
 
 import com.bizmate.groupware.approval.domain.ApprovalDocuments;
-import com.bizmate.groupware.approval.domain.FileAttachment;
-import com.bizmate.groupware.approval.repository.FileAttachmentRepository;
+import com.bizmate.groupware.approval.domain.ApprovalFileAttachment;
+import com.bizmate.groupware.approval.domain.ApprovalFileAttachment;
+import com.bizmate.groupware.approval.repository.ApprovalFileAttachmentRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -20,12 +21,12 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class FileStorageServiceImpl implements FileStorageService {
 
-    private final FileAttachmentRepository fileAttachmentRepository;
+    private final ApprovalFileAttachmentRepository fileAttachmentRepository;
 
     // ✅ OS별 경로 맞게 변경 가능
     private static final String UPLOAD_DIR = "C:/bizmate/uploads";
 
-    public FileAttachment saveFile(MultipartFile file, ApprovalDocuments document) {
+    public ApprovalFileAttachment saveFile(MultipartFile file, ApprovalDocuments document) {
         try {
             if (file.isEmpty()) {
                 throw new IllegalArgumentException("파일이 비어 있습니다.");
@@ -59,7 +60,7 @@ public class FileStorageServiceImpl implements FileStorageService {
             }
 
             // ✅ DB 저장
-            FileAttachment attachment = FileAttachment.builder()
+            ApprovalFileAttachment attachment = ApprovalFileAttachment.builder()
                     .document(document)
                     .originalName(originalName)
                     .storedName(storedName)
@@ -69,7 +70,7 @@ public class FileStorageServiceImpl implements FileStorageService {
                     .uploadedAt(LocalDateTime.now())
                     .build();
 
-            FileAttachment saved = fileAttachmentRepository.save(attachment);
+            ApprovalFileAttachment saved = fileAttachmentRepository.save(attachment);
             log.info("✅ 파일 저장 완료: {} ({} bytes, type={})", originalName, file.getSize(), contentType);
             return saved;
 

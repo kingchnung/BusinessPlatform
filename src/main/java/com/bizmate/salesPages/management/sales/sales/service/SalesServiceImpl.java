@@ -69,21 +69,21 @@ public class SalesServiceImpl implements SalesService{
 
     @Override
     public void modify(SalesDTO salesDTO) {
-        Optional<Sales> result = salesRepository.findById(salesDTO.getSalesId());
-        Sales sales = result.orElseThrow(()->
-                new NoSuchElementException("Sales ID ["+ salesDTO.getOrderId()+ "]을 찾을 수 없습니다."));
-
-        sales.changeSalesAmount(salesDTO.getSalesAmount());
-        sales.changeDeploymentDate(salesDTO.getDeploymentDate());
-        sales.changeUserId(salesDTO.getUserId());
-        sales.changeWriter(salesDTO.getWriter());
-        sales.changeClientId(salesDTO.getClientId());
-        sales.changeClientCompany(salesDTO.getClientCompany());
-        sales.changeSalesNote(salesDTO.getSalesNote());
-        sales.changeProjectId(salesDTO.getProjectId());
-        sales.changeProjectName(salesDTO.getProjectName());
-
-        salesRepository.save(sales);
+//        Optional<Sales> result = salesRepository.findById(salesDTO.getSalesId());
+//        Sales sales = result.orElseThrow(()->
+//                new NoSuchElementException("Sales ID ["+ salesDTO.getOrderId()+ "]을 찾을 수 없습니다."));
+//
+//        sales.changeSalesAmount(salesDTO.getSalesAmount());
+//        sales.changeDeploymentDate(salesDTO.getDeploymentDate());
+//        sales.changeUserId(salesDTO.getUserId());
+//        sales.changeWriter(salesDTO.getWriter());
+//        sales.changeClientId(salesDTO.getClientId());
+//        sales.changeClientCompany(salesDTO.getClientCompany());
+//        sales.changeSalesNote(salesDTO.getSalesNote());
+//        sales.changeProjectId(salesDTO.getProjectId());
+//        sales.changeProjectName(salesDTO.getProjectName());
+//
+//        salesRepository.save(sales);
     }
 
     @Override

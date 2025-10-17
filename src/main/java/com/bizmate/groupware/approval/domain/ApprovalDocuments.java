@@ -98,7 +98,7 @@ public class ApprovalDocuments extends BaseEntity {
 
     @Builder.Default
     @OneToMany(mappedBy = "document", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<FileAttachment> attachments = new ArrayList<>();
+    private List<ApprovalFileAttachment> attachments = new ArrayList<>();
 
     /* ----------------------------- 결재 이력 필드 ------------------------------ */
 

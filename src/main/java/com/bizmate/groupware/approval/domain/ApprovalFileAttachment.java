@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 @Table(name = "APPROVAL_ATTACHMENT")
-public class FileAttachment {
+public class ApprovalFileAttachment {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
