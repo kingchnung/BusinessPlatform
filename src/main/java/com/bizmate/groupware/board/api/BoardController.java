@@ -20,15 +20,17 @@ public class BoardController {
 
     // ✅ 게시판 목록 조회 (공지사항, 건의사항, 일반)
     @GetMapping
-    public ResponseEntity<List<BoardDto>> getBoards(@RequestParam BoardType type) {
-        List<BoardDto> boards = boardService.getBoardsByType(type);
+    public ResponseEntity<List<BoardDto>> getBoards(@RequestParam(required = false) BoardType type) {
+        List<BoardDto> boards = (type != null)
+                ? boardService.getBoardsByType(type)
+                : boardService.getAllBoards(); // ✅ 전체 목록용 서비스 추가
         return ResponseEntity.ok(boards);
     }
 
     // ✅ 게시글 상세 조회
-    @GetMapping("/{id}")
-    public ResponseEntity<BoardDto> getBoard(@PathVariable Long id) {
-        BoardDto board = boardService.getBoard(id);
+    @GetMapping("/{boardNo}")
+    public ResponseEntity<BoardDto> getBoard(@PathVariable Long boardNo) {
+        BoardDto board = boardService.getBoard(boardNo);
         return ResponseEntity.ok(board);
     }
 
@@ -43,23 +45,23 @@ public class BoardController {
     }
 
     // ✅ 게시글 수정
-    @PutMapping("/{id}")
+    @PutMapping("/{boardNo}")
     public ResponseEntity<BoardDto> updateBoard(
-            @PathVariable Long id,
+            @PathVariable Long boardNo,
             @RequestBody BoardDto dto,
             @AuthenticationPrincipal UserPrincipal user
     ) {
-        BoardDto updated = boardService.updateBoard(id, dto, user);
+        BoardDto updated = boardService.updateBoard(boardNo, dto, user);
         return ResponseEntity.ok(updated);
     }
 
     // ✅ 게시글 삭제 (논리 삭제)
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{boardNo}")
     public ResponseEntity<Void> deleteBoard(
-            @PathVariable Long id,
+            @PathVariable Long boardNo,
             @AuthenticationPrincipal UserPrincipal user
     ) {
-        boardService.deleteBoard(id, user);
+        boardService.deleteBoard(boardNo, user);
         return ResponseEntity.noContent().build();
     }
 

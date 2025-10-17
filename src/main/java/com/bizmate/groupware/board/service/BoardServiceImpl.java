@@ -28,18 +28,18 @@ public class BoardServiceImpl implements BoardService {
     //게시글 등록
     @Override
     public BoardDto createBoard(BoardDto dto, UserPrincipal user) {
-//        if (dto.getType() == BoardType.NOTICE && !user.isAdmin()) {
+//        if (dto.getBoardType() == BoardType.NOTICE && !user.isAdmin()) {
 //            throw new VerificationFailedException("공지사항은 관리자만 등록할 수 있습니다.");
 //        }
 
-        String displayName = (dto.getType() == BoardType.SUGGESTION)
+        String displayName = (dto.getBoardType() == BoardType.SUGGESTION)
                 ? "익명" : user.getEmpName();
 
         Board board = Board.builder()
-                .type(dto.getType())
+                .boardType(dto.getBoardType())
                 .title(dto.getTitle())
                 .content(dto.getContent())
-                .authorName(user.getUsername())
+                .authorId(user.getUsername())
                 .authorName(displayName)
                 .isDeleted(false)
                 .build();
@@ -58,7 +58,7 @@ public class BoardServiceImpl implements BoardService {
 //            throw new VerificationFailedException("삭제 권한이 없습니다.");
 //        }
 
-        board.setIsDeleted(true);
+        board.setDeleted(true);
     }
 
     //댓글 등록
@@ -69,16 +69,16 @@ public class BoardServiceImpl implements BoardService {
                 .orElseThrow(() -> new EntityNotFoundException("게시글이 존재하지 않습니다."));
 
         // 공지사항은 댓글 금지
-        if (board.getType() == BoardType.NOTICE) {
+        if (board.getBoardType() == BoardType.NOTICE) {
             throw new VerificationFailedException("공지사항에는 댓글을 달 수 없습니다.");
         }
 
-        String displayName = board.getType() == BoardType.SUGGESTION ? "익명" : user.getEmpName();
+        String displayName = board.getBoardType() == BoardType.SUGGESTION ? "익명" : user.getEmpName();
 
         Comment comment = Comment.builder()
                 .board(board)
                 .content(content)
-                .authorId(user.getUserId())
+                .authorId(user.getUsername())
                 .authorName(displayName)
                 .build();
 
@@ -87,7 +87,7 @@ public class BoardServiceImpl implements BoardService {
 
     @Override
     public List<BoardDto> getBoardsByType(BoardType type) {
-        return boardRepository.findByTypeAndIsDeletedFalseOrderByCreatedAtDesc(type)
+        return boardRepository.findByBoardTypeAndIsDeletedFalse(type)
                 .stream()
                 .map(this::toDto)
                 .toList();
@@ -114,15 +114,23 @@ public class BoardServiceImpl implements BoardService {
         return toDto(board);
     }
 
+    @Override
+    public List<BoardDto> getAllBoards() {
+        return boardRepository.findAllOrderByPriority()
+                .stream()
+                .map(this::toDto)
+                .toList();
+    }
+
     private BoardDto toDto(Board board) {
         return BoardDto.builder()
                 .boardNo(board.getBoardNo())
-                .type(board.getType())
+                .boardType(board.getBoardType())
                 .title(board.getTitle())
                 .content(board.getContent())
                 .authorName(board.getAuthorName())
                 .createdAt(board.getCreatedAt())
-                .isDeleted(board.getIsDeleted())
+                .isDeleted(board.isDeleted())
                 .build();
     }
 

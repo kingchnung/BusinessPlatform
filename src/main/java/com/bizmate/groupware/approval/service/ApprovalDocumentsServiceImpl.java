@@ -7,33 +7,25 @@ import com.bizmate.groupware.approval.domain.*;
 import com.bizmate.groupware.approval.dto.ApprovalDocumentsDto;
 import com.bizmate.groupware.approval.dto.DocumentSearchRequestDto;
 import com.bizmate.groupware.approval.dto.FileAttachmentDto;
+import com.bizmate.groupware.approval.notification.NotificationService;
 import com.bizmate.groupware.approval.repository.ApprovalDocumentsRepository;
 import com.bizmate.groupware.approval.repository.FileAttachmentRepository;
 import com.bizmate.hr.domain.Department;
 import com.bizmate.hr.domain.UserEntity;
 import com.bizmate.hr.dto.user.UserDTO;
 import com.bizmate.hr.repository.DepartmentRepository;
+import com.bizmate.hr.repository.EmployeeRepository;
 import com.bizmate.hr.repository.UserRepository;
-import com.bizmate.hr.security.UserPrincipal;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -48,6 +40,8 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
     private final FileAttachmentRepository fileAttachmentRepository;
     private final UserRepository userRepository;
     private final ApprovalIdGenerator approvalIdGenerator;
+    private final EmployeeRepository employeeRepository;
+    private final NotificationService notificationService;
 
     /* -------------------------------------------------------------
        ① 임시저장 (DRAFT)
@@ -164,7 +158,23 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
         // ✅ 첨부파일 처리
         handleFileAttachments(dto, saved, loginUser);
 
-        log.info("✅ 상신 완료: 문서ID={}", saved.getDocId());
+        // ✅ 다음 결재자 이메일 알림
+        if (saved.getApprovalLine() != null && !saved.getApprovalLine().isEmpty()) {
+            ApproverStep next = saved.getApprovalLine().get(0); // 첫 번째 결재자
+            userRepository.findByUsername(next.approverId()).ifPresent(nextUser -> {
+                if (nextUser.getEmail() != null && !nextUser.getEmail().isBlank()) {
+                    notificationService.sendApprovalRequestMail(
+                            nextUser.getEmail(),
+                            nextUser.getEmpName(),
+                            saved.getTitle(),
+                            saved.getDocId(),
+                            loginUser.getEmpName()
+                    );
+                }
+            });
+        }
+
+        log.info("✅ 상신 완료 및 메일 발송: 문서ID={}", saved.getDocId());
         return mapEntityToDto(saved);
     }
 
@@ -224,6 +234,23 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
         // 6️⃣ 저장 및 즉시 flush
         approvalDocumentsRepository.saveAndFlush(document);
 
+        // ✅ 첫 번째 결재자에게 메일 발송
+        try {
+            ApproverStep firstApprover = resetLine.get(0);
+            userRepository.findByUsername(firstApprover.approverId()).ifPresent(approverUser -> {
+                log.info("📨 재상신 알림 대상: {}", approverUser.getEmail());
+                notificationService.sendApprovalRequestMail(
+                        approverUser.getEmail(),
+                        approverUser.getEmpName(),
+                        document.getTitle(),
+                        document.getDocId(),
+                        loginUser.getEmpName()
+                );
+            });
+        } catch (Exception e) {
+            log.error("❌ 재상신 알림 메일 발송 실패: {}", e.getMessage(), e);
+        }
+
         log.info("✅ 재상신 완료: 문서ID={}, 상태={}, 첫 결재자={}",
                 docId,
                 document.getStatus(),
@@ -275,11 +302,30 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
         // 🔹 변경점: 다음 결재자 존재 여부에 따라 상태 및 인덱스 이동
         if (idx + 1 < line.size()) {
             document.setCurrentApproverIndex(idx + 1);
+
+            ApproverStep next = line.get(idx + 1);
+            userRepository.findByUsername(next.approverId()).ifPresent(nextUser -> {
+                if(nextUser.getEmail() != null && !nextUser.getEmail().isBlank()) {
+                    notificationService.sendApprovalRequestMail(
+                            nextUser.getEmail(),
+                            nextUser.getEmpName(),
+                            document.getTitle(),
+                            document.getDocId(),
+                            loginUser.getEmpName()
+                    );
+                }
+            });
         } else {
             document.setStatus(DocumentStatus.APPROVED);
             document.setApprovedBy(loginUser.getEmpName());
             document.setApprovedDate(LocalDateTime.now());
             document.setApprovedEmpId(loginUser.getEmpId());
+            notificationService.sendApprovalCompleteMail(
+                    document.getAuthorUser().getEmail(),
+                    document.getTitle(),
+                    document.getDocId(),
+                    loginUser.getEmpName()
+            );
             log.info("✅ 모든 결재자 승인 완료 → 문서 최종 승인됨");
         }
 
@@ -340,6 +386,19 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
         document.markUpdated(loginUser);
         approvalDocumentsRepository.saveAndFlush(document);
 
+        // ✅ 반려 메일 발송
+        UserEntity author = document.getAuthorUser();
+        if (author != null && author.getEmail() != null) {
+            notificationService.sendRejectMail(
+                    author.getEmail(),
+                    document.getTitle(),
+                    document.getDocId(),
+                    loginUser.getEmpName(),
+                    reason
+            );
+        }
+
+        log.info("📩 반려 메일 전송 완료: {}", author != null ? author.getEmail() : "N/A");
         return mapEntityToDto(document);
     }
 

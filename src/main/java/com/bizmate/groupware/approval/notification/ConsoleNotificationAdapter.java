@@ -1,4 +1,4 @@
-package com.bizmate.groupware.approval.util;
+package com.bizmate.groupware.approval.notification;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;

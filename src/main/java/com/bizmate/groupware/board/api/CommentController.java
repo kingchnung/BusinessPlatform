@@ -9,32 +9,41 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
-@RequestMapping("api/comments")
+@RequestMapping("/api/boards/{boardNo}/comment")
 @RequiredArgsConstructor
 @Slf4j
 public class CommentController {
 
     private final CommentService commentService;
 
+    // ✅ 댓글 목록 조회
+    @GetMapping
+    public ResponseEntity<List<CommentDto>> getComments(@PathVariable Long boardNo) {
+        List<CommentDto> comments = commentService.getComments(boardNo);
+        return ResponseEntity.ok(comments);
+    }
+
     // ✅ 댓글 등록
-    @PostMapping("/{boardId}")
+    @PostMapping
     public ResponseEntity<CommentDto> addComment(
-            @PathVariable Long boardId,
+            @PathVariable Long boardNo,
             @RequestBody CommentDto dto,
             @AuthenticationPrincipal UserPrincipal user
     ) {
-        CommentDto saved = commentService.addComment(boardId, dto.getContent(), user);
+        CommentDto saved = commentService.addComment(boardNo, dto.getContent(), user);
         return ResponseEntity.ok(saved);
     }
 
     // ✅ 댓글 삭제
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{commentNo}")
     public ResponseEntity<Void> deleteComment(
-            @PathVariable Long id,
+            @PathVariable Long commentNo,
             @AuthenticationPrincipal UserPrincipal user
     ) {
-        commentService.deleteComment(id, user);
+        commentService.deleteComment(commentNo, user);
         return ResponseEntity.noContent().build();
     }
 }
