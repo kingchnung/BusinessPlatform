@@ -76,7 +76,8 @@ public class CustomSecurityConfig {
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
                                 "/swagger-resources/**",
-                                "/h2-console/**"
+                                "/h2-console/**",
+                                "/api/assignments/**"
                         ).permitAll()
 
                         .requestMatchers("/api/employees/me").authenticated()

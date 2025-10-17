@@ -109,6 +109,17 @@ public class DepartmentServiceImpl implements DepartmentService {
     public void deleteDepartment(Long deptId) {
         Department dept = departmentRepository.findById(deptId)
                 .orElseThrow(() -> new EntityNotFoundException("부서를 찾을 수 없습니다. ID=" + deptId));
+        // ✅✅✅ 핵심: 삭제 전 안전 확인 로직 추가 ✅✅✅
+        // 1. 소속된 직원이 있는지 확인
+        if (!dept.getEmployees().isEmpty()) {
+            throw new IllegalStateException("소속된 직원이 있는 부서는 삭제할 수 없습니다.");
+        }
+
+        // 2. 하위 부서(팀)가 있는지 확인
+        if (!dept.getChildDepts().isEmpty()) {
+            throw new IllegalStateException("하위 부서(팀)가 있는 부서는 삭제할 수 없습니다.");
+        }
+
         departmentRepository.delete(dept);
         log.info("🗑️ 부서 삭제 완료: {}", dept.getDeptName());
     }

@@ -30,15 +30,10 @@ public class AssignmentsHistoryController {
             @RequestBody AssignmentHistoryRequestDTO dto,
             Authentication authentication
     ) {
-        String username = authentication.getName();
+        String username = "admin";
         log.info("👤 [{}] 부서이동 요청: {}", username, dto);
 
         AssignmentHistoryDTO result = assignmentsHistoryService.createAssignment(dto, username);
-
-        log.info("✅ 부서이동 처리 완료 - 직원ID: {}, 부서: {} → {}",
-                dto.getEmpId(),
-                result.getPreviousDepartmentName(),
-                result.getNewDepartmentName());
 
         return result;
     }
