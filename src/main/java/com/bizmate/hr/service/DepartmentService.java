@@ -1,15 +1,21 @@
 package com.bizmate.hr.service;
 
-import com.bizmate.hr.dto.department.*;
+import com.bizmate.hr.dto.department.DepartmentDTO;
+import com.bizmate.hr.dto.department.DepartmentRequestDTO;
 
 import java.util.List;
 
 public interface DepartmentService {
 
-    List<DepartmentOverviewDTO> getDepartmentOverview();  // 현황 조회
-    List<DepartmentDTO> getAllDepartments();              // 전체 목록 조회
-    DepartmentResponseDTO getDepartmentDetail(Long deptId);  // 상세 조회
-    DepartmentResponseDTO createDepartment(DepartmentCreateRequestDTO dto); // 생성
-    DepartmentResponseDTO updateDepartment(Long deptId, DepartmentUpdateRequestDTO dto); // 수정
-    void deleteDepartment(Long deptId);                   // 삭제
+    /** 부서 등록 및 수정 (ID가 있으면 수정, 없으면 등록) */
+    DepartmentDTO saveDepartment(Long deptId, DepartmentRequestDTO requestDTO);
+
+    /** 전체 부서 조회 */
+    List<DepartmentDTO> getAllDepartments();
+
+    /** 특정 부서 조회 */
+    DepartmentDTO getDepartment(Long deptId);
+
+    /** 부서 삭제 */
+    void deleteDepartment(Long deptId);
 }
