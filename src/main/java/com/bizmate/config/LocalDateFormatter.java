@@ -1,4 +1,4 @@
-package com.bizmate.common.controller.formatter;
+package com.bizmate.config;
 
 import org.springframework.format.Formatter;
 

@@ -1,6 +1,5 @@
-package com.bizmate.common.config;
+package com.bizmate.config;
 
-import com.bizmate.common.controller.formatter.LocalDateFormatter;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.format.FormatterRegistry;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
@@ -11,7 +10,7 @@ public class CustomServletConfig implements WebMvcConfigurer {
 
     @Override
     public void addFormatters(FormatterRegistry registry){
-        registry.addFormatter(new LocalDateFormatter());
+        registry.addFormatter(new com.bizmate.config.LocalDateFormatter());
     }
 
     @Override

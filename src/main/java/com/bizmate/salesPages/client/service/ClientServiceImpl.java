@@ -2,7 +2,6 @@ package com.bizmate.salesPages.client.service;
 
 import com.bizmate.common.dto.PageRequestDTO;
 import com.bizmate.common.util.FileUtil;
-import com.bizmate.hr.dto.user.UserDTO;
 import com.bizmate.common.dto.PageResponseDTO;
 import com.bizmate.hr.security.UserPrincipal;
 import com.bizmate.salesPages.client.domain.Client;
@@ -85,7 +84,7 @@ public class ClientServiceImpl implements ClientService{
     }
 
     @Override
-public Long clientRegister(ClientDTO clientDTO, MultipartFile file) { // 👇 [수정] MultipartFile 파라미터 받기
+public Long clientRegister(ClientDTO clientDTO, MultipartFile file) {
     Optional<Client> existingClient = clientRepository.findByClientId(clientDTO.getClientId());
 
     if (existingClient.isPresent()) {
@@ -169,27 +168,8 @@ public Long clientRegister(ClientDTO clientDTO, MultipartFile file) { // 👇 [�
                 pageRequestDTO.getSize(),
                 Sort.by("clientNo").descending());
 
-        Page<Client> result;
+        Page<Client> result = clientRepository.findAll(pageable);
 
-        switch (pageRequestDTO.getSearch()){
-            case "clientId" :
-                result = clientRepository.findByClientIdContaining(pageRequestDTO.getKeyword(),pageable);
-                break;
-            case "clientCompany" :
-                result = clientRepository.findByClientCompanyContaining(pageRequestDTO.getKeyword(), pageable);
-                break;
-            case "clientCeo" :
-                result = clientRepository.findByClientCeoContaining(pageRequestDTO.getKeyword(), pageable);
-                break;
-            case "clientContact" :
-                result = clientRepository.findByClientContactContaining(pageRequestDTO.getKeyword(),pageable);
-                break;
-            case  "userId" :
-                result = clientRepository.findByUserIdContaining(pageRequestDTO.getKeyword(),pageable);
-            default:
-                result = clientRepository.findAll(pageable);
-                break;
-        }
 
         List<ClientDTO> dtoList = result.getContent().stream().map(
                 client -> modelMapper.map(client, ClientDTO.class)).collect(Collectors.toList());
