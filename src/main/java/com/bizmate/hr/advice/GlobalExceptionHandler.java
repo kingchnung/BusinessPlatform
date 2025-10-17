@@ -63,8 +63,8 @@ public class GlobalExceptionHandler {
         log.error("JWTException 발생: {}", ex.getMessage());
 
         Map<String, String> error = Map.of(
-            "error", "JWT_ERROR",
-            "message", ex.getMessage()
+                "error", "JWT_ERROR",
+                "message", ex.getMessage()
         );
         // 토큰 오류는 보통 403 Forbidden으로 처리될 수 있습니다. (인증은 통과했으나 접근 거부)
         return new ResponseEntity<>(error, HttpStatus.FORBIDDEN); // 403

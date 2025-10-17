@@ -1,4 +1,4 @@
-package com.bizmate.config;
+package com.bizmate.common.config;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;

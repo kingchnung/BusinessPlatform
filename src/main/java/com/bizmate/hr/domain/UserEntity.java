@@ -42,12 +42,10 @@ public class UserEntity {
     private String pwHash;
 
     // 5. 계정 활성 여부 ('Y'/'N')
-    @Builder.Default
     @Column(name = "is_active", nullable = false, length = 1)
     private String isActive = "Y";
 
     // 6. 계정 잠금 여부 ('Y'/'N')
-    @Builder.Default
     @Column(name = "is_locked", nullable = false, length = 1)
     private String isLocked = "N";
 

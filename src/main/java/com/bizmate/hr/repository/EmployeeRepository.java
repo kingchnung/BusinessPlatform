@@ -65,7 +65,5 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
 
     List<Employee> findByDepartment_DeptId(Long deptId);
 
-    @Query("SELECT MAX(e.empNo) FROM Employee e")
-    String findMaxEmpNO();
 
 }

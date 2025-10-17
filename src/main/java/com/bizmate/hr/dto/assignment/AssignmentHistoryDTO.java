@@ -1,6 +1,7 @@
 package com.bizmate.hr.dto.assignment;
 
 import com.bizmate.hr.domain.AssignmentsHistory;
+
 import com.bizmate.hr.domain.Department;
 import com.bizmate.hr.domain.code.Position;
 import com.bizmate.hr.domain.code.Grade;

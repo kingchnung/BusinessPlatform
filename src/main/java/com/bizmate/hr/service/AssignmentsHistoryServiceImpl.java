@@ -38,8 +38,8 @@ public class AssignmentsHistoryServiceImpl implements AssignmentsHistoryService 
                 .collect(Collectors.toList());
     }
 
-    @Transactional(readOnly = true)
     @Override
+    @Transactional(readOnly = true)
     public List<AssignmentHistoryDTO> getHistoryByEmployee(Long empId) {
         return historyRepository.findByEmployee_EmpIdOrderByAssDateDesc(empId)
                 .stream()
@@ -47,14 +47,14 @@ public class AssignmentsHistoryServiceImpl implements AssignmentsHistoryService 
                 .collect(Collectors.toList());
     }
 
-//    @Override
-//    @Transactional(readOnly = true)
-//    public List<AssignmentHistoryDTO> getHistoryByDepartment(Long deptId) {
-//        return historyRepository.findByNewDepartment_DeptIdOrderByAssDateDesc(deptId)
-//                .stream()
-//                .map(AssignmentHistoryDTO::fromEntity)
-//                .collect(Collectors.toList());
-//    }
+    @Override
+    @Transactional(readOnly = true)
+    public List<AssignmentHistoryDTO> getHistoryByDepartment(Long deptId) {
+        return historyRepository.findByNewDepartment_DeptIdOrderByAssDateDesc(deptId)
+                .stream()
+                .map(AssignmentHistoryDTO::fromEntity)
+                .collect(Collectors.toList());
+    }
 
     /**
      * 발령 등록 (관리자 전용)
