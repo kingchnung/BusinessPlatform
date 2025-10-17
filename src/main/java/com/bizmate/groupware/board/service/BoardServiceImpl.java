@@ -114,6 +114,14 @@ public class BoardServiceImpl implements BoardService {
         return toDto(board);
     }
 
+    @Override
+    public List<BoardDto> getAllBoards() {
+        return boardRepository.findAllOrderByPriority()
+                .stream()
+                .map(this::toDto)
+                .toList();
+    }
+
     private BoardDto toDto(Board board) {
         return BoardDto.builder()
                 .boardNo(board.getBoardNo())

@@ -18,4 +18,6 @@ public interface BoardService {
     BoardDto getBoard(Long id);
 
     BoardDto updateBoard(Long id, BoardDto dto, UserPrincipal user);
+
+    List<BoardDto> getAllBoards();
 }

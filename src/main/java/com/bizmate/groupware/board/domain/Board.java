@@ -1,9 +1,12 @@
 package com.bizmate.groupware.board.domain;
 
 import com.bizmate.common.domain.BaseEntity;
+import com.bizmate.groupware.approval.domain.DocumentStatus;
+import com.bizmate.hr.dto.user.UserDTO;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,5 +46,17 @@ public class Board extends BaseEntity {
     @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<Comment> comments = new ArrayList<>();
+
+    public void markCreated(UserDTO user) {
+        super.setCreatedBy(user.getUsername());
+        super.setUpdatedBy(user.getUsername());
+        super.setCreatedAt(LocalDateTime.now());
+        super.setUpdatedAt(LocalDateTime.now());
+    }
+
+    public void markUpdated(UserDTO user) {
+        super.setUpdatedBy(user.getUsername());
+        super.setUpdatedAt(LocalDateTime.now());
+    }
 
 }
