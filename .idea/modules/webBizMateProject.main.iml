@@ -1,14 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <module version="4">
-<<<<<<< HEAD
   <component name="AdditionalModuleElements">
     <content url="file://$MODULE_DIR$/../../webBizMateProject/build/generated/sources/annotationProcessor/java/main">
       <sourceFolder url="file://$MODULE_DIR$/../../webBizMateProject/build/generated/sources/annotationProcessor/java/main" isTestSource="false" generated="true" />
     </content>
-=======
+  </component>
   <component name="NewModuleRootManager" inherit-compiler-output="true">
     <exclude-output />
     <orderEntry type="sourceFolder" forTests="false" />
->>>>>>> e41c8756d99f86adfacf976ef40cbc28eba9bbc4
+  </component>
+  <component name="AdditionalModuleElements">
+    <content url="file://$MODULE_DIR$/../../build/generated/sources/annotationProcessor/java/main">
+      <sourceFolder url="file://$MODULE_DIR$/../../build/generated/sources/annotationProcessor/java/main" isTestSource="false" generated="true" />
+    </content>
   </component>
 </module>
