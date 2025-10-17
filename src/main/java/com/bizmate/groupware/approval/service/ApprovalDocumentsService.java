@@ -2,14 +2,15 @@ package com.bizmate.groupware.approval.service;
 
 
 
+import com.bizmate.common.dto.PageRequestDTO;
+import com.bizmate.common.dto.PageResponseDTO;
 import com.bizmate.groupware.approval.domain.DocumentStatus;
 import com.bizmate.groupware.approval.dto.ApprovalDocumentsDto;
 import com.bizmate.groupware.approval.dto.DocumentSearchRequestDto;
 import com.bizmate.hr.domain.Department;
 import com.bizmate.hr.domain.UserEntity;
 import com.bizmate.hr.dto.user.UserDTO;
-import com.bizmate.project.dto.PageRequestDTO;
-import com.bizmate.project.dto.PageResponseDTO;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.data.domain.Page;
 

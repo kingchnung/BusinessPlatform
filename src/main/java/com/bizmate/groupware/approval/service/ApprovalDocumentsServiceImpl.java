@@ -2,12 +2,13 @@ package com.bizmate.groupware.approval.service;
 
 
 
+import com.bizmate.common.dto.PageRequestDTO;
+import com.bizmate.common.dto.PageResponseDTO;
 import com.bizmate.common.exception.VerificationFailedException;
 import com.bizmate.groupware.approval.domain.*;
 import com.bizmate.groupware.approval.dto.ApprovalDocumentsDto;
 import com.bizmate.groupware.approval.dto.DocumentSearchRequestDto;
-import com.bizmate.groupware.approval.dto.FileAttachmentDto;
-import com.bizmate.groupware.approval.infrastructure.JsonMapConverter;
+import com.bizmate.groupware.approval.dto.ApprovalFileAttachmentDto;
 import com.bizmate.groupware.approval.notification.NotificationService;
 import com.bizmate.groupware.approval.repository.ApprovalDocumentsRepository;
 import com.bizmate.groupware.approval.repository.ApprovalFileAttachmentRepository;
@@ -15,10 +16,7 @@ import com.bizmate.hr.domain.Department;
 import com.bizmate.hr.domain.UserEntity;
 import com.bizmate.hr.dto.user.UserDTO;
 import com.bizmate.hr.repository.DepartmentRepository;
-import com.bizmate.hr.repository.EmployeeRepository;
 import com.bizmate.hr.repository.UserRepository;
-import com.bizmate.project.dto.PageRequestDTO;
-import com.bizmate.project.dto.PageResponseDTO;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -513,12 +511,12 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
         } else {
             UserEntity uploader = userRepository.findById(loginUser.getUserId())
                     .orElseThrow(() -> new VerificationFailedException("업로더를 찾을 수 없습니다."));
-            int linkedCount = fileAttachmentRepository.linkPendingFiles(saved, uploader);
+            int linkedCount = fileAttachmentRepository.linkPendingFiles(saved, uploader.getUsername());
             log.info("📎 임시 업로드 {}건 연결됨 (문서ID={})", linkedCount, saved.getDocId());
         }
     }
 
-    private void saveAttachments(List<FileAttachmentDto> attachmentDtos, ApprovalDocuments document) {
+    private void saveAttachments(List<ApprovalFileAttachmentDto> attachmentDtos, ApprovalDocuments document) {
         if (attachmentDtos == null || attachmentDtos.isEmpty()) {
             return;
         }
@@ -666,9 +664,9 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
     private ApprovalDocumentsDto mapEntityToDto(ApprovalDocuments entity) {
 
         UserEntity user = entity.getAuthorUser();
-        List<FileAttachmentDto> attachments = fileAttachmentRepository.findByDocument_DocId(entity.getDocId())
+        List<ApprovalFileAttachmentDto> attachments = fileAttachmentRepository.findByDocument_DocId(entity.getDocId())
                 .stream()
-                .map(FileAttachmentDto::fromEntity)
+                .map(ApprovalFileAttachmentDto::fromEntity)
                 .toList();
 
         return ApprovalDocumentsDto.builder()
