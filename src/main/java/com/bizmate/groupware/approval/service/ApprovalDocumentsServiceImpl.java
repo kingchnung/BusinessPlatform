@@ -6,10 +6,10 @@ import com.bizmate.common.exception.VerificationFailedException;
 import com.bizmate.groupware.approval.domain.*;
 import com.bizmate.groupware.approval.dto.ApprovalDocumentsDto;
 import com.bizmate.groupware.approval.dto.DocumentSearchRequestDto;
-import com.bizmate.groupware.approval.dto.FileAttachmentDto;
+import com.bizmate.groupware.approval.dto.ApprovalFileAttachmentDto;
 import com.bizmate.groupware.approval.notification.NotificationService;
 import com.bizmate.groupware.approval.repository.ApprovalDocumentsRepository;
-import com.bizmate.groupware.approval.repository.FileAttachmentRepository;
+import com.bizmate.groupware.approval.repository.ApprovalFileAttachmentRepository;
 import com.bizmate.hr.domain.Department;
 import com.bizmate.hr.domain.UserEntity;
 import com.bizmate.hr.dto.user.UserDTO;
@@ -26,6 +26,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -37,7 +38,7 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
 
     private final ApprovalDocumentsRepository approvalDocumentsRepository;
     private final DepartmentRepository departmentRepository;
-    private final FileAttachmentRepository fileAttachmentRepository;
+    private final ApprovalFileAttachmentRepository fileAttachmentRepository;
     private final UserRepository userRepository;
     private final ApprovalIdGenerator approvalIdGenerator;
     private final EmployeeRepository employeeRepository;
@@ -84,8 +85,16 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
         ApprovalDocuments entity = mapDtoToEntity(dto, DocumentStatus.DRAFT);
         entity.markCreated(loginUser); // Auditing 기록
 
-        ApprovalDocuments saved = approvalDocumentsRepository.save(entity);
+        // 🔥 열람자 정보 세팅 추가 (DTO에 있으면)
+        if (dto.getViewerIds() != null && !dto.getViewerIds().isEmpty()) {
+            entity.setViewerIds(new ArrayList<>(dto.getViewerIds())); // 새 리스트로 교체
+        }
 
+        ApprovalDocuments saved = approvalDocumentsRepository.saveAndFlush(entity);
+        log.info("📄 [검증] 문서 저장 완료 - docId={}, title={}, status={}",
+                saved.getDocId(), saved.getTitle(), saved.getStatus());
+        approvalDocumentsRepository.flush();
+        log.info("📎 handleFileAttachments() 진입 전 - docId={}", saved.getDocId());
         // ✅ 첨부파일 처리
         handleFileAttachments(dto, saved, loginUser);
 
@@ -153,8 +162,16 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
             entity.markCreated(loginUser);
         }
 
-        ApprovalDocuments saved = approvalDocumentsRepository.save(entity);
+        // ✅ 열람자 정보 반영
+        if (dto.getViewerIds() != null && !dto.getViewerIds().isEmpty()) {
+            entity.setViewerIds(new ArrayList<>(dto.getViewerIds()));
+        }
 
+        ApprovalDocuments saved = approvalDocumentsRepository.saveAndFlush(entity);
+        log.info("📄 [검증] 문서 저장 완료 - docId={}, title={}, status={}",
+                saved.getDocId(), saved.getTitle(), saved.getStatus());
+        approvalDocumentsRepository.flush();
+        log.info("📎 handleFileAttachments() 진입 전 - docId={}", saved.getDocId());
         // ✅ 첨부파일 처리
         handleFileAttachments(dto, saved, loginUser);
 
@@ -489,31 +506,59 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
        ✅ 내부 유틸
        ------------------------------------------------------------- */
     private void handleFileAttachments(ApprovalDocumentsDto dto, ApprovalDocuments saved, UserDTO loginUser) {
-        if (dto.getAttachments() != null && !dto.getAttachments().isEmpty()) {
-            List<FileAttachment> newAttachments = dto.getAttachments().stream()
-                    .filter(a -> a.getId() == null)
-                    .map(a -> a.toEntity(saved))
-                    .toList();
+        log.info("📎 [handleFileAttachments 진입] DTO 첨부파일 수={}, 문서ID={}",
+                dto.getAttachments() != null ? dto.getAttachments().size() : 0,
+                saved.getDocId());
 
-            if (!newAttachments.isEmpty()) {
-                fileAttachmentRepository.saveAll(newAttachments);
-                log.info("📎 첨부파일 {}건 매핑 완료 (문서ID={})", newAttachments.size(), saved.getDocId());
+        UserEntity uploader = userRepository.findById(loginUser.getUserId())
+                .orElseThrow(() -> new VerificationFailedException("업로더(UserEntity)를 찾을 수 없습니다."));
+
+        List<ApprovalFileAttachment> attachedFiles = new ArrayList<>();
+
+        if (dto.getAttachments() != null && !dto.getAttachments().isEmpty()) {
+            for (ApprovalFileAttachmentDto fileDto : dto.getAttachments()) {
+                ApprovalFileAttachment fileEntity;
+
+                if (fileDto.getId() != null) {
+                    // ✅ 이미 업로드된 파일이면 DB에서 다시 attach (영속 상태 확보)
+                    fileEntity = fileAttachmentRepository.findById(fileDto.getId())
+                            .orElseThrow(() -> new VerificationFailedException("존재하지 않는 첨부파일 ID: " + fileDto.getId()));
+
+                    // ✅ 문서(FK) 연결
+                    fileEntity.setDocument(saved);
+                    fileEntity.setUploader(uploader);
+                } else {
+                    // ✅ 신규 파일일 경우 toEntity()로 새로 생성
+                    fileEntity = fileDto.toEntity(saved, uploader);
+                }
+
+                attachedFiles.add(fileEntity);
             }
+
+            // ✅ 문서와 파일 연결 (양방향 관계)
+            saved.getAttachments().clear();
+            saved.getAttachments().addAll(attachedFiles);
+
+            // ✅ 병합 저장 (merge)
+            fileAttachmentRepository.saveAllAndFlush(attachedFiles);
+            log.info("✅ 첨부파일 {}건 연결 완료 (문서ID={})", attachedFiles.size(), saved.getDocId());
         } else {
-            UserEntity uploader = userRepository.findById(loginUser.getUserId())
-                    .orElseThrow(() -> new VerificationFailedException("업로더를 찾을 수 없습니다."));
+            // ✅ 첨부파일 DTO가 비어있을 경우 (임시 업로드 연결)
             int linkedCount = fileAttachmentRepository.linkPendingFiles(saved, uploader);
-            log.info("📎 임시 업로드 {}건 연결됨 (문서ID={})", linkedCount, saved.getDocId());
+            if (linkedCount > 0)
+                log.info("🔗 임시 업로드 {}건 자동 연결됨 (문서ID={})", linkedCount, saved.getDocId());
+            else
+                log.info("⚠️ 연결할 임시 업로드 없음 (uploader={}, docId={})", uploader.getEmpName(), saved.getDocId());
         }
     }
 
-    private void saveAttachments(List<FileAttachmentDto> attachmentDtos, ApprovalDocuments document) {
-        if (attachmentDtos == null || attachmentDtos.isEmpty()) {
+    private void saveAttachments(List<ApprovalFileAttachmentDto> attachmentDto, ApprovalDocuments document) {
+        if (attachmentDto == null || attachmentDto.isEmpty()) {
             return;
         }
 
-        List<FileAttachment> list = attachmentDtos.stream()
-                .map(dto -> dto.toEntity(document))
+        List<ApprovalFileAttachment> list = attachmentDto.stream()
+                .map(dto -> dto.toEntity(document, document.getAuthorUser()))
                 .toList();
 
         fileAttachmentRepository.saveAll(list);
@@ -655,9 +700,10 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
     private ApprovalDocumentsDto mapEntityToDto(ApprovalDocuments entity) {
 
         UserEntity user = entity.getAuthorUser();
-        List<FileAttachmentDto> attachments = fileAttachmentRepository.findByDocument_DocId(entity.getDocId())
+        List<ApprovalFileAttachmentDto> attachments = fileAttachmentRepository
+                .findByDocument_DocId(entity.getDocId())
                 .stream()
-                .map(FileAttachmentDto::fromEntity)
+                .map(ApprovalFileAttachmentDto::fromEntity)
                 .toList();
 
         return ApprovalDocumentsDto.builder()

@@ -46,4 +46,6 @@ public interface ApprovalDocumentsRepository extends JpaRepository<ApprovalDocum
     @Query("SELECT d FROM ApprovalDocuments d WHERE d.status <> 'DELETED'")
     List<ApprovalDocuments> findAllActive();
 
+    ApprovalDocuments findByDocId(String docId);
+
 }

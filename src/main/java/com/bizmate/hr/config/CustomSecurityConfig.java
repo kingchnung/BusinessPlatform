@@ -68,12 +68,9 @@ public class CustomSecurityConfig {
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .formLogin(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-
                 // 2️⃣ 세션 사용 안 함 (JWT 기반)
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
-
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 // 3️⃣ 인가 설정
-        http
                 .authorizeHttpRequests(auth -> auth
                         // 인증 없이 접근 가능한 경로들
                         .requestMatchers(
@@ -82,7 +79,9 @@ public class CustomSecurityConfig {
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
                                 "/swagger-resources/**",
-                                "/h2-console/**"
+                                "/h2-console/**",
+                                "/api/attachments/preview/**",
+                                "/api/attachments/download/**"
                         ).permitAll()
 
                         .requestMatchers("/api/employees/me").authenticated()

@@ -40,12 +40,21 @@ public class JWTCheckFilter extends OncePerRequestFilter {
             FilterChain filterChain
     ) throws ServletException, IOException {
 
+        log.info("🧭 JWTCheckFilter 요청 URI: {}", request.getRequestURI());
         String header = request.getHeader("Authorization");
+        String path = request.getRequestURI();
+
+        // ✅ 업로드 미리보기 / 다운로드는 인증 없이 통과
+        if (path.startsWith("/api/attachments/preview") || path.startsWith("/api/attachments/download")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
 
         if (header == null || !header.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
         }
+
 
         String token = header.substring(7); // “Bearer “ 제거
 

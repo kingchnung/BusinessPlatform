@@ -74,9 +74,11 @@ public class CustomUserDetailsService implements UserDetailsService {
         }
 
         principal.setEmail(user.getEmail()); // ✅ 이메일 추가
+        principal.setDeptCode(user.getEmployee().getDepartment().getDeptCode());
+        principal.setDeptName(user.getEmployee().getDepartment().getDeptName());
 
-        log.info("✅ 로그인 사용자 로드 완료: userId={}, username={}, empName={}, email={}",
-                principal.getUserId(), principal.getUsername(), principal.getEmpName(), principal.getEmail());
+        log.info("✅ 로그인 사용자 로드 완료: userId={}, username={}, empName={}, email={}, deptCode={}, deptName={}",
+                principal.getUserId(), principal.getUsername(), principal.getEmpName(), principal.getEmail(), principal.getDeptCode(), principal.getDeptName());
 
         return principal;
     }

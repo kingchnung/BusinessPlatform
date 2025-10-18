@@ -39,6 +39,9 @@ dependencies {
     // ✅ 모델 매퍼
     implementation 'org.modelmapper:modelmapper:3.2.1'
 
+    // ✅ iText 7 HTML → PDF 변환기 (무료버전 html2pdf)
+    implementation 'com.itextpdf:html2pdf:4.0.4'
+
     // ✅ Lombok
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'

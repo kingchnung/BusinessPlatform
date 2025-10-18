@@ -30,6 +30,7 @@ public class JWTProvider {
     // 비밀 키: 보안상 32바이트 이상 권장. (테스트용)
     private static final String SECRET_KEY = "1234567890123456789012345678901234567890";
     private static final Key ks = Keys.hmacShaKeyFor(SECRET_KEY.getBytes(StandardCharsets.UTF_8));
+
     private final long accessTokenValidityMillis = 1000L * 60 * 60;    // 1시간
     private final long refreshTokenValidityMillis = 1000L * 60 * 60 * 24 * 7; // 7일
     // ★★★ --------------------- ★★★
@@ -40,7 +41,7 @@ public class JWTProvider {
      * Access Token을 생성합니다.
      */
     public String createAccessToken(UserPrincipal principal) {
-        log.info("jwt생성 직전 권한 목록 : {}",principal.getAuthorities());
+        log.info("jwt생성 직전 권한 목록 : {}, user : {}",principal.getAuthorities(), principal.getUsername());
         return createToken(principal, accessTokenValidityMillis);
     }
 
@@ -79,6 +80,8 @@ public class JWTProvider {
         claims.put("empName", principal.getEmpName());
         claims.put("email", principal.getEmail());
         claims.put("empId",principal.getEmpId());
+        claims.put("deptCode", principal.getDeptCode());
+        claims.put("deptName", principal.getDeptName());
         claims.put("roles", principal.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.toList()));
@@ -129,6 +132,8 @@ public class JWTProvider {
         Long empId = claims.get("empId", Long.class);
         String empName = claims.get("empName", String.class);
         String email = claims.get("email", String.class);
+        String deptName = claims.get("deptName", String.class);
+        String deptCode = claims.get("deptCode", String.class);
 
         @SuppressWarnings("unchecked")
         List<String> roles = (List<String>) claims.getOrDefault("roles", Collections.emptyList());
@@ -148,6 +153,8 @@ public class JWTProvider {
         );
         principal.setEmpName(empName);
         principal.setEmail(email);
+        principal.setDeptCode(deptCode);
+        principal.setDeptName(deptName);
 
         return new UsernamePasswordAuthenticationToken(principal, null, authorities);
     }

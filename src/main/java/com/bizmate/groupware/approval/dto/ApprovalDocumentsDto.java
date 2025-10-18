@@ -61,12 +61,15 @@ public class ApprovalDocumentsDto {
     private List<ApproverStep> approvalLine;
 
     @Builder.Default
-    private List<FileAttachmentDto> attachments = new ArrayList<>();
+    private List<ApprovalFileAttachmentDto> attachments = new ArrayList<>();
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
     private String currentApproverId;
+
+    @Builder.Default
+    private List<String> viewerIds = new ArrayList<>();
 
     public void setDocType(DocumentType docType) {
         this.docType = docType;
@@ -96,7 +99,7 @@ public class ApprovalDocumentsDto {
                 .updatedAt(entity.getUpdatedAt())
                 .attachments(entity.getAttachments() != null
                         ? entity.getAttachments().stream()
-                        .map(FileAttachmentDto::fromEntity)
+                        .map(ApprovalFileAttachmentDto::fromEntity)
                         .toList()
                         : null)
                 .build();

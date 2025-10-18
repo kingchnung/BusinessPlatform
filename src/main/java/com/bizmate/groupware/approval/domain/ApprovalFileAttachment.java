@@ -11,8 +11,11 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Table(name = "APPROVAL_ATTACHMENT")
-public class FileAttachment {
+@Table(name = "APPROVAL_ATTACHMENT",
+        indexes = {
+                @Index(name = "IDX_ATTACHMENT_DOC_ID", columnList = "DOC_ID")
+        })
+public class ApprovalFileAttachment {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
