@@ -1,5 +1,6 @@
 package com.bizmate.common.dto;
 
+import com.sun.jdi.PrimitiveValue;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,4 +18,8 @@ public class PageRequestDTO {
 
     @Builder.Default
     private int size = 10;
+
+    private String search;
+    private String keyword;
+
 }
