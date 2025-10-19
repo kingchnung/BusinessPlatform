@@ -10,7 +10,9 @@ import com.bizmate.groupware.approval.dto.ApprovalFileAttachmentDto;
 import com.bizmate.groupware.approval.notification.NotificationService;
 import com.bizmate.groupware.approval.repository.ApprovalDocumentsRepository;
 import com.bizmate.groupware.approval.repository.ApprovalFileAttachmentRepository;
+import com.bizmate.groupware.approval.repository.EmployeeSignatureRepository;
 import com.bizmate.hr.domain.Department;
+import com.bizmate.hr.domain.Employee;
 import com.bizmate.hr.domain.UserEntity;
 import com.bizmate.hr.dto.user.UserDTO;
 import com.bizmate.hr.repository.DepartmentRepository;
@@ -24,11 +26,13 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -43,6 +47,8 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
     private final ApprovalIdGenerator approvalIdGenerator;
     private final EmployeeRepository employeeRepository;
     private final NotificationService notificationService;
+    private final EmployeeSignatureRepository employeeSignatureRepository;
+    private final FileStorageService fileStorageService;
 
     /* -------------------------------------------------------------
        ① 임시저장 (DRAFT)
@@ -198,9 +204,9 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
     /* -------------------------------------------------------------
    ✅ ③ 반려문서 재상신 (Resubmit)
    ------------------------------------------------------------- */
-    @Override
     @Transactional
-    public ApprovalDocumentsDto resubmit(String docId, ApprovalDocumentsDto dto, UserDTO loginUser) {
+    @Override
+    public ApprovalDocumentsDto resubmit(String docId, ApprovalDocumentsDto dto, List<MultipartFile> files, UserDTO loginUser) {
         log.info("🔁 [문서 재상신 시작] docId={}, 사번={}, 이름={}", docId, loginUser.getUsername(), loginUser.getEmpName());
 
         ApprovalDocuments document = approvalDocumentsRepository.findById(docId)
@@ -220,6 +226,55 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
             throw new VerificationFailedException("부서 정보가 일치하지 않습니다.");
         }
 
+        /* -------------------------------------------------------------
+       📎 첨부파일 처리 (유지 + 추가 + 삭제)
+       ------------------------------------------------------------- */
+        List<ApprovalFileAttachment> existingFiles =
+                new ArrayList<>(Optional.ofNullable(document.getAttachments()).orElse(List.of()));
+
+        // ✅ 프론트에서 남긴 기존 파일 id 목록 (dto.attachments에 담아 보냄)
+        Set<Long> remainFileIds = Optional.ofNullable(dto.getAttachments())
+                .orElse(List.of())
+                .stream()
+                .map(ApprovalFileAttachmentDto::getId)
+                .collect(Collectors.toSet());
+
+        // ✅ 삭제대상
+        List<ApprovalFileAttachment> deleteTargets = existingFiles.stream()
+                .filter(f -> !remainFileIds.contains(f.getId()))
+                .toList();
+
+        // ✅ 삭제 수행
+        if (!deleteTargets.isEmpty()) {
+            for (ApprovalFileAttachment del : deleteTargets) {
+                fileStorageService.deleteFile(del.getFilePath());
+            }
+            fileAttachmentRepository.deleteAll(deleteTargets);
+            existingFiles.removeAll(deleteTargets);
+            log.info("🗑️ 삭제된 첨부파일 {}개: {}", deleteTargets.size(),
+                    deleteTargets.stream().map(ApprovalFileAttachment::getOriginalName).toList());
+        }
+
+        // ✅ 새 파일 추가
+        List<ApprovalFileAttachment> newFiles = new ArrayList<>();
+        if (files != null && !files.isEmpty()) {
+            for (MultipartFile file : files) {
+                ApprovalFileAttachment uploaded = fileStorageService.saveFile(file, document, loginUser);
+                uploaded.setDocument(document);
+                newFiles.add(uploaded);
+            }
+            fileAttachmentRepository.saveAll(newFiles);
+            log.info("📎 새 첨부파일 {}개 업로드됨", newFiles.size());
+        }
+
+        // ✅ 병합 후 설정
+        if (document.getAttachments() == null) {
+            document.setAttachments(new ArrayList<>());
+        }
+        document.getAttachments().clear();             // 기존 항목 제거
+        document.getAttachments().addAll(existingFiles); // 유지된 파일
+        document.getAttachments().addAll(newFiles);     // 새로 추가된 파일
+
         // 4️⃣ 결재선 초기화
         List<ApproverStep> approvalLine = document.getApprovalLine();
         if (approvalLine == null || approvalLine.isEmpty())
@@ -233,7 +288,9 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
                         step.approverName(),
                         Decision.PENDING, // 전부 대기 상태로 초기화
                         "", // 코멘트 초기화
-                        null // 결정시각 초기화
+                        null, // 결정시각 초기화
+                        null
+
                 ))
                 .toList();
 
@@ -246,6 +303,8 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
         document.setStatus(DocumentStatus.IN_PROGRESS); // 상태 복귀
 
         // 5️⃣ 변경자 정보 업데이트
+        document.setTitle(dto.getTitle());
+        document.setDocContent(dto.getDocContent());
         document.markUpdated(loginUser);
 
         // 6️⃣ 저장 및 즉시 flush
@@ -300,6 +359,18 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
         if (!current.approverName().equals(loginUser.getEmpName()))
             throw new VerificationFailedException("현재 결재 차례가 아닙니다.");
 
+        Employee employee = employeeRepository.findByEmpId(loginUser.getEmpId())
+                .orElseThrow(() -> new VerificationFailedException("결재자(Employee)를 찾을 수 없습니다."));
+
+        String signImagePath = employeeSignatureRepository.findByEmployee(employee)
+                .map(EmployeeSignature::getSignImagePath)
+                .orElse(null);
+
+        if (signImagePath != null)
+            log.info("✍️ [서명 이미지 확인] {} → {}", loginUser.getEmpName(), signImagePath);
+        else
+            log.warn("⚠️ [서명 이미지 없음] {}", loginUser.getEmpName());
+
         // 🔹 변경점: 승인 처리 및 결재선 상태 갱신
         ApproverStep approved = new ApproverStep(
                 current.order(),
@@ -307,7 +378,8 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
                 current.approverName(),
                 Decision.APPROVED,
                 "",
-                LocalDateTime.now()
+                LocalDateTime.now(),
+                signImagePath
         );
         line.set(idx, approved);
 
@@ -389,7 +461,8 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
                 current.approverName(),
                 Decision.REJECTED,
                 reason != null ? reason : "",
-                LocalDateTime.now()
+                LocalDateTime.now(),
+                null
         );
         line.set(idx, rejected);
 
@@ -612,7 +685,8 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
                                 approverName,
                                 step.decision(),
                                 step.comment(),
-                                step.decidedAt()
+                                step.decidedAt(),
+                                null
                         );
                     })
                     .toList();

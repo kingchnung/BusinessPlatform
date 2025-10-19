@@ -1,6 +1,7 @@
 package com.bizmate.groupware.approval.repository;
 
 import com.bizmate.groupware.approval.domain.EmployeeSignature;
+import com.bizmate.hr.domain.Employee;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -12,4 +13,6 @@ public interface EmployeeSignatureRepository extends JpaRepository<EmployeeSigna
     Optional<EmployeeSignature> findByEmployeeEmpId(Long empId);
 
     Optional<EmployeeSignature> findByEmployeeEmpNo(String empNo);
+
+    Optional<EmployeeSignature> findByEmployee(Employee employee);
 }

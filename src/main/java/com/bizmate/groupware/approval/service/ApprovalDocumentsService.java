@@ -10,6 +10,8 @@ import com.bizmate.hr.domain.UserEntity;
 import com.bizmate.hr.dto.user.UserDTO;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.data.domain.Page;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -19,6 +21,12 @@ public interface ApprovalDocumentsService {
     ApprovalDocumentsDto draft(ApprovalDocumentsDto dto, UserDTO loginUser) throws JsonProcessingException;
 
     ApprovalDocumentsDto submit(ApprovalDocumentsDto dto, UserDTO loginUser) throws JsonProcessingException;
+
+    /* -------------------------------------------------------------
+   ✅ ③ 반려문서 재상신 (Resubmit)
+   ------------------------------------------------------------- */
+    @Transactional
+    ApprovalDocumentsDto resubmit(String docId, ApprovalDocumentsDto dto, List<MultipartFile> files, UserDTO loginUser);
 
     /* ----------------------------- 결재/반려/삭제 ------------------------------ */
     ApprovalDocumentsDto approve(String docId, UserDTO loginUser);
@@ -43,5 +51,4 @@ public interface ApprovalDocumentsService {
 
     List<ApprovalDocumentsDto> findByStatus(DocumentStatus status);
 
-    ApprovalDocumentsDto resubmit(String docId, ApprovalDocumentsDto dto, UserDTO loginUser);
 }

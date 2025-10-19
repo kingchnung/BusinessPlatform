@@ -3,6 +3,8 @@ package com.bizmate.groupware.approval.service;
 import com.bizmate.groupware.approval.domain.ApprovalDocuments;
 import com.bizmate.groupware.approval.domain.ApprovalFileAttachment;
 import com.bizmate.groupware.approval.repository.ApprovalFileAttachmentRepository;
+import com.bizmate.hr.domain.UserEntity;
+import com.bizmate.hr.dto.user.UserDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -22,10 +24,12 @@ public class FileStorageServiceImpl implements FileStorageService {
 
     private final ApprovalFileAttachmentRepository fileAttachmentRepository;
 
+
     // ✅ OS별 경로 맞게 변경 가능
     private static final String UPLOAD_DIR = "C:/bizmate/uploads";
 
-    public ApprovalFileAttachment saveFile(MultipartFile file, ApprovalDocuments document) {
+    @Override
+    public ApprovalFileAttachment saveFile(MultipartFile file, ApprovalDocuments document, UserDTO uploader) {
         try {
             if (file.isEmpty()) {
                 throw new IllegalArgumentException("파일이 비어 있습니다.");
@@ -58,6 +62,14 @@ public class FileStorageServiceImpl implements FileStorageService {
                 if (contentType == null) contentType = "application/octet-stream";
             }
 
+            UserEntity uploaderEntity = UserEntity.builder()
+                    .userId(uploader.getUserId())
+                    .username(uploader.getUsername())
+                    .empName(uploader.getEmpName())
+                    .deptName(uploader.getDeptName())
+                    .deptCode(uploader.getDeptCode())
+                    .build();
+
             // ✅ DB 저장
             ApprovalFileAttachment attachment = ApprovalFileAttachment.builder()
                     .document(document)
@@ -67,6 +79,7 @@ public class FileStorageServiceImpl implements FileStorageService {
                     .fileSize(file.getSize())
                     .contentType(contentType)
                     .uploadedAt(LocalDateTime.now())
+                    .uploader(uploaderEntity)
                     .build();
 
             ApprovalFileAttachment saved = fileAttachmentRepository.save(attachment);
@@ -75,6 +88,29 @@ public class FileStorageServiceImpl implements FileStorageService {
 
         } catch (IOException e) {
             throw new RuntimeException("파일 저장 실패: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * ✅ 파일 삭제 메서드
+     * - 실제 파일 삭제
+     * - 존재하지 않아도 예외 없이 통과
+     */
+    @Override
+    public void deleteFile(String filePath) {
+        if (filePath == null || filePath.isBlank()) return;
+
+        try {
+            Path path = Paths.get(filePath);
+            boolean deleted = Files.deleteIfExists(path);
+
+            if (deleted) {
+                log.info("🗑️ 파일 삭제 완료: {}", filePath);
+            } else {
+                log.warn("⚠️ 삭제 대상 파일이 존재하지 않음: {}", filePath);
+            }
+        } catch (Exception e) {
+            log.warn("⚠️ 파일 삭제 중 오류 발생: {}", e.getMessage(), e);
         }
     }
 }
