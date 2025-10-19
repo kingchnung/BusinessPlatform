@@ -68,6 +68,9 @@ public class ApprovalDocumentsDto {
 
     private String currentApproverId;
 
+    @Builder.Default
+    private List<String> viewerIds = new ArrayList<>();
+
     public void setDocType(DocumentType docType) {
         this.docType = docType;
         this.docTypeLabel = (docType != null) ? docType.getLabel() : "-";

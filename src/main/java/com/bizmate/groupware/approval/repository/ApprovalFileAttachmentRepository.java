@@ -3,6 +3,7 @@ package com.bizmate.groupware.approval.repository;
 import com.bizmate.groupware.approval.domain.ApprovalDocuments;
 import com.bizmate.groupware.approval.domain.ApprovalFileAttachment;
 import com.bizmate.groupware.approval.dto.ApprovalFileAttachmentDto;
+import com.bizmate.hr.domain.UserEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -14,20 +15,16 @@ import java.util.List;
 
 @Repository
 public interface ApprovalFileAttachmentRepository extends JpaRepository<ApprovalFileAttachment, Long> {
+    List<ApprovalFileAttachment> findByDocument_DocId(String docId);
 
     /**
-     * ✅ 임시 업로드된(PENDING) 파일을 문서와 연결
+     * 임시 업로드 파일을 상신 시 문서에 연결
      */
     @Modifying
-    @Transactional
-    @Query(value = """
-                UPDATE APPROVAL_FILE_ATTACHMENT 
-                SET DOC_ID = :#{#document.docId},
-                    STATUS = 'LINKED'
-                WHERE STATUS = 'PENDING'
-                  AND CREATED_BY = :username
-            """, nativeQuery = true)
+    @Query("UPDATE ApprovalFileAttachment f SET f.document = :document " +
+            "WHERE f.uploader = :uploader AND f.document IS NULL")
     int linkPendingFiles(@Param("document") ApprovalDocuments document,
+                         @Param("uploader") UserEntity uploader);
                          @Param("username") String username);
 
     List<ApprovalFileAttachment> findByDocument_DocId(String docId);

@@ -66,4 +66,5 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
     List<Employee> findByDepartment_DeptId(Long deptId);
 
 
+    Optional<Employee> findByEmpId(Long empId);
 }

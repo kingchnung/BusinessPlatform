@@ -1,6 +1,8 @@
 package com.bizmate.hr.config;
 
 import com.bizmate.hr.security.filter.JWTCheckFilter;
+import com.bizmate.hr.security.handler.APILoginFailHandler;
+import com.bizmate.hr.security.handler.APILoginSuccessHandler;
 import com.bizmate.hr.security.handler.CustomAccessDeniedHandler;
 import com.bizmate.hr.security.handler.CustomAuthenticationEntryPoint;
 import jakarta.servlet.http.HttpServletResponse;
@@ -37,6 +39,8 @@ public class CustomSecurityConfig {
     private final JWTCheckFilter jwtCheckFilter;
     private final CustomAccessDeniedHandler accessDeniedHandler;
     private final CustomAuthenticationEntryPoint authenticationEntryPoint;
+    private final APILoginSuccessHandler apiLoginSuccessHandler;
+    private final APILoginFailHandler apiLoginFailHandler;
 
     /**
      * PasswordEncoder 등록 (비밀번호 해싱)
@@ -67,15 +71,20 @@ public class CustomSecurityConfig {
 
                 // 2️⃣ 세션 사용 안 함 (JWT 기반)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
                 // 3️⃣ 인가 설정
                 .authorizeHttpRequests(auth -> auth
                         // 인증 없이 접근 가능한 경로들
                         .requestMatchers(
                                 "/api/auth/**",       // 로그인, 회원가입
+                                "/api/auth/refresh",// 토큰 재발급
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
                                 "/swagger-resources/**",
+                                "/h2-console/**",
+                                "/api/attachments/preview/**",
+                                "/api/attachments/download/**"
                                 "/h2-console/**",
                                 "/api/assignments/**"
                         ).permitAll()
@@ -126,6 +135,7 @@ public class CustomSecurityConfig {
         configuration.setAllowedMethods(Arrays.asList("HEAD", "GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
+        configuration.setExposedHeaders(List.of("Authorization"));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);

@@ -8,12 +8,13 @@ import com.bizmate.groupware.approval.repository.ApprovalDocumentsRepository;
 import com.bizmate.groupware.approval.repository.ApprovalFileAttachmentRepository;
 import com.bizmate.hr.domain.UserEntity;
 import com.bizmate.hr.repository.UserRepository;
-import io.jsonwebtoken.io.IOException;
 import jakarta.persistence.EntityManager;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
+import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -22,7 +23,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.net.MalformedURLException;
+import java.io.*;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
@@ -38,7 +39,7 @@ import java.util.stream.Collectors;
 public class ApprovalFileAttachmentController {
 
     private final EntityManager entityManager;
-    private final ApprovalFileAttachmentRepository approvalFileAttachmentRepository;
+    private final ApprovalFileAttachmentRepository fileAttachmentRepository;
     private final ApprovalDocumentsRepository approvalDocumentsRepository;
     private final UserRepository userRepository;
 
@@ -87,7 +88,7 @@ public class ApprovalFileAttachmentController {
                 .uploadedAt(LocalDateTime.now())
                 .build();
 
-        ApprovalFileAttachment saved = approvalFileAttachmentRepository.saveAndFlush(entity);
+        ApprovalFileAttachment saved = fileAttachmentRepository.saveAndFlush(entity);
         ApprovalFileAttachmentDto dto = ApprovalFileAttachmentDto.fromEntity(saved);
 
         log.info("✅ 업로드 완료: {} (문서ID: {})", saved.getOriginalName(), document != null ? document.getDocId() : "임시");
@@ -99,7 +100,7 @@ public class ApprovalFileAttachmentController {
      */
     @GetMapping("/list/{docId}")
     public ResponseEntity<List<ApprovalFileAttachmentDto>> getFileList(@PathVariable String docId) {
-        List<ApprovalFileAttachmentDto> dtoList = approvalFileAttachmentRepository.findByDocument_DocId(docId)
+        List<ApprovalFileAttachmentDto> dtoList = fileAttachmentRepository.findByDocument_DocId(docId)
                 .stream()
                 .map(ApprovalFileAttachmentDto::fromEntity)
                 .collect(Collectors.toList());
@@ -110,51 +111,86 @@ public class ApprovalFileAttachmentController {
 
     // ✅ 미리보기
     @GetMapping("/preview/{id}")
-    public ResponseEntity<Resource> preview(@PathVariable Long id) throws IOException {
-        ApprovalFileAttachment file = approvalFileAttachmentRepository.findById(id)
-                .orElseThrow(() -> new IllegalStateException("파일을 찾을 수 없습니다."));
+    public void previewFile(@PathVariable Long id, HttpServletResponse response) throws IOException {
+        ApprovalFileAttachment file = fileAttachmentRepository.findById(id)
+                .orElseThrow(() -> new FileNotFoundException("파일이 존재하지 않습니다."));
 
-        Path path = Paths.get(file.getFilePath());
-        Resource resource;
-
-        try {
-            resource = new UrlResource(path.toUri());
-        } catch (MalformedURLException e) {
-            throw new IOException("잘못된 파일 경로 형식입니다: " + file.getFilePath(), e);
+        File localFile = new File(file.getFilePath());
+        if (!localFile.exists()) {
+            throw new FileNotFoundException("파일이 존재하지 않습니다.");
         }
 
-        if (!resource.exists()) {
-            throw new IllegalStateException("요청한 파일이 존재하지 않습니다: " + file.getFilePath());
+        // ✅ Content-Type 설정 (DB 값이 비어있을 때 자동 판별)
+        String contentType = file.getContentType();
+        if (contentType == null || contentType.isBlank()) {
+            String name = file.getOriginalName().toLowerCase();
+            if (name.endsWith(".pdf")) contentType = "application/pdf";
+            else if (name.endsWith(".png")) contentType = "image/png";
+            else if (name.endsWith(".jpg") || name.endsWith(".jpeg")) contentType = "image/jpeg";
+            else contentType = "application/octet-stream";
+        }
+        response.setContentType(contentType);
+
+        // ✅ inline 미리보기 지원
+        if (contentType.startsWith("image/") || contentType.equals("application/pdf")) {
+            response.setHeader("Content-Disposition",
+                    "inline; filename=\"" + URLEncoder.encode(file.getOriginalName(), StandardCharsets.UTF_8) + "\"");
+        } else {
+            response.setHeader("Content-Disposition",
+                    "attachment; filename=\"" + URLEncoder.encode(file.getOriginalName(), StandardCharsets.UTF_8) + "\"");
         }
 
-        return ResponseEntity.ok()
-                .contentType(MediaType.parseMediaType(file.getContentType()))
-                .body(resource);
+        // ✅ 캐시 방지 (안 하면 이전 파일로 미리보기 뜨는 경우 있음)
+        response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+        response.setHeader("Pragma", "no-cache");
+        response.setHeader("Expires", "0");
+
+        // ✅ 스트리밍 전송
+        try (InputStream in = new BufferedInputStream(new FileInputStream(localFile));
+             OutputStream out = response.getOutputStream()) {
+            byte[] buffer = new byte[8192];
+            int bytesRead;
+            while ((bytesRead = in.read(buffer)) != -1) {
+                out.write(buffer, 0, bytesRead);
+            }
+            out.flush();
+        }
     }
+
 
     // ✅ 다운로드
     @GetMapping("/download/{id}")
-    public ResponseEntity<Resource> download(@PathVariable Long id) throws IOException {
-        ApprovalFileAttachment file = approvalFileAttachmentRepository.findById(id)
-                .orElseThrow(() -> new IllegalStateException("파일을 찾을 수 없습니다."));
+    public ResponseEntity<Resource> downloadFile(@PathVariable Long id, HttpServletResponse response) {
+        ApprovalFileAttachment file = fileAttachmentRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("파일을 찾을 수 없습니다. ID=" + id));
 
-        Path path = Paths.get(file.getFilePath());
-        Resource resource;
+        File localFile = new File(file.getFilePath());
+        if (!localFile.exists()) {
+            throw new RuntimeException("저장된 파일이 존재하지 않습니다: " + file.getFilePath());
+        }
 
         try {
-            resource = new UrlResource(path.toUri());
-        } catch (MalformedURLException e) {
-            throw new IOException("잘못된 파일 경로 형식입니다: " + file.getFilePath(), e);
-        }
+            String encodedName = URLEncoder.encode(file.getOriginalName(), StandardCharsets.UTF_8)
+                    .replaceAll("\\+", "%20"); // 공백 처리
 
-        if (!resource.exists()) {
-            throw new IllegalStateException("요청한 파일이 존재하지 않습니다: " + file.getFilePath());
-        }
+            FileSystemResource resource = new FileSystemResource(localFile);
 
-        return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION,
-                        "attachment; filename=\"" + URLEncoder.encode(file.getOriginalName(), StandardCharsets.UTF_8) + "\"")
-                .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                .body(resource);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentDisposition(
+                    ContentDisposition.attachment().filename(encodedName, StandardCharsets.UTF_8).build());
+            headers.setContentType(MediaType.parseMediaType(file.getContentType() != null
+                    ? file.getContentType()
+                    : "application/octet-stream"));
+            headers.setContentLength(localFile.length());
+
+            log.info("📥 파일 다운로드 요청: {}", file.getOriginalName());
+
+            return ResponseEntity.ok()
+                    .headers(headers)
+                    .body(resource);
+        } catch (Exception e) {
+            log.error("❌ 파일 다운로드 실패", e);
+            return ResponseEntity.internalServerError().build();
+        }
     }
 }

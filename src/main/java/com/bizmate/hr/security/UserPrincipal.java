@@ -29,6 +29,8 @@ public class UserPrincipal implements UserDetails {
 
     private String empName;
     private String email;
+    private String deptCode;
+    private String deptName;
 
     public UserPrincipal(Long userId,
                          Long empId,
