@@ -19,6 +19,7 @@ import com.bizmate.hr.domain.Employee;
 import com.bizmate.hr.domain.UserEntity;
 import com.bizmate.hr.dto.user.UserDTO;
 import com.bizmate.hr.repository.DepartmentRepository;
+import com.bizmate.hr.repository.EmployeeRepository;
 import com.bizmate.hr.repository.UserRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
@@ -51,6 +52,7 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
     private final ApprovalHistoryService historyService;
     private final EmployeeSignatureRepository employeeSignatureRepository;
     private final FileStorageService fileStorageService;
+    private final EmployeeRepository employeeRepository;
 
     /* -------------------------------------------------------------
        ① 임시저장 (DRAFT)
@@ -601,7 +603,7 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
         if (dto.getAttachments() != null && !dto.getAttachments().isEmpty()) {
             List<ApprovalFileAttachment> newAttachments = dto.getAttachments().stream()
                     .filter(a -> a.getId() == null)
-                    .map(a -> a.toEntity(saved))
+                    .map(a -> a.toEntity(saved, loginUser))
                     .toList();
             for (ApprovalFileAttachmentDto fileDto : dto.getAttachments()) {
                 ApprovalFileAttachment fileEntity;
@@ -631,7 +633,7 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
             log.info("✅ 첨부파일 {}건 연결 완료 (문서ID={})", attachedFiles.size(), saved.getDocId());
         } else {
             // ✅ 첨부파일 DTO가 비어있을 경우 (임시 업로드 연결)
-            int linkedCount = fileAttachmentRepository.linkPendingFiles(saved, uploader);
+            int linkedCount = fileAttachmentRepository.linkPendingFiles(saved, uploader, uploader.getUsername());
             if (linkedCount > 0)
                 log.info("🔗 임시 업로드 {}건 자동 연결됨 (문서ID={})", linkedCount, saved.getDocId());
             else
@@ -645,19 +647,15 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
 
     private void saveAttachments(List<ApprovalFileAttachmentDto> attachmentDto, ApprovalDocuments document) {
         if (attachmentDto == null || attachmentDto.isEmpty()) {
-    private void saveAttachments(List<ApprovalFileAttachmentDto> attachmentDtos, ApprovalDocuments document) {
-        if (attachmentDtos == null || attachmentDtos.isEmpty()) {
-            return;
+
+
+            List<ApprovalFileAttachment> list = attachmentDto.stream()
+                    .map(dto -> dto.toEntity(document, document.getAuthorUser()));
+
+
+            fileAttachmentRepository.saveAll(list);
+            log.info("📎 첨부파일 {}건 저장 완료 (문서ID={})", list.size(), document.getDocId());
         }
-
-        List<ApprovalFileAttachment> list = attachmentDto.stream()
-                .map(dto -> dto.toEntity(document, document.getAuthorUser()))
-        List<ApprovalFileAttachment> list = attachmentDtos.stream()
-                .map(dto -> dto.toEntity(document))
-                .toList();
-
-        fileAttachmentRepository.saveAll(list);
-        log.info("📎 첨부파일 {}건 저장 완료 (문서ID={})", list.size(), document.getDocId());
     }
 
     private void validateDraft(ApprovalDocumentsDto dto) {
@@ -796,8 +794,7 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
     private ApprovalDocumentsDto mapEntityToDto(ApprovalDocuments entity) {
 
         UserEntity user = entity.getAuthorUser();
-        List<ApprovalFileAttachmentDto> attachments = fileAttachmentRepository
-                .findByDocument_DocId(entity.getDocId())
+
         List<ApprovalFileAttachmentDto> attachments = fileAttachmentRepository.findByDocument_DocId(entity.getDocId())
                 .stream()
                 .map(ApprovalFileAttachmentDto::fromEntity)

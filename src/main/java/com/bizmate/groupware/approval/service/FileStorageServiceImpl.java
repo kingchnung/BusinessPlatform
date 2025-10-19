@@ -2,9 +2,6 @@ package com.bizmate.groupware.approval.service;
 
 import com.bizmate.groupware.approval.domain.ApprovalDocuments;
 import com.bizmate.groupware.approval.domain.ApprovalFileAttachment;
-import com.bizmate.groupware.approval.domain.ApprovalFileAttachment;
-import com.bizmate.groupware.approval.repository.ApprovalFileAttachmentRepository;
-import com.bizmate.groupware.approval.domain.ApprovalFileAttachment;
 import com.bizmate.groupware.approval.repository.ApprovalFileAttachmentRepository;
 import com.bizmate.hr.domain.UserEntity;
 import com.bizmate.hr.dto.user.UserDTO;
@@ -27,12 +24,9 @@ public class FileStorageServiceImpl implements FileStorageService {
 
     private final ApprovalFileAttachmentRepository fileAttachmentRepository;
 
-    private final ApprovalFileAttachmentRepository fileAttachmentRepository;
-
     // ✅ OS별 경로 맞게 변경 가능
     private static final String UPLOAD_DIR = "C:/bizmate/uploads";
 
-    public ApprovalFileAttachment saveFile(MultipartFile file, ApprovalDocuments document) {
     @Override
     public ApprovalFileAttachment saveFile(MultipartFile file, ApprovalDocuments document, UserDTO uploader) {
         try {
