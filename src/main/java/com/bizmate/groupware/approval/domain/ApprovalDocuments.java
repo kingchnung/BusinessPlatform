@@ -4,7 +4,6 @@ import com.bizmate.common.domain.BaseEntity;
 import com.bizmate.groupware.approval.infrastructure.ApproverLineJsonConverter;
 import com.bizmate.groupware.approval.infrastructure.JsonMapConverter;
 import com.bizmate.groupware.approval.infrastructure.DocumentTypeConverter;
-import com.bizmate.groupware.approval.listener.ApprovalDocumentsListener;
 import com.bizmate.hr.domain.Department;
 import com.bizmate.hr.domain.Employee;
 import com.bizmate.hr.domain.Role;
@@ -25,9 +24,6 @@ import java.util.*;
  * - markApproved(), markRejected(), markDeleted() 포함
  */
 @Entity
-@EntityListeners({
-        ApprovalDocumentsListener.class
-})
 @Getter
 @Setter
 @Table(name = "APPROVAL_DOCUMENTS")
@@ -105,8 +101,6 @@ public class ApprovalDocuments extends BaseEntity {
             orphanRemoval = true,
             fetch = FetchType.LAZY)
     @Builder.Default
-    private List<ApprovalFileAttachment> attachments = new ArrayList<>();
-    @OneToMany(mappedBy = "document", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ApprovalFileAttachment> attachments = new ArrayList<>();
 
     /* ----------------------------- 결재 이력 필드 ------------------------------ */

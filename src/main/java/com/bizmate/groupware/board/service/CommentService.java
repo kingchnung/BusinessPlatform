@@ -9,6 +9,6 @@ public interface CommentService {
 
     List<CommentDto> getComments(Long boardNo);
     CommentDto addComment(Long boardNo, String content, UserPrincipal user);
-    CommentDto editComment(Long id, String newContent, UserPrincipal user);
+
     void deleteComment(Long commentNo, UserPrincipal user);
 }
