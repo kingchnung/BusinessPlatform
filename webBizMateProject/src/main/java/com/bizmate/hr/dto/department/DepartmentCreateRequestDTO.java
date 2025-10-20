@@ -16,9 +16,7 @@ public class DepartmentCreateRequestDTO {
     @Size(max = 50, message = "부서명은 50자 이하로 입력해야 합니다.")
     private String deptName;
 
-    @NotBlank(message = "부서코드는 필수입니다.")
-    @Size(max = 10, message = "부서코드는 10자 이하로 입력해야 합니다.")
-    private String deptCode;
+
 
     // 상위부서ID는 등록 시 선택 사항일 수 있습니다. (계층 구조 반영)
     private Long parentDeptId;

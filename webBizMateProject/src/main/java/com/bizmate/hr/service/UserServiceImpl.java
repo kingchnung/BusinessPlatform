@@ -4,6 +4,7 @@ import com.bizmate.hr.domain.Employee;
 import com.bizmate.hr.domain.Role;
 import com.bizmate.hr.domain.UserEntity;
 import com.bizmate.hr.dto.user.UserDTO;
+import com.bizmate.hr.dto.user.UserPwChangeRequest;
 import com.bizmate.hr.dto.user.UserUpdateRequestDTO;
 import com.bizmate.hr.repository.EmployeeRepository;
 import com.bizmate.hr.repository.RoleRepository;
@@ -11,10 +12,16 @@ import com.bizmate.hr.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import org.springframework.security.access.AccessDeniedException;
+
+import java.security.SecureRandom;
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -30,6 +37,7 @@ public class UserServiceImpl implements UserService {
     private final EmployeeRepository employeeRepository;
     private final PasswordEncoder passwordEncoder;
     private final RoleRepository roleRepository;
+    private final MailService mailService;
 
     /**
      * 신규 직원 생성 시 사용자 계정을 자동 생성하고 기본 역할을 부여합니다.
@@ -175,4 +183,71 @@ public class UserServiceImpl implements UserService {
         userRepository.deleteById(userId);
         log.info("사용자 ID {} 의 계정이 성공적으로 삭제되었습니다.", userId);
     }
+
+    @Override
+    public void changePw(Long userId, UserPwChangeRequest dto) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+        Object principal = auth.getPrincipal();
+        Long currentUserId;
+
+        if (principal instanceof com.bizmate.hr.security.UserPrincipal userPrincipal) {
+            currentUserId = userPrincipal.getUserId(); // ✅ principal에서 userId 직접 가져오기
+        } else {
+            throw new AccessDeniedException("인증 정보를 확인할 수 없습니다.");
+        }
+
+        // ✅ 본인 확인
+        if (!currentUserId.equals(userId)) {
+            throw new AccessDeniedException("본인 계정만 수정할 수 있습니다.");
+        }
+
+        UserEntity user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+
+        if (!passwordEncoder.matches(dto.getCurrentPw(), user.getPwHash())) {
+            throw new RuntimeException("현재 비밀번호가 일치하지 않습니다.");
+        }
+
+        log.info("입력된 비밀번호: {}", dto.getCurrentPw());
+        log.info("DB 비밀번호 해시: {}", user.getPwHash());
+        log.info("비교 결과: {}", passwordEncoder.matches(dto.getCurrentPw(), user.getPwHash()));
+
+        user.setPwHash(passwordEncoder.encode(dto.getNewPw()));
+        userRepository.save(user);
+
+    }
+
+    @Transactional
+    public String resetUserLock(Long userId) {
+        UserEntity user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 ID의 사용자를 찾을 수 없습니다."));
+
+        String tempPw = generateTempPassword();
+        user.setPwHash(passwordEncoder.encode(tempPw));
+        user.setIsLocked("N");
+        user.setFailedCount(0);
+        user.setUpdDate(LocalDateTime.now());
+        userRepository.save(user);
+
+        mailService.sendPasswordResetMail(user.getEmail(), tempPw);
+        return tempPw;
+    }
+
+    /**
+     * 🔹 랜덤 임시 비밀번호 생성 (대문자 + 소문자 + 숫자 8자리)
+     */
+    private String generateTempPassword() {
+        int length = 8;
+        String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        SecureRandom random = new SecureRandom();
+
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < length; i++) {
+            int index = random.nextInt(chars.length());
+            sb.append(chars.charAt(index));
+        }
+        return sb.toString();
+    }
+
 }

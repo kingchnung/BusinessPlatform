@@ -5,6 +5,7 @@ import com.bizmate.hr.domain.Permission;
 import com.bizmate.hr.domain.UserEntity; // 엔티티 이름 변경 적용
 
 
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -36,6 +37,11 @@ public class UserDTO extends User {
     private final List<String> roleNames;
     private final List<String> permissionNames;
 
+    private final String deptName;
+    private final String positionName;
+    private final Integer failedCount;
+    private final LocalDateTime lastLogin;
+
     /**
      * Spring Security의 UserDetails를 상속받는 생성자
      * 주의: authorities 컬렉션을 외부(fromEntity)에서 미리 생성하여 전달받습니다.
@@ -50,6 +56,10 @@ public class UserDTO extends User {
             boolean isActive,
             List<String> roleNames,
             List<String> permissionNames,
+            String deptName,
+            String positionName,
+            Integer failedCount,
+            LocalDateTime lastLogin,
             // ★★★ 이미 생성된 authorities를 인수로 받음 ★★★
             Collection<? extends GrantedAuthority> authorities) {
 
@@ -68,6 +78,11 @@ public class UserDTO extends User {
         this.isActive = isActive;
         this.roleNames = roleNames;
         this.permissionNames = permissionNames;
+
+        this.deptName = deptName;
+        this.positionName = positionName;
+        this.failedCount = failedCount;
+        this.lastLogin = lastLogin;
     }
 
     // --- Private Static 헬퍼 메서드 영역 ---
@@ -115,7 +130,6 @@ public class UserDTO extends User {
                 .collect(Collectors.toList());
 
         boolean isLocked = "Y".equalsIgnoreCase(user.getIsLocked());
-        boolean isAccountNonLocked = !isLocked;
         boolean isActive = "Y".equalsIgnoreCase(user.getIsActive());
 
         // ★★★ Authorities를 미리 생성 ★★★
@@ -128,10 +142,14 @@ public class UserDTO extends User {
                 user.getUsername(),
                 user.getPwHash(),
                 user.getEmployee() != null ? user.getEmployee().getEmpName() : null,
-                isAccountNonLocked,
+                !isLocked,
                 isActive,
                 roleNames,
                 permissionNames,
+                user.getDeptName(),
+                user.getPositionName(),
+                user.getFailedCount(),
+                user.getLastLogin(),
                 authorities // ★★★ 생성된 authorities 전달 ★★★
         );
     }

@@ -18,4 +18,6 @@ public class PermissionUpdateRequestDTO {
 
     @Size(max = 255, message = "설명은 255자 이하로 입력해야 합니다.")
     private String description; // 새로운 설명
+
+    private String isUsed;
 }

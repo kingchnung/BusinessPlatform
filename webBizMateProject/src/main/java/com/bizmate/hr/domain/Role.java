@@ -1,5 +1,6 @@
 package com.bizmate.hr.domain;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -33,6 +34,10 @@ public class Role {
     @Column(name = "description", length = 255)
     private String description;
 
+    @Column(name = "is_used", length = 1,  nullable = false)
+    private String isUsed = "Y";
+
+
     // N:M 관계 매핑 1: 사용자 - 역할 (USER_ROLES 테이블)
     @ManyToMany(mappedBy = "roles", fetch = FetchType.LAZY)
     @Builder.Default
@@ -45,6 +50,6 @@ public class Role {
             joinColumns = @JoinColumn(name = "role_id"),
             inverseJoinColumns = @JoinColumn(name = "perm_id")
     )
-    @Builder.Default
+    @JsonManagedReference
     private Set<Permission> permissions = new HashSet<>();
 }

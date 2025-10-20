@@ -2,6 +2,7 @@ package com.bizmate.hr.service;
 
 import com.bizmate.hr.domain.Employee;
 import com.bizmate.hr.dto.user.UserDTO;
+import com.bizmate.hr.dto.user.UserPwChangeRequest;
 import com.bizmate.hr.dto.user.UserUpdateRequestDTO;
 
 import java.util.List;
@@ -44,4 +45,6 @@ public interface UserService {
      */
     void deleteUser(Long userId);
 
+    void changePw(Long userId, UserPwChangeRequest dto);
+    String resetUserLock(Long userId);
 }

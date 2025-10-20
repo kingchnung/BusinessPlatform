@@ -51,6 +51,10 @@ dependencies {
 	testAnnotationProcessor 'org.projectlombok:lombok'
 	testImplementation 'org.springframework.security:spring-security-test'
 
+    implementation 'org.springframework.boot:spring-boot-starter-mail'
+    implementation 'org.apache.commons:commons-lang3' // for RandomStringUtils
+
+
 
 
 //	implementation 'nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect:3.4.0'

@@ -51,10 +51,12 @@ public class Department {
 
     // 5. 사용여부
     @Column(name = "is_used",  length = 1)
+    @Builder.Default
     private String isUsed = "Y";
 
     // ★ 7. 생성일 (추가)
     @Column(name = "cre_date", nullable = false)
+    @Builder.Default
     private LocalDateTime creDate = LocalDateTime.now();
 
     // ★ 8. 수정일 (추가)
