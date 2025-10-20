@@ -20,7 +20,7 @@ desktop.ini
 # ## Build & Dependency Files ##
 # Gradle
 .gradle/
-build/
+build/*
 out/
 
 # Maven

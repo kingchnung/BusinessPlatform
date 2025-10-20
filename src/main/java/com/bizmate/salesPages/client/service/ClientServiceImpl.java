@@ -4,11 +4,11 @@ package com.bizmate.salesPages.client.service;
 
 
 
+import com.bizmate.common.dto.PageRequestDTO;
+import com.bizmate.common.dto.PageResponseDTO;
 import com.bizmate.salesPages.client.domain.Client;
 import com.bizmate.salesPages.client.dto.ClientDTO;
 import com.bizmate.salesPages.client.repository.ClientRepository;
-import com.bizmate.salesPages.common.dto.PageRequestDTO;
-import com.bizmate.salesPages.common.dto.PageResponseDTO;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;

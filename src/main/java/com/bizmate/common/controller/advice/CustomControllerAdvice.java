@@ -1,4 +1,4 @@
-package com.bizmate.salesPages.common.controller.advice;
+package com.bizmate.common.controller.advice;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

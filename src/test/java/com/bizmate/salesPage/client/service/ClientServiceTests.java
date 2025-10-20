@@ -1,7 +1,8 @@
 package com.bizmate.salesPage.client.service;
 
-import com.bizmate.salesPages.common.dto.PageRequestDTO;
-import com.bizmate.salesPages.common.dto.PageResponseDTO;
+
+import com.bizmate.common.dto.PageRequestDTO;
+import com.bizmate.common.dto.PageResponseDTO;
 import com.bizmate.salesPages.client.dto.ClientDTO;
 import com.bizmate.salesPages.client.service.ClientService;
 import lombok.extern.slf4j.Slf4j;

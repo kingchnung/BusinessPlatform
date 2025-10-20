@@ -1,7 +1,7 @@
 package com.bizmate.project.controller;
 
-import com.bizmate.project.dto.PageRequestDTO;
-import com.bizmate.project.dto.PageResponseDTO;
+import com.bizmate.common.dto.PageRequestDTO;
+import com.bizmate.common.dto.PageResponseDTO;
 import com.bizmate.project.dto.request.ProjectRequestDTO;
 import com.bizmate.project.dto.response.ProjectResponseDTO;
 import com.bizmate.project.service.ProjectService;

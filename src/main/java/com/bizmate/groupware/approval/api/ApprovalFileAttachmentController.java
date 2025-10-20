@@ -33,7 +33,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/attachments")
+@RequestMapping("/api/approvals/attachments")
 @RequiredArgsConstructor
 @Slf4j
 public class ApprovalFileAttachmentController {

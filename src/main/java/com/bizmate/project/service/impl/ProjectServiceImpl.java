@@ -1,12 +1,13 @@
 package com.bizmate.project.service.impl;
 
+import com.bizmate.common.dto.PageRequestDTO;
+import com.bizmate.common.dto.PageResponseDTO;
 import com.bizmate.hr.domain.UserEntity;
 import com.bizmate.hr.repository.UserRepository;
 import com.bizmate.project.domain.Project;
 import com.bizmate.project.domain.enums.project.ProjectImportance;
 import com.bizmate.project.domain.enums.project.ProjectStatus;
-import com.bizmate.project.dto.PageRequestDTO;
-import com.bizmate.project.dto.PageResponseDTO;
+
 import com.bizmate.project.dto.request.ProjectRequestDTO;
 import com.bizmate.project.dto.response.ProjectResponseDTO;
 import com.bizmate.project.repository.ProjectRepository;

@@ -6,6 +6,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
+import java.time.LocalDateTime;
+
 @Data
 @SuperBuilder
 @AllArgsConstructor
@@ -17,4 +19,12 @@ public class PageRequestDTO {
 
     @Builder.Default
     private int size = 10;
+
+    @Builder.Default
+    private String search = "";
+    @Builder.Default
+    private String keyword = "";
+
+    private LocalDateTime startDate;
+    private LocalDateTime endDate;
 }
