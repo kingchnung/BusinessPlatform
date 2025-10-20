@@ -6,7 +6,7 @@ import com.bizmate.common.exception.VerificationFailedException;
 import com.bizmate.groupware.approval.domain.*;
 import com.bizmate.groupware.approval.dto.ApprovalDocumentsDto;
 import com.bizmate.groupware.approval.dto.DocumentSearchRequestDto;
-import com.bizmate.groupware.approval.dto.FileAttachmentDto;
+import com.bizmate.groupware.approval.dto.ApprovalFileAttachmentDto;
 import com.bizmate.groupware.approval.notification.NotificationService;
 import com.bizmate.groupware.approval.repository.ApprovalDocumentsRepository;
 import com.bizmate.groupware.approval.repository.ApprovalFileAttachmentRepository;
@@ -509,7 +509,7 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
         }
     }
 
-    private void saveAttachments(List<FileAttachmentDto> attachmentDtos, ApprovalDocuments document) {
+    private void saveAttachments(List<ApprovalFileAttachmentDto> attachmentDtos, ApprovalDocuments document) {
         if (attachmentDtos == null || attachmentDtos.isEmpty()) {
             return;
         }
@@ -657,9 +657,9 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
     private ApprovalDocumentsDto mapEntityToDto(ApprovalDocuments entity) {
 
         UserEntity user = entity.getAuthorUser();
-        List<FileAttachmentDto> attachments = fileAttachmentRepository.findByDocument_DocId(entity.getDocId())
+        List<ApprovalFileAttachmentDto> attachments = fileAttachmentRepository.findByDocument_DocId(entity.getDocId())
                 .stream()
-                .map(FileAttachmentDto::fromEntity)
+                .map(ApprovalFileAttachmentDto::fromEntity)
                 .toList();
 
         return ApprovalDocumentsDto.builder()

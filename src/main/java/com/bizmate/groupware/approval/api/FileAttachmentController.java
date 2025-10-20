@@ -3,7 +3,7 @@ package com.bizmate.groupware.approval.api;
 import com.bizmate.common.exception.VerificationFailedException;
 import com.bizmate.groupware.approval.domain.ApprovalDocuments;
 import com.bizmate.groupware.approval.domain.ApprovalFileAttachment;
-import com.bizmate.groupware.approval.dto.FileAttachmentDto;
+import com.bizmate.groupware.approval.dto.ApprovalFileAttachmentDto;
 import com.bizmate.groupware.approval.repository.ApprovalDocumentsRepository;
 import com.bizmate.groupware.approval.repository.ApprovalFileAttachmentRepository;
 import com.bizmate.hr.domain.UserEntity;
@@ -49,7 +49,7 @@ public class FileAttachmentController {
      * ✅ 1️⃣ 파일 업로드 (문서 ID 포함)
      */
     @PostMapping
-    public ResponseEntity<FileAttachmentDto> uploadFile(
+    public ResponseEntity<ApprovalFileAttachmentDto> uploadFile(
             @RequestParam("file") MultipartFile file,
             @RequestParam(value = "docId", required = false) String docId,
             @AuthenticationPrincipal UserDetails userDetails
@@ -89,7 +89,7 @@ public class FileAttachmentController {
                 .build();
 
         ApprovalFileAttachment saved = approvalFileAttachmentRepository.saveAndFlush(entity);
-        FileAttachmentDto dto = FileAttachmentDto.fromEntity(saved);
+        ApprovalFileAttachmentDto dto = ApprovalFileAttachmentDto.fromEntity(saved);
 
         log.info("✅ 업로드 완료: {} (문서ID: {})", saved.getOriginalName(), document != null ? document.getDocId() : "임시");
         return ResponseEntity.ok(dto);
@@ -99,10 +99,10 @@ public class FileAttachmentController {
      * ✅ 2️⃣ 문서별 첨부파일 목록 조회
      */
     @GetMapping("/list/{docId}")
-    public ResponseEntity<List<FileAttachmentDto>> getFileList(@PathVariable String docId) {
-        List<FileAttachmentDto> dtoList = approvalFileAttachmentRepository.findByDocument_DocId(docId)
+    public ResponseEntity<List<ApprovalFileAttachmentDto>> getFileList(@PathVariable String docId) {
+        List<ApprovalFileAttachmentDto> dtoList = approvalFileAttachmentRepository.findByDocument_DocId(docId)
                 .stream()
-                .map(FileAttachmentDto::fromEntity)
+                .map(ApprovalFileAttachmentDto::fromEntity)
                 .collect(Collectors.toList());
 
         log.info("📎 문서 [{}] 첨부파일 {}건 반환", docId, dtoList.size());

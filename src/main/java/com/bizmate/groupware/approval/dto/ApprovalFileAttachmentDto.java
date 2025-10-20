@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class FileAttachmentDto {
+public class ApprovalFileAttachmentDto {
     private Long id;
     private String originalName;
     private String storedName;
@@ -22,8 +22,8 @@ public class FileAttachmentDto {
     private String uploaderName;
     private LocalDateTime uploadedAt;
 
-    public static FileAttachmentDto fromEntity(ApprovalFileAttachment entity) {
-        return FileAttachmentDto.builder()
+    public static ApprovalFileAttachmentDto fromEntity(ApprovalFileAttachment entity) {
+        return ApprovalFileAttachmentDto.builder()
                 .id(entity.getId())
                 .originalName(entity.getOriginalName())
                 .storedName(entity.getStoredName())
