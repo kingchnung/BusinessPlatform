@@ -1,7 +1,6 @@
 package com.bizmate.groupware.approval.service;
 
 
-
 import com.bizmate.common.dto.PageRequestDTO;
 import com.bizmate.common.dto.PageResponseDTO;
 import com.bizmate.common.exception.VerificationFailedException;
@@ -25,6 +24,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -396,7 +396,7 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
 
             ApproverStep next = line.get(idx + 1);
             userRepository.findByUsername(next.approverId()).ifPresent(nextUser -> {
-                if(nextUser.getEmail() != null && !nextUser.getEmail().isBlank()) {
+                if (nextUser.getEmail() != null && !nextUser.getEmail().isBlank()) {
                     notificationService.sendApprovalRequestMail(
                             nextUser.getEmail(),
                             nextUser.getEmpName(),
@@ -526,22 +526,20 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
 
     @Override
     public PageResponseDTO<ApprovalDocumentsDto> getPagedApprovals(PageRequestDTO req) {
-        int page = req.getPage() - 1; // 0-based index
-        int size = req.getSize();
+        Pageable pageable = PageRequest.of(req.getPage() - 1, req.getSize());
 
-        PageRequest pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Page<ApprovalDocuments> resultPage = approvalDocumentsRepository
+                .searchDocuments(req.getKeyword(), pageable);
 
-        Page<ApprovalDocuments> result = approvalDocumentsRepository.findAll(pageable);
-
-        List<ApprovalDocumentsDto> dtoList = result.getContent()
+        List<ApprovalDocumentsDto> dtoList = resultPage.getContent()
                 .stream()
-                .map(this::mapEntityToDto)
-                .collect(Collectors.toList());
+                .map(ApprovalDocumentsDto::fromEntity)
+                .toList();
 
         return PageResponseDTO.<ApprovalDocumentsDto>withAll()
                 .dtoList(dtoList)
                 .pageRequestDTO(req)
-                .totalCount(result.getTotalElements())
+                .totalCount(resultPage.getTotalElements())
                 .build();
     }
 
@@ -575,6 +573,16 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
     @Override
     public List<ApprovalDocumentsDto> findByStatus(DocumentStatus status) {
         return List.of();
+    }
+
+    @Override
+    public void restoreDocument(String docId) {
+
+    }
+
+    @Override
+    public PageResponseDTO<ApprovalDocumentsDto> getPagedApprovalsByUser(PageRequestDTO pageRequestDTO, Long userId) {
+        return null;
     }
 
     /* -------------------------------------------------------------
@@ -743,17 +751,10 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
         entity.markCreated(
                 new UserDTO(
                         userEntity.getUserId(),
-                        userEntity.getEmployee().getEmpId(),
                         userEntity.getUsername(),
-                        userEntity.getPwHash() != null ? userEntity.getPwHash() : "N/A",
                         userEntity.getEmpName(),
-                        true,
-                        true,
                         userEntity.getEmail(),
-                        null,
-                        null,
-                        List.of()
-
+                        userEntity.getEmployee().getEmpId()
                 )
         );
 
@@ -763,7 +764,6 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
         dto.setDepartmentId(dept.getDeptId());
         dto.setDepartmentName(dept.getDeptName());
         dto.setDepartmentCode(dept.getDeptCode());
-
 
 
         log.info("📋 DTO departmentCode={}, departmentId={}, userId={}, empId={}",

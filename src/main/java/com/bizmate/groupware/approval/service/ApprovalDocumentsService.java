@@ -51,4 +51,7 @@ public interface ApprovalDocumentsService {
 
     List<ApprovalDocumentsDto> findByStatus(DocumentStatus status);
 
+    void restoreDocument(String docId);
+
+    PageResponseDTO<ApprovalDocumentsDto> getPagedApprovalsByUser(PageRequestDTO pageRequestDTO, Long userId);
 }

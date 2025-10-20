@@ -37,6 +37,7 @@ public class Permission {
     private String description;
 
     @Column(name = "is_used", length = 1, nullable = false)
+    @Builder.Default
     private String isUsed = "Y";
 
     // N:M 관계 매핑: 역할 - 권한 (ROLE_PERMISSIONS 테이블)

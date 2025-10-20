@@ -34,6 +34,7 @@ public class Role {
     @Column(name = "description", length = 255)
     private String description;
 
+    @Builder.Default
     @Column(name = "is_used", length = 1,  nullable = false)
     private String isUsed = "Y";
 

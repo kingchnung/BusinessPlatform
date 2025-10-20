@@ -62,7 +62,7 @@ public class CustomUserDetailsService implements UserDetailsService {
                 empId,
                 user.getUsername(),
                 user.getPwHash(),      // 비밀번호 해시
-                active,
+                true,
                 locked,
                 authorities
         );

@@ -10,6 +10,7 @@ import com.bizmate.hr.security.UserPrincipal;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.web.bind.annotation.*;
@@ -33,14 +34,18 @@ public class ApprovalDocumentsController {
     @GetMapping
     public ResponseEntity<PageResponseDTO<ApprovalDocumentsDto>> getApprovalList(
             PageRequestDTO pageRequestDTO,
-            @AuthenticationPrincipal UserDTO loginUser
+            @AuthenticationPrincipal UserPrincipal principal
     ) {
-        log.info("📄 결재문서 목록 조회 요청: page={}, size={}, user={}",
-                pageRequestDTO.getPage(), pageRequestDTO.getSize(),
-                loginUser != null ? loginUser.getUsername() : "anonymous");
+        boolean isAdmin = principal.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
 
-        PageResponseDTO<ApprovalDocumentsDto> result =
-                approvalDocumentsService.getPagedApprovals(pageRequestDTO);
+        log.info("📄 결재문서 목록 조회 요청: page={}, size={}, user={}, isAdmin={}",
+                pageRequestDTO.getPage(), pageRequestDTO.getSize(),
+                principal.getUsername(), isAdmin);
+
+        PageResponseDTO<ApprovalDocumentsDto> result = isAdmin
+                ? approvalDocumentsService.getPagedApprovals(pageRequestDTO) // 전체 문서 조회
+                : approvalDocumentsService.getPagedApprovalsByUser(pageRequestDTO, principal.getUserId()); // 사용자 본인 문서만
 
         return ResponseEntity.ok(result);
     }
@@ -176,7 +181,8 @@ public class ApprovalDocumentsController {
             @AuthenticationPrincipal UserPrincipal principal) {
 
         try {
-            log.info("✅ [문서 승인 요청] 문서ID={}, 승인자={}", docId, principal.getEmpName());
+            boolean isAdmin = principal.getAuthorities().stream()
+                    .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
 
             // ✅ UserPrincipal → UserDTO 변환
             UserDTO loginUser = new UserDTO(
@@ -186,6 +192,12 @@ public class ApprovalDocumentsController {
                     principal.getEmail(),
                     principal.getEmpId()
             );
+
+            if (isAdmin) {
+                log.info("✅ [관리자 강제 승인 실행] 관리자={}, 문서={}", loginUser.getEmpName(), docId);
+            } else {
+                log.info("✅ [문서 승인 요청] 승인자={}, 문서={}", loginUser.getEmpName(), docId);
+            }
 
             ApprovalDocumentsDto result = approvalDocumentsService.approve(docId, loginUser);
             return ResponseEntity.ok(result);
@@ -210,6 +222,9 @@ public class ApprovalDocumentsController {
 
         try {
             String reason = (body != null) ? body.getOrDefault("reason", "") : "";
+
+            boolean isAdmin = principal.getAuthorities().stream()
+                    .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
             // ✅ UserPrincipal → UserDTO 변환
             UserDTO loginUser = new UserDTO(
                     principal.getUserId(),
@@ -219,7 +234,11 @@ public class ApprovalDocumentsController {
                     principal.getEmpId()
             );
 
-            log.info("🔴 반려 요청: docId={}, user={}, reason={}", docId, loginUser.getEmpName(), reason);
+            if (isAdmin) {
+                log.info("🔴 [관리자 강제 반려] 문서ID={}, 관리자={}, 사유={}", docId, loginUser.getEmpName(), reason);
+            } else {
+                log.info("🔴 [반려 요청] 문서ID={}, 사용자={}, 사유={}", docId, loginUser.getEmpName(), reason);
+            }
 
             ApprovalDocumentsDto result = approvalDocumentsService.reject(docId, loginUser, reason);
             return ResponseEntity.ok(result);
@@ -233,26 +252,28 @@ public class ApprovalDocumentsController {
         }
     }
 
+    /* -------------------------------------------------------------
+     ✅ 8️⃣ 문서 논리삭제 (관리자 전용)
+     ------------------------------------------------------------- */
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{docId}")
     public ResponseEntity<?> deleteDocument(
             @PathVariable String docId,
             @RequestParam(required = false) String reason,
             @AuthenticationPrincipal UserPrincipal principal) {
 
-        UserDTO user = new UserDTO(
+        UserDTO adminUser = new UserDTO(
                 principal.getUserId(),
-                principal.getEmpId(),
                 principal.getUsername(),
-                principal.getPassword(),
                 principal.getEmpName(),
-                true, true,
                 principal.getEmail(),
-                null, null,
-                List.of()
+                principal.getEmpId()
         );
 
-        approvalDocumentsService.logicalDelete(docId, user, reason != null ? reason : "삭제 사유 없음");
-        return ResponseEntity.ok(Map.of("message", "문서가 논리적으로 삭제되었습니다."));
+        log.info("🗑️ [관리자 문서 삭제] 문서ID={}, 관리자={}", docId, adminUser.getEmpName());
+
+        approvalDocumentsService.logicalDelete(docId, adminUser, reason != null ? reason : "관리자 삭제");
+        return ResponseEntity.ok(Map.of("message", "관리자에 의해 문서가 논리적으로 삭제되었습니다."));
     }
 
 }

@@ -48,4 +48,5 @@ public class PageResponseDTO<E> {
         this.totalPage = this.pageNumList.size();
         this.current = pageRequestDTO.getPage();
     }
+
 }

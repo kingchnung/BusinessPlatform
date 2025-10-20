@@ -40,8 +40,6 @@ public class UserDTO extends User {
     private String deptCode;
     private final List<String> roleNames;
     private final List<String> permissionNames;
-
-    private final String deptName;
     private final String positionName;
     private final Integer failedCount;
     private final LocalDateTime lastLogin;
@@ -112,6 +110,10 @@ public class UserDTO extends User {
         this.isActive = true;
         this.roleNames = List.of("USER");
         this.permissionNames = List.of();
+
+        this.positionName = null;
+        this.failedCount = 0;
+        this.lastLogin = null;
     }
 
     // --- Private Static 헬퍼 메서드 영역 ---
