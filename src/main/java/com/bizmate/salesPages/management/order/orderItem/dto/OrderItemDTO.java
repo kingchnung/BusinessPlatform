@@ -13,7 +13,7 @@ public class OrderItemDTO {
     private String itemName;
     private Long quantity;
     private BigDecimal unitPrice;
-    private BigDecimal uintVat;
+    private BigDecimal unitVat;
     private BigDecimal totalAmount;
     private String itemNote;
     private Integer lineNum;

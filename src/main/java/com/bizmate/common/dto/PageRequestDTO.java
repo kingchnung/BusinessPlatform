@@ -22,4 +22,6 @@ public class PageRequestDTO {
     private String search;
     private String keyword;
 
+    private Integer year;
+
 }

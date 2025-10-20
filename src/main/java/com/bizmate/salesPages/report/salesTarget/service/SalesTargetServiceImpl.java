@@ -1,8 +1,8 @@
 package com.bizmate.salesPages.report.salesTarget.service;
 
-import com.bizmate.hr.dto.user.UserDTO;
 import com.bizmate.common.dto.PageRequestDTO;
 import com.bizmate.common.dto.PageResponseDTO;
+import com.bizmate.hr.security.UserPrincipal;
 import com.bizmate.salesPages.report.salesTarget.domain.SalesTarget;
 import com.bizmate.salesPages.report.salesTarget.dto.SalesTargetDTO;
 import com.bizmate.salesPages.report.salesTarget.repository.SalesTargetRepository;
@@ -16,7 +16,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -26,15 +25,14 @@ import java.util.stream.Collectors;
 @Transactional
 public class SalesTargetServiceImpl implements SalesTargetService {
     private final SalesTargetRepository salesTargetRepository;
-    private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyyMMdd");
     private final ModelMapper modelMapper;
 
     @Override
     public Long register(SalesTargetDTO salesTargetDTO) {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        if (principal instanceof UserDTO userDTO) {
-            salesTargetDTO.setUserId(userDTO.getUsername());
-            salesTargetDTO.setWriter(userDTO.getEmpName());
+        if (principal instanceof UserPrincipal userPrincipal) {
+            salesTargetDTO.setUserId(userPrincipal.getUsername());
+            salesTargetDTO.setWriter(userPrincipal.getEmpName());
         } else {
             throw new IllegalStateException("주문 등록을 위한 사용자 인증 정보를 찾을 수 없습니다. (비정상 접근)");
         }
@@ -69,19 +67,50 @@ public class SalesTargetServiceImpl implements SalesTargetService {
         salesTargetRepository.deleteById(targetId);
     }
 
+//    @Override
+//    public PageResponseDTO<SalesTargetDTO> list(PageRequestDTO pageRequestDTO) {
+//        Pageable pageable = PageRequest.of(
+//                pageRequestDTO.getPage() - 1,
+//                pageRequestDTO.getSize(),
+//                Sort.by("targetId").descending());
+//
+//        Page<SalesTarget> result = salesTargetRepository.findAll(pageable);
+//        List<SalesTargetDTO> dtoList = result.getContent().stream().map(
+//                salesTarget -> modelMapper.map(salesTarget, SalesTargetDTO.class)).collect(Collectors.toList());
+//        long totalCount = result.getTotalElements();
+//
+//        PageResponseDTO<SalesTargetDTO> responseDTO = PageResponseDTO.<SalesTargetDTO>withAll().dtoList(dtoList).pageRequestDTO(pageRequestDTO).totalCount(totalCount).build();
+//
+//        return responseDTO;
+//    }
+
     @Override
     public PageResponseDTO<SalesTargetDTO> list(PageRequestDTO pageRequestDTO) {
         Pageable pageable = PageRequest.of(
                 pageRequestDTO.getPage() - 1,
                 pageRequestDTO.getSize(),
-                Sort.by("targetId").descending());
+                Sort.by("targetYear").descending().and(Sort.by("targetMonth").ascending())
+        );
 
-        Page<SalesTarget> result = salesTargetRepository.findAll(pageable);
+        Page<SalesTarget> result;
+
+        Integer targetYear = pageRequestDTO.getYear();
+
+        if (targetYear != null && targetYear > 0) {
+            result = salesTargetRepository.findByTargetYear(targetYear, pageable);
+        } else {
+            result = salesTargetRepository.findAll(pageable);
+        }
+
         List<SalesTargetDTO> dtoList = result.getContent().stream().map(
                 salesTarget -> modelMapper.map(salesTarget, SalesTargetDTO.class)).collect(Collectors.toList());
         long totalCount = result.getTotalElements();
 
-        PageResponseDTO<SalesTargetDTO> responseDTO = PageResponseDTO.<SalesTargetDTO>withAll().dtoList(dtoList).pageRequestDTO(pageRequestDTO).totalCount(totalCount).build();
+        PageResponseDTO<SalesTargetDTO> responseDTO = PageResponseDTO.<SalesTargetDTO>withAll()
+                .dtoList(dtoList)
+                .pageRequestDTO(pageRequestDTO)
+                .totalCount(totalCount)
+                .build();
 
         return responseDTO;
     }
