@@ -115,7 +115,7 @@ public class OrderServiceImpl implements OrderService {
                     existingItem.changeItemName(itemDTO.getItemName());
                     existingItem.changeQuantity(itemDTO.getQuantity());
                     existingItem.changeUnitPrice(itemDTO.getUnitPrice());
-                    existingItem.changeUnitVat(itemDTO.getUintVat());
+                    existingItem.changeUnitVat(itemDTO.getUnitVat());
                     existingItem.changeItemNote(itemDTO.getItemNote());
 
                     existingItem.calculateAmount();
