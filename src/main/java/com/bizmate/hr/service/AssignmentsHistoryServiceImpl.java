@@ -38,8 +38,8 @@ public class AssignmentsHistoryServiceImpl implements AssignmentsHistoryService 
                 .collect(Collectors.toList());
     }
 
-    @Transactional(readOnly = true)
     @Override
+    @Transactional(readOnly = true)
     public List<AssignmentHistoryDTO> getHistoryByEmployee(Long empId) {
         return historyRepository.findByEmployee_EmpIdOrderByAssDateDesc(empId)
                 .stream()
@@ -47,14 +47,14 @@ public class AssignmentsHistoryServiceImpl implements AssignmentsHistoryService 
                 .collect(Collectors.toList());
     }
 
-//    @Override
-//    @Transactional(readOnly = true)
-//    public List<AssignmentHistoryDTO> getHistoryByDepartment(Long deptId) {
-//        return historyRepository.findByNewDepartment_DeptIdOrderByAssDateDesc(deptId)
-//                .stream()
-//                .map(AssignmentHistoryDTO::fromEntity)
-//                .collect(Collectors.toList());
-//    }
+    @Override
+    @Transactional(readOnly = true)
+    public List<AssignmentHistoryDTO> getHistoryByDepartment(Long deptId) {
+        return historyRepository.findByNewDepartment_DeptIdOrderByAssDateDesc(deptId)
+                .stream()
+                .map(AssignmentHistoryDTO::fromEntity)
+                .collect(Collectors.toList());
+    }
 
     /**
      * 발령 등록 (관리자 전용)
@@ -76,17 +76,11 @@ public class AssignmentsHistoryServiceImpl implements AssignmentsHistoryService 
                 .orElseThrow(() -> new EntityNotFoundException("신규 직급코드 " + dto.getNewGradeCode() + "를 찾을 수 없습니다."));
 
         // 2. 이전 정보는 Optional
-        Department prevDept = (dto.getPrevDeptId() != null)
-                ? departmentRepository.findById(dto.getPrevDeptId()).orElse(null)
-                : null;
+        Department prevDept = employee.getDepartment();
 
-        Position prevPosition = (dto.getPrevPositionCode() != null)
-                ? positionRepository.findById(dto.getPrevPositionCode()).orElse(null)
-                : null;
+        Position prevPosition = employee.getPosition();
 
-        Grade prevGrade = (dto.getPrevGradeCode() != null)
-                ? gradeRepository.findById(dto.getPrevGradeCode()).orElse(null)
-                : null;
+        Grade prevGrade = employee.getGrade();
 
         // 3. 등록자 조회
         UserEntity createdBy = userRepository.findByUsername(createdByUsername)

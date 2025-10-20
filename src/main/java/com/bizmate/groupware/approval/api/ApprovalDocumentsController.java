@@ -1,19 +1,21 @@
 package com.bizmate.groupware.approval.api;
 
-
-import com.bizmate.project.dto.PageResponseDTO;
+import com.bizmate.common.dto.PageRequestDTO;
+import com.bizmate.common.dto.PageResponseDTO;
 import com.bizmate.common.exception.VerificationFailedException;
 import com.bizmate.groupware.approval.dto.ApprovalDocumentsDto;
 import com.bizmate.groupware.approval.service.ApprovalDocumentsService;
 import com.bizmate.hr.dto.user.UserDTO;
 import com.bizmate.hr.security.UserPrincipal;
-import com.bizmate.project.dto.PageRequestDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -68,7 +70,8 @@ public class ApprovalDocumentsController {
                     principal.getUserId(),
                     principal.getUsername(),
                     principal.getEmpName(),
-                    principal.getEmail()
+                    principal.getEmail(),
+                    principal.getEmpId()
             );
 
             dto.setUserId(loginUser.getUserId());
@@ -104,7 +107,8 @@ public class ApprovalDocumentsController {
                     principal.getUserId(),
                     principal.getUsername(),
                     principal.getEmpName(),
-                    principal.getEmail()
+                    principal.getEmail(),
+                    principal.getEmpId()
             );
 
             // ✅ 작성자 정보 세팅 (표시용)
@@ -131,7 +135,8 @@ public class ApprovalDocumentsController {
     @PutMapping("/{docId}/resubmit")
     public ResponseEntity<ApprovalDocumentsDto> resubmitDocument(
             @PathVariable String docId,
-            @RequestBody ApprovalDocumentsDto dto,
+            @RequestPart("data") ApprovalDocumentsDto dto,
+            @RequestPart(value = "files", required = false) List<MultipartFile> files,
             @AuthenticationPrincipal UserPrincipal principal) {
 
         try {
@@ -142,14 +147,15 @@ public class ApprovalDocumentsController {
                     principal.getUserId(),
                     principal.getUsername(),
                     principal.getEmpName(),
-                    principal.getEmail()
+                    principal.getEmail(),
+                    principal.getEmpId()
             );
 
             // ✅ 작성자 정보 세팅 (표시용)
             dto.setUserId(loginUser.getUserId());
             dto.setAuthorName(loginUser.getEmpName());
 
-            ApprovalDocumentsDto result = approvalDocumentsService.resubmit(docId, dto, loginUser);
+            ApprovalDocumentsDto result = approvalDocumentsService.resubmit(docId, dto, files, loginUser);
             return ResponseEntity.ok(result);
 
         } catch (VerificationFailedException e) {
@@ -177,7 +183,8 @@ public class ApprovalDocumentsController {
                     principal.getUserId(),
                     principal.getUsername(),
                     principal.getEmpName(),
-                    principal.getEmail()
+                    principal.getEmail(),
+                    principal.getEmpId()
             );
 
             ApprovalDocumentsDto result = approvalDocumentsService.approve(docId, loginUser);
@@ -208,7 +215,8 @@ public class ApprovalDocumentsController {
                     principal.getUserId(),
                     principal.getUsername(),
                     principal.getEmpName(),
-                    principal.getEmail()
+                    principal.getEmail(),
+                    principal.getEmpId()
             );
 
             log.info("🔴 반려 요청: docId={}, user={}, reason={}", docId, loginUser.getEmpName(), reason);

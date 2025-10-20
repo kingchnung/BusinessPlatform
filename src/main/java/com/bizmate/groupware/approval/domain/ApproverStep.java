@@ -1,13 +1,16 @@
 package com.bizmate.groupware.approval.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public record ApproverStep(
         @Min(1)
         @JsonProperty("order")
@@ -23,8 +26,10 @@ public record ApproverStep(
         @JsonProperty("comment")
         String comment,         // 코멘트(반려사유 포함)
         @JsonProperty("decidedAt")
-        LocalDateTime decidedAt
-) {
+        LocalDateTime decidedAt,
+        @JsonProperty("signImagePath")
+        String signImagePath
+) implements Serializable {
     public ApproverStep {
         approverId = (approverId == null || approverId.isBlank()) ? "-" : approverId;
         approverName = (approverName == null || approverName.isBlank()) ? "미등록 사용자" : approverName;

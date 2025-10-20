@@ -19,13 +19,6 @@ import java.util.List;
 public class UserController {
     private final UserService userService;
 
-    //  0. 전자결재용 - 모든 직원 목록 조회 (권한 제한 없음)
-    @GetMapping("/list")
-    public ResponseEntity<List<UserDTO>> getAllForApproval() {
-        List<UserDTO> users = userService.findAllUsers();
-        return ResponseEntity.ok(users);
-    }
-
     // 1. 전체 사용자 목록 조회 (관리자용)
     @GetMapping
     @PreAuthorize("hasAuthority('sys:admin')")

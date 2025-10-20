@@ -56,7 +56,7 @@ public class ApprovalDocuments extends BaseEntity {
     /* ----------------------------- HR 참조 ------------------------------ */
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "DEPARTMENT_ID", nullable = false)
+    @JoinColumn(name = "DEPT_ID", nullable = false)
     private Department department;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -89,15 +89,18 @@ public class ApprovalDocuments extends BaseEntity {
     private int currentApproverIndex;
 
     @Builder.Default
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "APPROVAL_DOC_VIEWERS", joinColumns = @JoinColumn(name = "DOC_ID"))
     @Column(name = "VIEWER_ID", length = 40)
     private List<String> viewerIds = new ArrayList<>();
 
     /* ----------------------------- 첨부파일 ------------------------------ */
 
+    @OneToMany(mappedBy = "document",
+            cascade = {CascadeType.PERSIST, CascadeType.MERGE},
+            orphanRemoval = true,
+            fetch = FetchType.LAZY)
     @Builder.Default
-    @OneToMany(mappedBy = "document", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ApprovalFileAttachment> attachments = new ArrayList<>();
 
     /* ----------------------------- 결재 이력 필드 ------------------------------ */

@@ -11,7 +11,10 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Table(name = "APPROVAL_ATTACHMENT")
+@Table(name = "APPROVAL_ATTACHMENT",
+        indexes = {
+                @Index(name = "IDX_ATTACHMENT_DOC_ID", columnList = "DOC_ID")
+        })
 public class ApprovalFileAttachment {
 
     @Id
@@ -21,7 +24,7 @@ public class ApprovalFileAttachment {
 
     // ✅ ApprovalDocuments와 FK 연결
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "DOC_ID") // ApprovalDocuments.DOC_ID 참조
+    @JoinColumn(name = "DOC_ID", nullable = false) // ApprovalDocuments.DOC_ID 참조
     private ApprovalDocuments document;
 
     @Column(name = "ORIGINAL_NAME", nullable = false, length = 255)
@@ -30,7 +33,7 @@ public class ApprovalFileAttachment {
     @Column(name = "STORED_NAME", nullable = false, length = 255)
     private String storedName;
 
-    @Column(name = "FILE_PATH", nullable = true, length = 255)
+    @Column(name = "FILE_PATH", length = 255)
     private String filePath;
 
     @Column(name = "FILE_SIZE", nullable = false)

@@ -18,12 +18,8 @@ public interface ApprovalFileAttachmentRepository extends JpaRepository<Approval
      * 임시 업로드 파일을 상신 시 문서에 연결
      */
     @Modifying
-    @Query("""
-        UPDATE ApprovalFileAttachment a
-           SET a.document = :document
-         WHERE a.document IS NULL
-           AND a.uploader = :uploader
-    """)
+    @Query("UPDATE ApprovalFileAttachment f SET f.document = :document " +
+            "WHERE f.uploader = :uploader AND f.document IS NULL")
     int linkPendingFiles(@Param("document") ApprovalDocuments document,
                          @Param("uploader") UserEntity uploader);
 }

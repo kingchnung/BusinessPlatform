@@ -1,8 +1,11 @@
 package com.bizmate.groupware.board.domain;
 
 import com.bizmate.common.domain.BaseEntity;
+import com.bizmate.hr.dto.user.UserDTO;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "BOARD_COMMENT")
@@ -35,4 +38,16 @@ public class Comment extends BaseEntity {
     private boolean isDeleted = false;
 
     private boolean anonymous = false;
+
+    public void markCreated(UserDTO user) {
+        super.setCreatedBy(user.getUsername());
+        super.setUpdatedBy(user.getUsername());
+        super.setCreatedAt(LocalDateTime.now());
+        super.setUpdatedAt(LocalDateTime.now());
+    }
+
+    public void markUpdated(UserDTO user) {
+        super.setUpdatedBy(user.getUsername());
+        super.setUpdatedAt(LocalDateTime.now());
+    }
 }

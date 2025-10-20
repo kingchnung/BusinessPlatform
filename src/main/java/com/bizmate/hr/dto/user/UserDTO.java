@@ -79,7 +79,7 @@ public class UserDTO extends User {
     /**
      * ✅ “비밀번호 불필요한” 경량 생성자 (컨트롤러 등에서 간단히 생성할 때)
      */
-    public UserDTO(Long userId, String username, String empName, String email) {
+    public UserDTO(Long userId, String username, String empName, String email, Long empId) {
         super(
                 username != null ? username : "anonymous",
                 "dummy-password",
@@ -88,7 +88,7 @@ public class UserDTO extends User {
                 List.of(new SimpleGrantedAuthority("ROLE_USER"))
         );
         this.userId = userId;
-        this.empId = null;
+        this.empId = empId;
         this.username = username;
         this.pwHash = "dummy-password";
         this.empName = empName;
