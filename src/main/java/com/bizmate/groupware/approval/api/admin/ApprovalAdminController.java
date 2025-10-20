@@ -20,18 +20,18 @@ import org.springframework.web.bind.annotation.*;
 @PreAuthorize("hasRole('ADMIN')")
 public class ApprovalAdminController {
 
-    private final ApprovalDocumentsService approvalService;
+    private final ApprovalDocumentsService approvalDocumentsService;
 
     /* -------------------------------------------------------------
      ✅ 1️⃣ 모든 문서 조회 (관리자 전용)
      ------------------------------------------------------------- */
     @GetMapping("/all")
     public ResponseEntity<PageResponseDTO<ApprovalDocumentsDto>> getAllDocuments(PageRequestDTO pageRequestDTO) {
-        log.info("📄 [관리자] 전체 결재문서 조회 요청: page={}, size={}",
+        log.info("📄 [관리자] 전체 결재문서 조회 요청: page={}, size={} keyword={}",
                 pageRequestDTO.getPage(), pageRequestDTO.getSize(), pageRequestDTO.getKeyword());
 
         PageResponseDTO<ApprovalDocumentsDto> result =
-                approvalService.getPagedApprovals(pageRequestDTO);
+                approvalDocumentsService.getPagedApprovals(pageRequestDTO);
 
         return ResponseEntity.ok(result);
     }
@@ -42,20 +42,11 @@ public class ApprovalAdminController {
     @PutMapping("/{docId}/force-approve")
     public ResponseEntity<?> forceApprove(
             @PathVariable String docId,
+            @RequestParam(defaultValue = "관리자 강제 승인 처리") String reason,
             @AuthenticationPrincipal UserPrincipal principal
     ) {
-        log.info("⚡ [관리자 강제 승인] 문서={}, 관리자={}", docId, principal.getEmpName());
-
-        UserDTO admin = new UserDTO(
-                principal.getUserId(),
-                principal.getUsername(),
-                principal.getEmpName(),
-                principal.getEmail(),
-                principal.getEmpId()
-        );
-
-        approvalService.approve(docId, admin);
-        return ResponseEntity.ok("관리자 강제 승인 완료");
+        approvalDocumentsService.forceApprove(docId, principal, reason);
+        return ResponseEntity.ok("강제 승인 완료");
     }
 
     /* -------------------------------------------------------------
@@ -67,19 +58,8 @@ public class ApprovalAdminController {
             @RequestParam(defaultValue = "관리자 강제 반려") String reason,
             @AuthenticationPrincipal UserPrincipal principal
     ) {
-        log.info("⛔ [관리자 강제 반려] 문서={}, 관리자={}, 사유={}",
-                docId, principal.getEmpName(), reason);
-
-        UserDTO admin = new UserDTO(
-                principal.getUserId(),
-                principal.getUsername(),
-                principal.getEmpName(),
-                principal.getEmail(),
-                principal.getEmpId()
-        );
-
-        approvalService.reject(docId, admin, reason);
-        return ResponseEntity.ok("관리자 강제 반려 완료");
+        approvalDocumentsService.forceReject(docId, principal, reason);
+        return ResponseEntity.ok("강제 반려 완료");
     }
 
     /* -------------------------------------------------------------
@@ -88,7 +68,7 @@ public class ApprovalAdminController {
     @GetMapping("/{docId}/logs")
     public ResponseEntity<ApprovalDocumentsDto> getDocumentLogs(@PathVariable String docId) {
         log.info("🕓 [관리자] 결재문서 로그 조회 요청: {}", docId);
-        ApprovalDocumentsDto dto = approvalService.get(docId);
+        ApprovalDocumentsDto dto = approvalDocumentsService.get(docId);
         return ResponseEntity.ok(dto);
     }
 
@@ -102,7 +82,7 @@ public class ApprovalAdminController {
     ) {
         log.info("♻️ [관리자] 문서 복원 요청: {}, 관리자={}", docId, principal.getEmpName());
 
-        approvalService.restoreDocument(docId);
+        approvalDocumentsService.restoreDocument(docId);
         return ResponseEntity.ok("문서 복원 완료");
     }
 }

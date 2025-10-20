@@ -19,6 +19,7 @@ import com.bizmate.hr.dto.user.UserDTO;
 import com.bizmate.hr.repository.DepartmentRepository;
 import com.bizmate.hr.repository.EmployeeRepository;
 import com.bizmate.hr.repository.UserRepository;
+import com.bizmate.hr.security.UserPrincipal;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -525,11 +526,16 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public PageResponseDTO<ApprovalDocumentsDto> getPagedApprovals(PageRequestDTO req) {
         Pageable pageable = PageRequest.of(req.getPage() - 1, req.getSize());
 
-        Page<ApprovalDocuments> resultPage = approvalDocumentsRepository
-                .searchDocuments(req.getKeyword(), pageable);
+        Page<ApprovalDocuments> resultPage;
+        if (req.getKeyword() != null && !req.getKeyword().isEmpty()) {
+            resultPage = approvalDocumentsRepository.searchDocuments(req.getKeyword(), pageable);
+        } else {
+            resultPage = approvalDocumentsRepository.findAll(pageable);
+        }
 
         List<ApprovalDocumentsDto> dtoList = resultPage.getContent()
                 .stream()
@@ -581,71 +587,128 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
     }
 
     @Override
-    public PageResponseDTO<ApprovalDocumentsDto> getPagedApprovalsByUser(PageRequestDTO pageRequestDTO, Long userId) {
-        return null;
+    public PageResponseDTO<ApprovalDocumentsDto> getPagedApprovalsByUser(PageRequestDTO req, String username) {
+        Pageable pageable = PageRequest.of(req.getPage() - 1, req.getSize());
+
+        Page<ApprovalDocuments> resultPage;
+        if (req.getKeyword() != null && !req.getKeyword().isEmpty()) {
+            resultPage = approvalDocumentsRepository.searchDocumentsByUserAndKeyword(username, req.getKeyword(), pageable);
+        } else {
+            resultPage = approvalDocumentsRepository.findByAuthorUser_Username(username, pageable);
+        }
+
+        List<ApprovalDocumentsDto> dtoList = resultPage.getContent().stream()
+                .map(ApprovalDocumentsDto::fromEntity)
+                .toList();
+
+        return PageResponseDTO.<ApprovalDocumentsDto>withAll()
+                .dtoList(dtoList)
+                .pageRequestDTO(req)
+                .totalCount(resultPage.getTotalElements())
+                .build();
     }
+
 
     /* -------------------------------------------------------------
        ✅ 내부 유틸
        ------------------------------------------------------------- */
-    private void handleFileAttachments(ApprovalDocumentsDto dto, ApprovalDocuments saved, UserDTO loginUser) {
-        log.info("📎 [handleFileAttachments 진입] DTO 첨부파일 수={}, 문서ID={}",
-                dto.getAttachments() != null ? dto.getAttachments().size() : 0,
-                saved.getDocId());
+    // ApprovalDocumentsServiceImpl.java
+    private void handleFileAttachments(ApprovalDocumentsDto dto, ApprovalDocuments document, UserDTO loginUser) {
+        if (document == null || document.getDocId() == null) {
+            throw new VerificationFailedException("📎 첨부파일 연결 실패: 문서 정보가 없습니다.");
+        }
 
         UserEntity uploader = userRepository.findById(loginUser.getUserId())
                 .orElseThrow(() -> new VerificationFailedException("업로더(UserEntity)를 찾을 수 없습니다."));
 
         List<ApprovalFileAttachment> attachedFiles = new ArrayList<>();
 
+        /* ✅ 1️⃣ DTO에서 넘어온 첨부파일 우선 연결 */
         if (dto.getAttachments() != null && !dto.getAttachments().isEmpty()) {
             for (ApprovalFileAttachmentDto fileDto : dto.getAttachments()) {
                 ApprovalFileAttachment fileEntity;
 
                 if (fileDto.getId() != null) {
-                    // ✅ 이미 업로드된 파일이면 DB에서 다시 attach (영속 상태 확보)
+                    // 🔁 기존 파일 재연결
                     fileEntity = fileAttachmentRepository.findById(fileDto.getId())
                             .orElseThrow(() -> new VerificationFailedException("존재하지 않는 첨부파일 ID: " + fileDto.getId()));
 
-                    // ✅ 문서(FK) 연결
-                    fileEntity.setDocument(saved);
+                    fileEntity.setDocument(document);
                     fileEntity.setUploader(uploader);
                 } else {
-                    // ✅ 신규 파일일 경우 toEntity()로 새로 생성
-                    fileEntity = fileDto.toEntity(saved, uploader);
+                    // 🆕 신규 파일 → 문서 직접 연결
+                    fileEntity = fileDto.toEntity(document, uploader);
                 }
 
                 attachedFiles.add(fileEntity);
             }
+        }
 
-            // ✅ 문서와 파일 연결 (양방향 관계)
-            saved.getAttachments().clear();
-            saved.getAttachments().addAll(attachedFiles);
+        /* ✅ 2️⃣ DOC_ID가 NULL인 임시첨부파일 자동 연결 */
+        List<ApprovalFileAttachment> pendingFiles =
+                fileAttachmentRepository.findByDocumentIsNullAndUploader(uploader);
 
-            // ✅ 병합 저장 (merge)
+        if (!pendingFiles.isEmpty()) {
+            for (ApprovalFileAttachment pending : pendingFiles) {
+                // 혹시 DTO에서도 이미 포함된 파일이라면 중복 연결 방지
+                boolean alreadyLinked = attachedFiles.stream()
+                        .anyMatch(f -> f.getStoredName().equals(pending.getStoredName()));
+                if (!alreadyLinked) {
+                    pending.setDocument(document);
+                    attachedFiles.add(pending);
+                }
+            }
+            log.info("🔗 임시첨부파일 {}건 자동 연결됨 (업로더={}, DOC_ID={})",
+                    pendingFiles.size(), uploader.getEmpName(), document.getDocId());
+        }
+
+        /* ✅ 3️⃣ DB 저장 및 엔티티 갱신 */
+        if (!attachedFiles.isEmpty()) {
+            // ✅ 기존 컬렉션 객체를 재사용해야 orphanRemoval 오류 방지됨
+            if (document.getAttachments() == null) {
+                document.setAttachments(new ArrayList<>());
+            } else {
+                document.getAttachments().clear();
+            }
+
+            document.getAttachments().addAll(attachedFiles);
             fileAttachmentRepository.saveAllAndFlush(attachedFiles);
-            log.info("✅ 첨부파일 {}건 연결 완료 (문서ID={})", attachedFiles.size(), saved.getDocId());
-        } else {
-            // ✅ 첨부파일 DTO가 비어있을 경우 (임시 업로드 연결)
-            int linkedCount = fileAttachmentRepository.linkPendingFiles(saved, uploader);
-            if (linkedCount > 0)
-                log.info("🔗 임시 업로드 {}건 자동 연결됨 (문서ID={})", linkedCount, saved.getDocId());
-            else
-                log.info("⚠️ 연결할 임시 업로드 없음 (uploader={}, docId={})", uploader.getEmpName(), saved.getDocId());
+
+            log.info("✅ 첨부파일 최종 {}건 저장 완료 (DOC_ID={})",
+                    attachedFiles.size(), document.getDocId());
         }
     }
 
-    private void saveAttachments(List<ApprovalFileAttachmentDto> attachmentDto, ApprovalDocuments document) {
-        if (attachmentDto == null || attachmentDto.isEmpty()) {
-            return;
+    @Transactional
+    @Override
+    public void forceApprove(String docId, UserPrincipal adminUser, String reason) {
+        ApprovalDocuments document = approvalDocumentsRepository.findById(docId)
+                .orElseThrow(() -> new VerificationFailedException("문서를 찾을 수 없습니다."));
+
+        if (!adminUser.isAdmin()) {
+            throw new VerificationFailedException("강제 승인 권한이 없습니다.");
         }
 
-        List<ApprovalFileAttachment> list = attachmentDto.stream()
-                .map(dto -> dto.toEntity(document, document.getAuthorUser()))
-                .toList();
+        document.forceApprove(adminUser, reason);
+        approvalDocumentsRepository.save(document);
 
-        fileAttachmentRepository.saveAll(list);
-        log.info("📎 첨부파일 {}건 저장 완료 (문서ID={})", list.size(), document.getDocId());
+        log.warn("⚠️ 관리자 {}가 문서 {}를 강제승인 처리함", adminUser.getUsername(), docId);
+    }
+
+    @Transactional
+    @Override
+    public void forceReject(String docId, UserPrincipal adminUser, String reason) {
+        ApprovalDocuments document = approvalDocumentsRepository.findById(docId)
+                .orElseThrow(() -> new VerificationFailedException("문서를 찾을 수 없습니다."));
+
+        if (!adminUser.isAdmin()) {
+            throw new VerificationFailedException("강제 반려 권한이 없습니다.");
+        }
+
+        document.forceReject(adminUser, reason);
+        approvalDocumentsRepository.save(document);
+
+        log.warn("⚠️ 관리자 {}가 문서 {}를 강제반려 처리함", adminUser.getUsername(), docId);
     }
 
     private void validateDraft(ApprovalDocumentsDto dto) {

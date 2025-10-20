@@ -8,6 +8,7 @@ import com.bizmate.groupware.approval.dto.DocumentSearchRequestDto;
 import com.bizmate.hr.domain.Department;
 import com.bizmate.hr.domain.UserEntity;
 import com.bizmate.hr.dto.user.UserDTO;
+import com.bizmate.hr.security.UserPrincipal;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.data.domain.Page;
 import org.springframework.transaction.annotation.Transactional;
@@ -53,5 +54,11 @@ public interface ApprovalDocumentsService {
 
     void restoreDocument(String docId);
 
-    PageResponseDTO<ApprovalDocumentsDto> getPagedApprovalsByUser(PageRequestDTO pageRequestDTO, Long userId);
+    PageResponseDTO<ApprovalDocumentsDto> getPagedApprovalsByUser(PageRequestDTO pageRequestDTO, String username);
+
+    @Transactional
+    void forceApprove(String docId, UserPrincipal adminUser, String reason);
+
+    @Transactional
+    void forceReject(String docId, UserPrincipal adminUser, String reason);
 }

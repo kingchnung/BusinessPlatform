@@ -37,15 +37,31 @@ public class ApprovalDocumentsController {
             @AuthenticationPrincipal UserPrincipal principal
     ) {
         boolean isAdmin = principal.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+                .anyMatch(a ->
+                        a.getAuthority().equals("ROLE_CEO") ||
+                        a.getAuthority().equals("ROLE_ADMIN")
+                );
 
-        log.info("📄 결재문서 목록 조회 요청: page={}, size={}, user={}, isAdmin={}",
-                pageRequestDTO.getPage(), pageRequestDTO.getSize(),
-                principal.getUsername(), isAdmin);
+        log.info("📄 결재문서 목록 조회 요청: page={}, size={}, keyword={}, user={}, isAdmin={}",
+                pageRequestDTO.getPage(),
+                pageRequestDTO.getSize(),
+                pageRequestDTO.getKeyword(),
+                principal.getUsername(),
+                isAdmin
+        );
 
-        PageResponseDTO<ApprovalDocumentsDto> result = isAdmin
-                ? approvalDocumentsService.getPagedApprovals(pageRequestDTO) // 전체 문서 조회
-                : approvalDocumentsService.getPagedApprovalsByUser(pageRequestDTO, principal.getUserId()); // 사용자 본인 문서만
+        PageResponseDTO<ApprovalDocumentsDto> result;
+
+        if (isAdmin) {
+            // ✅ 관리자: 전체 문서 조회 (검색 포함)
+            result = approvalDocumentsService.getPagedApprovals(pageRequestDTO);
+        } else {
+            // ✅ 일반 사용자: 본인(username 기준) 문서만 조회
+            result = approvalDocumentsService.getPagedApprovalsByUser(
+                    pageRequestDTO,
+                    principal.getUsername()   // username 기반
+            );
+        }
 
         return ResponseEntity.ok(result);
     }

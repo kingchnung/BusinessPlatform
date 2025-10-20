@@ -58,4 +58,25 @@ public class UserPrincipal implements UserDetails {
     @Override public boolean isAccountNonLocked() { return !locked; }
     @Override public boolean isCredentialsNonExpired() { return true; }
     @Override public boolean isEnabled() { return active; }
+
+    /** ✅ 특정 ROLE 보유 여부 확인 */
+    public boolean hasRole(String roleName) {
+        if (authorities == null) return false;
+        return authorities.stream()
+                .map(GrantedAuthority::getAuthority)
+                .anyMatch(auth -> auth.equalsIgnoreCase(roleName) || auth.equalsIgnoreCase("ROLE_" + roleName));
+    }
+
+    /** ✅ 특정 권한(perm) 보유 여부 확인 */
+    public boolean hasPermission(String permission) {
+        if (authorities == null) return false;
+        return authorities.stream()
+                .map(GrantedAuthority::getAuthority)
+                .anyMatch(auth -> auth.equalsIgnoreCase(permission));
+    }
+
+    /** ✅ 관리자 여부 (ROLE_CEO, sys:admin 등 통합 판단) */
+    public boolean isAdmin() {
+        return hasRole("ROLE_CEO") || hasRole("ROLE_ADMIN") || hasPermission("sys:admin");
+    }
 }

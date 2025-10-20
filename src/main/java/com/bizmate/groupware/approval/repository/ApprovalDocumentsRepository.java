@@ -62,14 +62,31 @@ public interface ApprovalDocumentsRepository extends JpaRepository<ApprovalDocum
     ApprovalDocuments findByDocId(String docId);
 
     @Query("""
-            SELECT d
-            FROM ApprovalDocuments d
-            LEFT JOIN d.authorEmployee e
-            WHERE (:keyword IS NULL 
-                   OR UPPER(FUNCTION('REPLACE', d.title, ' ', '')) LIKE 
-                      UPPER(FUNCTION('REPLACE', CONCAT('%', :keyword, '%'), ' ', ''))
-                   OR UPPER(FUNCTION('REPLACE', e.empName, ' ', '')) LIKE 
-                      UPPER(FUNCTION('REPLACE', CONCAT('%', :keyword, '%'), ' ', '')))
-            """)
+    SELECT d
+    FROM ApprovalDocuments d
+    LEFT JOIN d.authorEmployee e
+    WHERE (:keyword IS NULL 
+           OR UPPER(FUNCTION('REPLACE', d.title, ' ', '')) LIKE 
+              UPPER(FUNCTION('REPLACE', CONCAT('%', :keyword, '%'), ' ', ''))
+           OR UPPER(FUNCTION('REPLACE', e.empName, ' ', '')) LIKE 
+              UPPER(FUNCTION('REPLACE', CONCAT('%', :keyword, '%'), ' ', '')))
+    """)
     Page<ApprovalDocuments> searchDocuments(@Param("keyword") String keyword, Pageable pageable);
+
+
+
+    Page<ApprovalDocuments> findByAuthorUser_Username(String username, Pageable pageable);
+
+    @Query("""
+    SELECT d
+    FROM ApprovalDocuments d
+    LEFT JOIN d.authorEmployee e
+    WHERE d.authorUser.username = :username
+      AND (
+        :keyword IS NULL
+        OR UPPER(FUNCTION('REPLACE', d.title, ' ', '')) LIKE UPPER(FUNCTION('REPLACE', CONCAT('%', :keyword, '%'), ' ', ''))
+        OR UPPER(FUNCTION('REPLACE', e.empName, ' ', '')) LIKE UPPER(FUNCTION('REPLACE', CONCAT('%', :keyword, '%'), ' ', ''))
+      )
+    """)
+    Page<ApprovalDocuments> searchDocumentsByUserAndKeyword(String username, String keyword, Pageable pageable);
 }

@@ -9,6 +9,7 @@ import com.bizmate.hr.domain.Employee;
 import com.bizmate.hr.domain.Role;
 import com.bizmate.hr.domain.UserEntity;
 import com.bizmate.hr.dto.user.UserDTO;
+import com.bizmate.hr.security.UserPrincipal;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
@@ -172,31 +173,31 @@ public class ApprovalDocuments extends BaseEntity {
 
     /* ----------------------------- 비즈니스 로직 ------------------------------ */
 
-    /** ✅ 승인 처리 */
-    public void markApproved(UserDTO user) {
-        if (!canApprove())
-            throw new IllegalStateException("진행 중(IN_PROGRESS) 상태의 문서만 승인할 수 있습니다.");
-
+    /** ✅ 강제 승인 (관리자 전용) */
+    public void forceApprove(UserPrincipal adminUser, String reason) {
         this.status = DocumentStatus.APPROVED;
-        this.approvedBy = user.getEmpName();
-        this.approvedEmpId = user.getEmpId();
+        this.approvedBy = "[강제승인]" + adminUser.getEmpName();
+        this.approvedEmpId = adminUser.getEmpId();
         this.approvedDate = LocalDateTime.now();
+        this.rejectedReason = null; // 혹시 반려 이유가 남아있다면 초기화
+        this.currentApproverIndex = approvalLine != null ? approvalLine.size() : 0;
 
-        markUpdated(user);
+        // Auditing 갱신
+        super.setUpdatedBy(adminUser.getUsername());
+        super.setUpdatedAt(LocalDateTime.now());
     }
 
-    /** ✅ 반려 처리 */
-    public void markRejected(UserDTO user, String reason) {
-        if (!canReject())
-            throw new IllegalStateException("진행 중(IN_PROGRESS) 상태의 문서만 반려할 수 있습니다.");
-
+    /** ✅ 강제 반려 (관리자 전용) */
+    public void forceReject(UserPrincipal adminUser, String reason) {
         this.status = DocumentStatus.REJECTED;
-        this.rejectedBy = user.getEmpName();
-        this.rejectedEmpId = user.getEmpId();
+        this.rejectedBy = "[강제반려]" + adminUser.getEmpName();
+        this.rejectedEmpId = adminUser.getEmpId();
         this.rejectedReason = reason;
         this.rejectedDate = LocalDateTime.now();
 
-        markUpdated(user);
+        // Auditing 갱신
+        super.setUpdatedBy(adminUser.getUsername());
+        super.setUpdatedAt(LocalDateTime.now());
     }
 
     /** ✅ 논리삭제 처리 */

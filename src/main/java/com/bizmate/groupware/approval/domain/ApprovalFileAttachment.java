@@ -24,7 +24,7 @@ public class ApprovalFileAttachment {
 
     // ✅ ApprovalDocuments와 FK 연결
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "DOC_ID", nullable = false) // ApprovalDocuments.DOC_ID 참조
+    @JoinColumn(name = "DOC_ID") // ApprovalDocuments.DOC_ID 참조
     private ApprovalDocuments document;
 
     @Column(name = "ORIGINAL_NAME", nullable = false, length = 255)

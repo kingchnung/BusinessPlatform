@@ -22,4 +22,6 @@ public interface ApprovalFileAttachmentRepository extends JpaRepository<Approval
             "WHERE f.uploader = :uploader AND f.document IS NULL")
     int linkPendingFiles(@Param("document") ApprovalDocuments document,
                          @Param("uploader") UserEntity uploader);
+
+    List<ApprovalFileAttachment> findByDocumentIsNullAndUploader(UserEntity uploader);
 }
