@@ -106,8 +106,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         // 4. 저장
         Employee updated = employeeRepository.save(employee);
 
-        // 5. User 정보 동기화 로직 (syncUserInfo)도 제거
-        // **[핵심] 전화번호, 이메일, 주소 변경은 사용자 인증 정보와 무관하므로 동기화 불필요**
+        syncUserInfo(updated);
 
         return EmployeeDTO.fromEntity(updated);
     }
@@ -197,16 +196,16 @@ public class EmployeeServiceImpl implements EmployeeService {
      * 🔹 직원 정보 변경 시 UserEntity의 복제 필드를 동기화하는 메서드
      */
     public void syncUserInfo(Employee employee) {
-        UserEntity user = userRepository.findByEmployee(employee)
-                .orElseThrow(() -> new EntityNotFoundException("연결된 사용자 계정을 찾을 수 없습니다."));
-
-        user.setEmpName(employee.getEmpName());
-        user.setEmail(employee.getEmail());
-        user.setPhone(employee.getPhone());
-        user.setDeptName(employee.getDepartment().getDeptName());
-        user.setPositionName(employee.getPosition().getPositionName());
-        user.setDeptCode(employee.getDepartment().getDeptCode());
-        userRepository.save(user);
+        userRepository.findByEmployeeId(employee.getEmpId())
+                .ifPresent(user -> {
+                    user.setEmpName(employee.getEmpName());
+                    user.setEmail(employee.getEmail());
+                    user.setPhone(employee.getPhone());
+                    user.setDeptName(employee.getDepartment().getDeptName());
+                    user.setPositionName(employee.getPosition().getPositionName());
+                    user.setDeptCode(employee.getDepartment().getDeptCode());
+                    userRepository.save(user);
+                });
     }
 
 

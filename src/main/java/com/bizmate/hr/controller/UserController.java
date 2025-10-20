@@ -3,6 +3,7 @@ package com.bizmate.hr.controller;
 
 
 import com.bizmate.hr.dto.user.UserDTO;
+import com.bizmate.hr.dto.user.UserPwChangeRequest;
 import com.bizmate.hr.dto.user.UserUpdateRequestDTO;
 import com.bizmate.hr.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -11,7 +12,9 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/users")
@@ -52,6 +55,29 @@ public class UserController {
         UserDTO updatedUser = userService.updateUser(userId, updateDTO);
         return ResponseEntity.ok(updatedUser);
     }
+
+    // 로그인한 사용자의 비밀번호 변경
+    @PutMapping("/{id}/password")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> changePassword(
+            @PathVariable Long id, @RequestBody
+            UserPwChangeRequest dto) {
+        userService.changePw(id, dto);
+        return ResponseEntity.ok(Map.of("message", "비밀번호가 변경되었습니다."));
+    }
+
+    //비밀번호 초기화
+    @PutMapping("/{userId}/reset-lock")
+    @PreAuthorize("hasRole('ROLE_MANAGER') or hasRole('ROLE_CEO')")
+    public ResponseEntity<Map<String, Object>> resetUserLock(@PathVariable Long userId) {
+        userService.resetUserLock(userId);
+        Map<String, Object> response = new HashMap<>();
+        response.put("message", "계정이 정상적으로 초기화되었습니다.");
+        response.put("userId", userId);
+        return ResponseEntity.ok(response);
+    }
+
+
 
     // 5. 특정 사용자 계정 삭제 (Delete)
     @DeleteMapping("/{userId}")

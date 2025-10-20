@@ -32,7 +32,7 @@ public class DepartmentController {
      */
     @PreAuthorize("hasRole('ROLE_EMPLOYEE')")
     @GetMapping
-    public List<DepartmentDTO> getAllDepartments() {
+    public List<DepartmentResponseDTO> getAllDepartments() {
         log.info("📋 전체 부서 목록 조회");
         return departmentService.getAllDepartments();
     }

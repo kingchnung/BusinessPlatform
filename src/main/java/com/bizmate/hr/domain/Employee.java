@@ -80,6 +80,7 @@ public class Employee {
 
     // 14. 재직상태
     @Column(name = "status", nullable = false, length = 20)
+    @Builder.Default
     private String status = "ACTIVE";
 
     // 15. 경력연수

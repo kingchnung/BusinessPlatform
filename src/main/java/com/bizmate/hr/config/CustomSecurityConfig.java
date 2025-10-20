@@ -89,6 +89,7 @@ public class CustomSecurityConfig {
                                 "/api/assignments/**"
                         ).permitAll()
 
+
                         .requestMatchers("/api/employees/me").authenticated()
                         // OPTIONS 메서드 허용 (CORS)
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
