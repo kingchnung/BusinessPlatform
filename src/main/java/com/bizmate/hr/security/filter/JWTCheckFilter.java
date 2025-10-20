@@ -45,7 +45,7 @@ public class JWTCheckFilter extends OncePerRequestFilter {
         String path = request.getRequestURI();
 
         // ✅ 업로드 미리보기 / 다운로드는 인증 없이 통과
-        if (path.startsWith("/api/attachments/preview") || path.startsWith("/api/attachments/download")) {
+        if (path.startsWith("/api/approvals/attachments/preview") || path.startsWith("/api/approvals/attachments/download")) {
             filterChain.doFilter(request, response);
             return;
         }
