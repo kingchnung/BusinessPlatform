@@ -77,6 +77,33 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
+    //계정활성화 비활성화
+    @PutMapping("/{userId}/active")
+    @PreAuthorize("hasRole('ROLE_MANAGER') or hasRole('ROLE_CEO')")
+    public ResponseEntity<Map<String, Object>> updateActiveStatus(
+            @PathVariable Long userId,
+            @RequestBody Map<String, Object> body) {
+
+        // 프론트에서 active: true/false 로 보내더라도 'Y'/'N'으로 변환
+        Object val = body.get("active");
+        String activeStatus = "Y";
+
+        if (val instanceof Boolean) {
+            activeStatus = ((Boolean) val) ? "Y" : "N";
+        } else if (val instanceof String) {
+            activeStatus = ((String) val).equalsIgnoreCase("Y") ? "Y" : "N";
+        }
+
+        userService.updateActiveStatus(userId, activeStatus);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("message", "계정이 " + ("Y".equals(activeStatus) ? "활성화" : "비활성화") + "되었습니다.");
+        response.put("userId", userId);
+        response.put("isActive", activeStatus);
+
+        return ResponseEntity.ok(response);
+    }
+
 
 
     // 5. 특정 사용자 계정 삭제 (Delete)

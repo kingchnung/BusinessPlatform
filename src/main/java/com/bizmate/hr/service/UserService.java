@@ -28,4 +28,5 @@ public interface UserService {
 
     int processLoginFailure(String username);
     void processLoginSuccess(String username);
+    void updateActiveStatus(Long userId, String activeStatus);
 }

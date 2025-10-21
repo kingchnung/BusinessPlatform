@@ -28,7 +28,6 @@ public class Project extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "project_id_generator")
     private Long projectId;
 
-
     @Column(nullable = false)
     private String projectNo;
     // 팀번호+일련번호 4자리 (330001) < 형식으로 만들어 보자
@@ -39,15 +38,9 @@ public class Project extends BaseTimeEntity {
     @Column(name = "project_start_date", nullable = false)
     private LocalDateTime projectStartDate;
 
-
-
     @Column
     @ColumnDefault(value = "sysdate")
     private LocalDateTime projectEndDate;
-
-
-
-
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -61,7 +54,6 @@ public class Project extends BaseTimeEntity {
     @ManyToOne
     @JoinColumn(name = "user_id" , nullable = false)
     private UserEntity userId;
-
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "client_id", nullable = false)

@@ -167,6 +167,23 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
+    public void updateActiveStatus(Long userId, String activeStatus) {
+        UserEntity user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다."));
+
+        if (!"Y".equalsIgnoreCase(activeStatus) && !"N".equalsIgnoreCase(activeStatus)) {
+            throw new IllegalArgumentException("활성 상태 값은 'Y' 또는 'N' 이어야 합니다.");
+        }
+
+        user.setIsActive(activeStatus.toUpperCase());
+        user.setUpdDate(LocalDateTime.now());
+        userRepository.save(user);
+    }
+
+
+
+    @Override
     public void changePw(Long userId, UserPwChangeRequest dto) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
@@ -199,12 +216,14 @@ public class UserServiceImpl implements UserService {
         userRepository.save(user);
 
     }
+
     @Override
     public void unlockUser(Long userId) {
         UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다."));
         user.setIsLocked("N");
         user.setFailedCount(0);
+        user.setUpdDate(LocalDateTime.now());
         userRepository.saveAndFlush(user);
     }
 
