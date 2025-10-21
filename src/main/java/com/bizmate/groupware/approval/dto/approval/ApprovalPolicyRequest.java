@@ -1,20 +1,20 @@
+// ApprovalPolicyRequest.java
 package com.bizmate.groupware.approval.dto.approval;
 
-import lombok.*;
-
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import java.util.List;
 
-@Getter
-@Setter
+@Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class ApprovalPolicyRequest {
-
-    private String policyName;     // 정책명
-    private String docType;        // 문서유형코드
-    private String createdBy;      // 등록자명
-    private String createdDept;    // 등록자부서명
-
-    private List<ApprovalPolicyStepRequest> steps; // 단계별 결재선
+    private String policyName;
+    private String docType;
+    private String createdBy;
+    private String createdDept;
+    private List<ApprovalPolicyStepRequest> steps;
 }

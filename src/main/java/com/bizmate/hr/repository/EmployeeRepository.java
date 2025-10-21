@@ -1,5 +1,6 @@
 package com.bizmate.hr.repository;
 
+import com.bizmate.hr.domain.Department;
 import com.bizmate.hr.domain.Employee;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -67,4 +68,7 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
 
 
     Optional<Employee> findByEmpId(Long empId);
+
+    @Query("SELECT e FROM Employee e WHERE e.department = :dept AND e.position.positionCode = :posCode")
+    Optional<Employee> findByDepartmentAndPositionCode(@Param("dept") Department dept, @Param("posCode") String posCode);
 }
