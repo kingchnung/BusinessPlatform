@@ -8,10 +8,4 @@ import java.util.List;
 import java.util.Optional;
 
 public interface ProjectMemberRepository extends JpaRepository<ProjectMember, ProjectMemberId> {
-
-    @Override
-    Optional<ProjectMember> findById(ProjectMemberId projectMemberId);
-
-    List<ProjectMember> findByProjectId_ProjectId(Long projectId);
-
 }

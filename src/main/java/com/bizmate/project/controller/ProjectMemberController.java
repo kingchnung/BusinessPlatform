@@ -1,6 +1,6 @@
 package com.bizmate.project.controller;
 
-import com.bizmate.project.dto.request.ProjectMemberRequestDTO;
+import com.bizmate.project.dto.request.ProjectMemberDTO;
 import com.bizmate.project.dto.response.ProjectMemberResponseDTO;
 import com.bizmate.project.service.ProjectMemberService;
 import lombok.RequiredArgsConstructor;
@@ -30,13 +30,13 @@ public class ProjectMemberController {
     }
 
     @PostMapping(value = "/")
-    public Map<String, String> register(@RequestBody ProjectMemberRequestDTO requestDTO){
+    public Map<String, String> register(@RequestBody ProjectMemberDTO requestDTO){
         projectMemberService.register(requestDTO);
         return Map.of("RESULT","SUCCESS");
     }
 
     @PutMapping("/{projectId}/{userId}")
-    public Map<String,String> modify (@RequestBody ProjectMemberRequestDTO requestDTO,
+    public Map<String,String> modify (@RequestBody ProjectMemberDTO requestDTO,
                                       @PathVariable(name = "projectId") Long projectId,
                                       @PathVariable(name = "userId") Long userId){
         projectMemberService.modify(requestDTO, projectId, userId);
