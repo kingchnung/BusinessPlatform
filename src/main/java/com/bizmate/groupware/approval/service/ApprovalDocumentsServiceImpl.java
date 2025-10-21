@@ -8,9 +8,11 @@ import com.bizmate.groupware.approval.domain.*;
 import com.bizmate.groupware.approval.dto.ApprovalDocumentsDto;
 import com.bizmate.groupware.approval.dto.DocumentSearchRequestDto;
 import com.bizmate.groupware.approval.dto.ApprovalFileAttachmentDto;
+import com.bizmate.groupware.approval.infrastructure.ApprovalPolicyMapper;
 import com.bizmate.groupware.approval.notification.NotificationService;
 import com.bizmate.groupware.approval.repository.ApprovalDocumentsRepository;
 import com.bizmate.groupware.approval.repository.ApprovalFileAttachmentRepository;
+import com.bizmate.groupware.approval.repository.ApprovalPolicyRepository;
 import com.bizmate.groupware.approval.repository.EmployeeSignatureRepository;
 import com.bizmate.hr.domain.Department;
 import com.bizmate.hr.domain.Employee;
@@ -20,7 +22,11 @@ import com.bizmate.hr.repository.DepartmentRepository;
 import com.bizmate.hr.repository.EmployeeRepository;
 import com.bizmate.hr.repository.UserRepository;
 import com.bizmate.hr.security.UserPrincipal;
+import com.bizmate.project.dto.request.ProjectRequestDTO;
+import com.bizmate.project.service.ProjectService;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -32,10 +38,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -52,6 +55,10 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
     private final NotificationService notificationService;
     private final EmployeeSignatureRepository employeeSignatureRepository;
     private final FileStorageService fileStorageService;
+    private final ApprovalPolicyRepository approvalPolicyRepository;
+    private final ApprovalPolicyMapper approvalPolicyMapper;
+    private final ProjectService projectService;
+    private final ObjectMapper objectMapper;
 
     /* -------------------------------------------------------------
        ① 임시저장 (DRAFT)
@@ -89,6 +96,19 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
         String docNumber = approvalIdGenerator.generateNewId(departmentId, departmentCode);
         dto.setId(docNumber);
         dto.setFinalDocNumber(docNumber);
+
+        /* -------------------------------------------------------------
+   🧩 자동 결재선 구성 (관리자 정책 기반)
+   ------------------------------------------------------------- */
+        if (dto.getApprovalLine() == null || dto.getApprovalLine().isEmpty()) {
+            approvalPolicyRepository.findByDocTypeAndIsActiveTrue(dto.getDocType())
+                    .ifPresent(policy -> {
+                        List<ApproverStep> autoLine = approvalPolicyMapper.toApproverSteps(policy.getSteps());
+                        dto.setApprovalLine(autoLine);
+                        log.info("✅ 자동 결재선 구성 완료 ({}단계)", autoLine.size());
+                    });
+        }
+
 
         // ✅ 엔티티 변환 및 저장
         ApprovalDocuments entity = mapDtoToEntity(dto, DocumentStatus.DRAFT);
@@ -165,6 +185,19 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
             String docNumber = approvalIdGenerator.generateNewId(departmentId, departmentCode);
             dto.setId(docNumber);
             dto.setFinalDocNumber(docNumber);
+
+            /* -------------------------------------------------------------
+   🧩 자동 결재선 구성 (관리자 정책 기반)
+   ------------------------------------------------------------- */
+            if (dto.getApprovalLine() == null || dto.getApprovalLine().isEmpty()) {
+                approvalPolicyRepository.findByDocTypeAndIsActiveTrue(dto.getDocType())
+                        .ifPresent(policy -> {
+                            List<ApproverStep> autoLine = approvalPolicyMapper.toApproverSteps(policy.getSteps());
+                            dto.setApprovalLine(autoLine);
+                            log.info("✅ 자동 결재선 구성 완료 ({}단계)", autoLine.size());
+                        });
+
+            }
 
             log.info("🆕 신규 상신 생성: {}", docNumber);
             entity = mapDtoToEntity(dto, DocumentStatus.IN_PROGRESS);
@@ -419,6 +452,15 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
                     loginUser.getEmpName()
             );
             log.info("✅ 모든 결재자 승인 완료 → 문서 최종 승인됨");
+            if (document.getDocType() == DocumentType.PROJECT_PLAN) {
+                log.info("🧩 프로젝트 기획안 결재 승인 → Project 자동 생성 시작");
+
+                ProjectRequestDTO projectDto = objectMapper.convertValue(
+                        document.getDocContent(), ProjectRequestDTO.class);
+
+                projectService.createProject(projectDto, document);
+            }
+
         }
 
         document.setApprovalLine(line);
@@ -863,5 +905,45 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
                 .updatedAt(entity.getUpdatedAt())
                 .attachments(attachments)
                 .build();
+    }
+
+    /**
+     * ✅ 정책 기반 결재문서 생성
+     */
+    @Transactional
+    public ApprovalDocuments createFromPolicy(String docType, String title, String content) {
+        log.info("📄 정책 기반 문서 생성 요청: {}", docType);
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        Map<String, Object> contentMap = new HashMap<>();
+
+        // 1️⃣ 문서 유형별 정책 조회
+        ApprovalPolicy policy = approvalPolicyRepository.findByDocType(docType)
+                .orElseThrow(() -> new IllegalArgumentException("해당 문서유형의 정책이 존재하지 않습니다: " + docType));
+
+        // 2️⃣ 정책 단계 → ApproverStep record로 변환
+        List<ApproverStep> approverSteps = approvalPolicyMapper.toApproverSteps(policy.getSteps());
+
+        try {
+            if (content != null && !content.isBlank()) {
+                contentMap = objectMapper.readValue(content, new TypeReference<Map<String, Object>>() {});
+            }
+        } catch (Exception e) {
+            log.error("❌ 문서 내용(JSON) 파싱 실패: {}", e.getMessage());
+        }
+
+        // 3️⃣ 문서 생성 및 저장
+        ApprovalDocuments document = ApprovalDocuments.builder()
+                .docType(DocumentType.from(docType))
+                .title(title)
+                .docContent(contentMap)
+                .approvalLine(approverSteps)
+                .status(DocumentStatus.DRAFT)
+                .build();
+
+        ApprovalDocuments saved = approvalDocumentsRepository.save(document);
+        log.info("✅ 문서 저장 완료: {}", saved.getDocId());
+
+        return saved;
     }
 }

@@ -1,6 +1,6 @@
 package com.bizmate.project.controller;
 
-import com.bizmate.project.dto.request.TaskRequestDTO;
+import com.bizmate.project.dto.request.ProjectTaskDTO;
 import com.bizmate.project.dto.response.TaskResponseDTO;
 import com.bizmate.project.service.TaskService;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +27,7 @@ public class TaskController {
     // 업무 입력
     @PostMapping(value = "/")
     //@PreAuthorize() 관리자, 로그인 권한 추가
-    public Map<String,Long> register(@RequestBody TaskRequestDTO requestDTO){
+    public Map<String,Long> register(@RequestBody ProjectTaskDTO requestDTO){
         Long id = taskService.register(requestDTO);
         return Map.of("SUCCESS_ID:", id);
     }
@@ -35,7 +35,7 @@ public class TaskController {
     // 업무 수정
     @PutMapping("/{id}")
     //@PreAuthorize() 관리자, 로그인 권한 추가
-    public Map<String,String> modify(@RequestBody TaskRequestDTO requestDTO,
+    public Map<String,String> modify(@RequestBody ProjectTaskDTO requestDTO,
                                    @PathVariable(name = "id") Long id){
         taskService.modify(requestDTO,id);
         return Map.of("RESULT","SUCCESS");
