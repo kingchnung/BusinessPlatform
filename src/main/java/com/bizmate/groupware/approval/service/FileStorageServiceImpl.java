@@ -1,8 +1,8 @@
 package com.bizmate.groupware.approval.service;
 
-import com.bizmate.groupware.approval.domain.ApprovalDocuments;
-import com.bizmate.groupware.approval.domain.ApprovalFileAttachment;
-import com.bizmate.groupware.approval.repository.ApprovalFileAttachmentRepository;
+import com.bizmate.groupware.approval.domain.document.ApprovalDocuments;
+import com.bizmate.groupware.approval.domain.attachment.ApprovalFileAttachment;
+import com.bizmate.groupware.approval.repository.attachment.ApprovalFileAttachmentRepository;
 import com.bizmate.hr.domain.UserEntity;
 import com.bizmate.hr.dto.user.UserDTO;
 import lombok.RequiredArgsConstructor;

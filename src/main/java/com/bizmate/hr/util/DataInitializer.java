@@ -1,18 +1,11 @@
 package com.bizmate.hr.util;
 
-import com.bizmate.groupware.approval.domain.*;
-import com.bizmate.groupware.approval.repository.ApprovalDocumentsRepository;
-import com.bizmate.groupware.board.domain.Board;
-import com.bizmate.groupware.board.domain.BoardType;
-import com.bizmate.groupware.board.repository.BoardRepository;
 import com.bizmate.hr.domain.*;
 import com.bizmate.hr.domain.code.Grade;
 import com.bizmate.hr.domain.code.Position;
-import com.bizmate.hr.dto.user.UserDTO;
 import com.bizmate.hr.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;

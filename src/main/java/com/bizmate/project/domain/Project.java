@@ -1,7 +1,7 @@
 package com.bizmate.project.domain;
 
 import com.bizmate.common.domain.BaseEntity;
-import com.bizmate.groupware.approval.domain.ApprovalDocuments;
+import com.bizmate.groupware.approval.domain.document.ApprovalDocuments;
 import com.bizmate.hr.domain.Department;
 import com.bizmate.hr.domain.UserEntity;
 import com.bizmate.project.domain.enums.project.ProjectStatus;

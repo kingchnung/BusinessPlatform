@@ -1,10 +1,13 @@
 package com.bizmate.groupware.approval.api.admin;
 
-import com.bizmate.groupware.approval.dto.ApprovalPolicyRequest;
-import com.bizmate.groupware.approval.service.ApprovalPolicyService;
+import com.bizmate.groupware.approval.domain.policy.ApprovalPolicy;
+import com.bizmate.groupware.approval.dto.approval.ApprovalPolicyRequest;
+import com.bizmate.groupware.approval.service.policy.ApprovalPolicyService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/admin/policies")
@@ -19,7 +22,8 @@ public class ApprovalPolicyAdminController {
     }
 
     @GetMapping
-    public ResponseEntity<?> getAllPolicies() {
+    public ResponseEntity<List<ApprovalPolicy>> getAllPolicies() {
+
         return ResponseEntity.ok(approvalPolicyService.getAllPolicies());
     }
 

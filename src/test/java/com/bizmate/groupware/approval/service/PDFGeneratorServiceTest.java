@@ -1,8 +1,9 @@
 package com.bizmate.groupware.approval.service;
 
-import com.bizmate.groupware.approval.domain.ApprovalDocuments;
-import com.bizmate.groupware.approval.repository.ApprovalDocumentsRepository;
-import com.bizmate.groupware.approval.repository.EmployeeSignatureRepository;
+import com.bizmate.groupware.approval.domain.document.ApprovalDocuments;
+import com.bizmate.groupware.approval.repository.document.ApprovalDocumentsRepository;
+import com.bizmate.groupware.approval.repository.PDF.EmployeeSignatureRepository;
+import com.bizmate.groupware.approval.service.PDF.PDFGeneratorService;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

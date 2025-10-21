@@ -3,8 +3,8 @@ package com.bizmate.groupware.approval.api;
 import com.bizmate.common.dto.PageRequestDTO;
 import com.bizmate.common.dto.PageResponseDTO;
 import com.bizmate.common.exception.VerificationFailedException;
-import com.bizmate.groupware.approval.dto.ApprovalDocumentsDto;
-import com.bizmate.groupware.approval.service.ApprovalDocumentsService;
+import com.bizmate.groupware.approval.dto.approval.ApprovalDocumentsDto;
+import com.bizmate.groupware.approval.service.document.ApprovalDocumentsService;
 import com.bizmate.hr.dto.user.UserDTO;
 import com.bizmate.hr.security.UserPrincipal;
 import lombok.RequiredArgsConstructor;
@@ -12,11 +12,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 

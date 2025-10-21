@@ -1,17 +1,12 @@
 package com.bizmate.project.controller;
 
-import com.bizmate.common.dto.PageRequestDTO;
-import com.bizmate.common.dto.PageResponseDTO;
-import com.bizmate.groupware.approval.domain.ApprovalDocuments;
+import com.bizmate.groupware.approval.domain.document.ApprovalDocuments;
 import com.bizmate.project.domain.Project;
 import com.bizmate.project.dto.request.ProjectRequestDTO;
-import com.bizmate.project.dto.response.ProjectResponseDTO;
 import com.bizmate.project.service.ProjectService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/projects")

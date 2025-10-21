@@ -1,13 +1,12 @@
 package com.bizmate.groupware.approval.infrastructure;
 
-import com.bizmate.groupware.approval.domain.ApproverStep;
+import com.bizmate.groupware.approval.domain.policy.ApproverStep;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 

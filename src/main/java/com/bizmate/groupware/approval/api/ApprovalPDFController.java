@@ -1,16 +1,10 @@
 package com.bizmate.groupware.approval.api;
 
-import com.bizmate.groupware.approval.domain.ApprovalDocuments;
-import com.bizmate.groupware.approval.repository.ApprovalDocumentsRepository;
-import com.bizmate.groupware.approval.service.PDFGeneratorService;
+import com.bizmate.groupware.approval.service.PDF.PDFGeneratorService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
-
-import java.nio.charset.StandardCharsets;
-import java.time.format.DateTimeFormatter;
 
 @Slf4j
 @RestController

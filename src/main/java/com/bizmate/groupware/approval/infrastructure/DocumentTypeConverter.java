@@ -1,6 +1,6 @@
 package com.bizmate.groupware.approval.infrastructure;
 
-import com.bizmate.groupware.approval.domain.DocumentType;
+import com.bizmate.groupware.approval.domain.document.DocumentType;
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
 import lombok.extern.slf4j.Slf4j;

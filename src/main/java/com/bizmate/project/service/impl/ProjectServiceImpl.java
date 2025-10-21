@@ -1,6 +1,6 @@
 package com.bizmate.project.service.impl;
 
-import com.bizmate.groupware.approval.domain.ApprovalDocuments;
+import com.bizmate.groupware.approval.domain.document.ApprovalDocuments;
 import com.bizmate.hr.domain.Employee;
 import com.bizmate.hr.repository.EmployeeRepository;
 import com.bizmate.project.domain.Project;

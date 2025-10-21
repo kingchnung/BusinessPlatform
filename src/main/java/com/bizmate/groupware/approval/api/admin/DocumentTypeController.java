@@ -1,6 +1,6 @@
 package com.bizmate.groupware.approval.api.admin;
 
-import com.bizmate.groupware.approval.domain.DocumentType;
+import com.bizmate.groupware.approval.domain.document.DocumentType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;

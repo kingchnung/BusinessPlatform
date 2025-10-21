@@ -1,11 +1,16 @@
 package com.bizmate.groupware.approval.service;
 
-import com.bizmate.groupware.approval.domain.*;
-import com.bizmate.groupware.approval.dto.ApprovalDocumentsDto;
+import com.bizmate.groupware.approval.domain.document.ApprovalDocuments;
+import com.bizmate.groupware.approval.domain.document.Decision;
+import com.bizmate.groupware.approval.domain.document.DocumentStatus;
+import com.bizmate.groupware.approval.domain.document.DocumentType;
+import com.bizmate.groupware.approval.domain.policy.ApproverStep;
+import com.bizmate.groupware.approval.dto.approval.ApprovalDocumentsDto;
 import com.bizmate.groupware.approval.notification.NotificationService;
-import com.bizmate.groupware.approval.repository.ApprovalDocumentsRepository;
-import com.bizmate.groupware.approval.repository.ApprovalFileAttachmentRepository;
-import com.bizmate.groupware.approval.repository.EmployeeSignatureRepository;
+import com.bizmate.groupware.approval.repository.document.ApprovalDocumentsRepository;
+import com.bizmate.groupware.approval.repository.attachment.ApprovalFileAttachmentRepository;
+import com.bizmate.groupware.approval.repository.PDF.EmployeeSignatureRepository;
+import com.bizmate.groupware.approval.service.document.ApprovalDocumentsServiceImpl;
 import com.bizmate.hr.domain.Employee;
 import com.bizmate.hr.dto.user.UserDTO;
 import com.bizmate.hr.repository.EmployeeRepository;

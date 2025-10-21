@@ -1,11 +1,11 @@
 package com.bizmate.groupware.approval.api;
 
 import com.bizmate.common.exception.VerificationFailedException;
-import com.bizmate.groupware.approval.domain.ApprovalDocuments;
-import com.bizmate.groupware.approval.domain.ApprovalFileAttachment;
-import com.bizmate.groupware.approval.dto.ApprovalFileAttachmentDto;
-import com.bizmate.groupware.approval.repository.ApprovalDocumentsRepository;
-import com.bizmate.groupware.approval.repository.ApprovalFileAttachmentRepository;
+import com.bizmate.groupware.approval.domain.document.ApprovalDocuments;
+import com.bizmate.groupware.approval.domain.attachment.ApprovalFileAttachment;
+import com.bizmate.groupware.approval.dto.approval.ApprovalFileAttachmentDto;
+import com.bizmate.groupware.approval.repository.document.ApprovalDocumentsRepository;
+import com.bizmate.groupware.approval.repository.attachment.ApprovalFileAttachmentRepository;
 import com.bizmate.hr.domain.UserEntity;
 import com.bizmate.hr.repository.UserRepository;
 import jakarta.persistence.EntityManager;

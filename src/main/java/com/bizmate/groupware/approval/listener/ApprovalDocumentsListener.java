@@ -1,8 +1,8 @@
 package com.bizmate.groupware.approval.listener;
 
-import com.bizmate.groupware.approval.domain.ApprovalDocuments;
-import com.bizmate.groupware.approval.domain.ApprovalHistory;
-import com.bizmate.groupware.approval.repository.ApprovalHistoryRepository;
+import com.bizmate.groupware.approval.domain.document.ApprovalDocuments;
+import com.bizmate.groupware.approval.domain.document.ApprovalHistory;
+import com.bizmate.groupware.approval.repository.document.ApprovalHistoryRepository;
 import jakarta.persistence.PostPersist;
 import jakarta.persistence.PostUpdate;
 import lombok.extern.slf4j.Slf4j;

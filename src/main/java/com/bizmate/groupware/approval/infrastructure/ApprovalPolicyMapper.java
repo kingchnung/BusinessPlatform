@@ -1,6 +1,8 @@
 package com.bizmate.groupware.approval.infrastructure;
 
-import com.bizmate.groupware.approval.domain.*;
+import com.bizmate.groupware.approval.domain.document.Decision;
+import com.bizmate.groupware.approval.domain.policy.ApprovalPolicyStep;
+import com.bizmate.groupware.approval.domain.policy.ApproverStep;
 import com.bizmate.hr.domain.Employee;
 import com.bizmate.hr.repository.EmployeeRepository;
 import lombok.RequiredArgsConstructor;

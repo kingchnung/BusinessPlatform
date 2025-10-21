@@ -1,7 +1,7 @@
 package com.bizmate.groupware.approval.service;
 
-import com.bizmate.groupware.approval.domain.ApprovalDocuments;
-import com.bizmate.groupware.approval.domain.ApprovalFileAttachment;
+import com.bizmate.groupware.approval.domain.document.ApprovalDocuments;
+import com.bizmate.groupware.approval.domain.attachment.ApprovalFileAttachment;
 import com.bizmate.hr.dto.user.UserDTO;
 import org.springframework.web.multipart.MultipartFile;
 

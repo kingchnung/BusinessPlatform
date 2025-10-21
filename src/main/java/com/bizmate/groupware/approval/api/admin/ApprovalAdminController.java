@@ -2,9 +2,8 @@ package com.bizmate.groupware.approval.api.admin;
 
 import com.bizmate.common.dto.PageRequestDTO;
 import com.bizmate.common.dto.PageResponseDTO;
-import com.bizmate.groupware.approval.dto.ApprovalDocumentsDto;
-import com.bizmate.groupware.approval.service.ApprovalDocumentsService;
-import com.bizmate.hr.dto.user.UserDTO;
+import com.bizmate.groupware.approval.dto.approval.ApprovalDocumentsDto;
+import com.bizmate.groupware.approval.service.document.ApprovalDocumentsService;
 import com.bizmate.hr.security.UserPrincipal;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
