@@ -139,7 +139,7 @@ public class DataInitializer implements CommandLineRunner {
                 .orElseThrow(() -> new IllegalStateException("기본 역할 'EMPLOYEE'가 없습니다."));
 
         for (Employee emp : allEmployees) {
-            Optional<UserEntity> optUser = userRepository.findByEmployeeId(emp.getEmpId());
+            Optional<UserEntity> optUser = userRepository.findByEmployee(emp);
 
             if (optUser.isEmpty()) {
                 createUserAccount(emp, defaultRole);
@@ -169,7 +169,7 @@ public class DataInitializer implements CommandLineRunner {
 
                 if (changed) {
                     user.setUpdDate(LocalDateTime.now());
-                    userRepository.save(user);
+                    userRepository.saveAndFlush(user);
                     updated++;
                 }
             }

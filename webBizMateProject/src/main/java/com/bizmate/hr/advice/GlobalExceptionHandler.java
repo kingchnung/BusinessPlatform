@@ -70,6 +70,17 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(error, HttpStatus.FORBIDDEN); // 403
     }
 
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<Map<String, Object>> handleRuntimeException(RuntimeException ex) {
+        log.warn("RuntimeException 발생: {}", ex.getMessage());
+
+        Map<String, Object> error = new HashMap<>();
+        error.put("error", ex.getMessage()); // 🔹 프론트에서 err.response.data.error 로 접근 가능
+        error.put("timestamp", System.currentTimeMillis());
+
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST); // 400
+    }
+
 
     /**
      * 기타 예상치 못한 모든 예외 처리 (HTTP 500 Internal Server Error)
@@ -85,4 +96,6 @@ public class GlobalExceptionHandler {
 
         return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR); // 500
     }
+
+
 }

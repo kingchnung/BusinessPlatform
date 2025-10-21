@@ -196,15 +196,19 @@ public class EmployeeServiceImpl implements EmployeeService {
      * 🔹 직원 정보 변경 시 UserEntity의 복제 필드를 동기화하는 메서드
      */
     public void syncUserInfo(Employee employee) {
-        userRepository.findByEmployeeId(employee.getEmpId())
+        userRepository.findByEmployee(employee)
                 .ifPresent(user -> {
                     user.setEmpName(employee.getEmpName());
                     user.setEmail(employee.getEmail());
                     user.setPhone(employee.getPhone());
-                    user.setDeptName(employee.getDepartment().getDeptName());
-                    user.setPositionName(employee.getPosition().getPositionName());
-                    user.setDeptCode(employee.getDepartment().getDeptCode());
-                    userRepository.save(user);
+                    if (employee.getDepartment() != null) {
+                        user.setDeptName(employee.getDepartment().getDeptName());
+                        user.setDeptCode(employee.getDepartment().getDeptCode());
+                    }
+                    if (employee.getPosition() != null) {
+                        user.setPositionName(employee.getPosition().getPositionName());
+                    }
+                    userRepository.saveAndFlush(user);
                 });
     }
 

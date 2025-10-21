@@ -17,19 +17,20 @@ public class MemberController {
     private final AuthService authService;
 
     @PostMapping("/login")
-    public Map<String, Object> login(@RequestBody LoginRequestDTO request) {
-        return authService.login(request);
+    public ResponseEntity<?> login(@RequestBody LoginRequestDTO request) {
+        return ResponseEntity.ok(authService.login(request));
     }
 
     @PostMapping("/refresh")
-    public Map<String, Object> refresh(@RequestParam("refreshToken") String refreshToken) {
-        return authService.refresh(refreshToken);
+    public ResponseEntity<?> refresh(@RequestBody String refreshToken) {
+        return ResponseEntity.ok(authService.refresh(refreshToken));
     }
 
     @PostMapping("/reset-password")
     public ResponseEntity<?> resetPassword(@RequestBody ResetPasswordRequest dto) {
         authService.resetPassword(dto);
-        return ResponseEntity.ok(Map.of("message", "임시 비밀번호가 이메일로 발송되었습니다."));
+        return ResponseEntity.ok().body(
+                "임시 비밀번호가 등록된 이메일(" + dto.getEmail() + ")로 발송되었습니다.");
     }
 
 
