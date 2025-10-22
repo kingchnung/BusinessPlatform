@@ -28,6 +28,9 @@ public class Order implements Serializable {
 
     @CreationTimestamp
     @Temporal(TemporalType.DATE)
+    private LocalDate orderIdDate;
+
+    @Temporal(TemporalType.DATE)
     private LocalDate orderDate;
 
     private String projectId;
@@ -42,8 +45,7 @@ public class Order implements Serializable {
     private String clientCompany;
     private String orderNote;
 
-    @Builder.Default
-    private String orderStatus = "시작전";
+    private String orderStatus;
 
     @Builder.Default
     @OneToMany(
@@ -106,11 +108,19 @@ public class Order implements Serializable {
         this.orderDueDate = orderDueDate;
     }
 
+    public void changeOrderDate(LocalDate orderDate) {
+        this.orderDate = orderDate;
+    }
+
     public void changeClientId(String clientId) {
         this.clientId = clientId;
     }
 
     public void changeOrderNote(String orderNote) {
         this.orderNote = orderNote;
+    }
+
+    public void changeOrderStatus(String orderStatus) {
+        this.orderStatus = orderStatus;
     }
 }

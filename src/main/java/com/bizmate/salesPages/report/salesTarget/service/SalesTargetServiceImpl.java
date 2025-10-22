@@ -29,6 +29,20 @@ public class SalesTargetServiceImpl implements SalesTargetService {
 
     @Override
     public Long register(SalesTargetDTO salesTargetDTO) {
+        Optional<SalesTarget> existingTarget = salesTargetRepository.findByTargetYearAndTargetMonth(
+                salesTargetDTO.getTargetYear(),
+                salesTargetDTO.getTargetMonth()
+        );
+
+        if (existingTarget.isPresent()) {
+            throw new IllegalStateException(
+                    String.format("%d년 %d월의 매출 목표는 이미 등록되어 있습니다.",
+                            salesTargetDTO.getTargetYear(),
+                            salesTargetDTO.getTargetMonth()
+                    )
+            );
+        }
+
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (principal instanceof UserPrincipal userPrincipal) {
             salesTargetDTO.setUserId(userPrincipal.getUsername());
@@ -66,6 +80,12 @@ public class SalesTargetServiceImpl implements SalesTargetService {
     public void remove(Long targetId) {
         salesTargetRepository.deleteById(targetId);
     }
+
+    @Override
+    public void removeList(List<Long> targetIds) {
+        salesTargetRepository.deleteAllByIdInBatch(targetIds);
+    }
+
 
 //    @Override
 //    public PageResponseDTO<SalesTargetDTO> list(PageRequestDTO pageRequestDTO) {

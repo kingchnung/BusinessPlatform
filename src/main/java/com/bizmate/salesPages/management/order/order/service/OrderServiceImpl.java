@@ -4,6 +4,7 @@ import com.bizmate.hr.dto.user.UserDTO;
 
 import com.bizmate.common.dto.PageRequestDTO;
 import com.bizmate.common.dto.PageResponseDTO;
+import com.bizmate.hr.security.UserPrincipal;
 import com.bizmate.salesPages.management.order.order.domain.Order;
 import com.bizmate.salesPages.management.order.order.dto.OrderDTO;
 import com.bizmate.salesPages.management.order.order.repository.OrderRepository;
@@ -41,9 +42,9 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public String register(OrderDTO orderDTO) {
         LocalDate today = LocalDate.now();
-        orderDTO.setOrderDate(today);
+        orderDTO.setOrderIdDate(today);
 
-        String maxOrderId = orderRepository.findMaxOrderIdByOrderDate(today).orElse(null);
+        String maxOrderId = orderRepository.findMaxOrderIdByOrderIdDate(today).orElse(null);
 
         int nextSequence = 1;
         if(maxOrderId != null) {
@@ -63,9 +64,9 @@ public class OrderServiceImpl implements OrderService {
         orderDTO.setOrderId(finalOrderId);
 
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        if(principal instanceof UserDTO userDTO){
-            orderDTO.setUserId(userDTO.getUsername());
-            orderDTO.setWriter(userDTO.getEmpName());
+        if(principal instanceof UserPrincipal userPrincipal){
+            orderDTO.setUserId(userPrincipal.getUsername());
+            orderDTO.setWriter(userPrincipal.getEmpName());
         } else {
             throw new IllegalStateException("주문 등록을 위한 사용자 인증 정보를 찾을 수 없습니다. (비정상 접근)");
         }
@@ -100,6 +101,7 @@ public class OrderServiceImpl implements OrderService {
         order.changeOrderDueDate(orderDTO.getOrderDueDate());
         order.changeOrderNote(orderDTO.getOrderNote());
         order.changeProjectId(orderDTO.getProjectId());
+        order.changeOrderDate(orderDTO.getOrderDate());
 
         List<OrderItemDTO> newItemDto = orderDTO.getOrderItems();
         List<OrderItem> mergedItem = new ArrayList<>();
@@ -145,15 +147,26 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    public void removeList(List<String> orderIds) {
+        orderRepository.deleteAllByIdInBatch(orderIds);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public PageResponseDTO<OrderDTO> list(PageRequestDTO pageRequestDTO) {
         Pageable pageable = PageRequest.of(
                 pageRequestDTO.getPage() -1,
                 pageRequestDTO.getSize(),
                 Sort.by("orderId").descending());
 
-        Page<Order> result = orderRepository.findAll(pageable);
+
+        // 기존: Page<Order> result = orderRepository.findAll(pageable);
+        // 변경: Querydsl을 사용한 동적 검색 메서드 호출
+        Page<Order> result = orderRepository.searchOrders(pageRequestDTO, pageable);
+
         List<OrderDTO> dtoList = result.getContent().stream().map(
                 order -> modelMapper.map(order, OrderDTO.class)).collect(Collectors.toList());
+
         long totalCount = result.getTotalElements();
 
         PageResponseDTO<OrderDTO> responseDTO = PageResponseDTO.<OrderDTO>withAll().dtoList(dtoList).pageRequestDTO(pageRequestDTO).totalCount(totalCount).build();

@@ -23,7 +23,7 @@ public class Sales {
     private String salesId;
 
     @CreationTimestamp
-    @Temporal(TemporalType.DATE)
+    private LocalDate salesIdDate;
     private LocalDate salesDate;
 
     private String projectId;
@@ -37,8 +37,6 @@ public class Sales {
     private String clientId;
     private String clientCompany;
     private String salesNote;
-
-    private String invoiceId;
     private boolean invoiceIssued;
 
     @Builder.Default
@@ -104,6 +102,14 @@ public class Sales {
 
     public void changeDeploymentDate(LocalDate deploymentDate) {
         this.deploymentDate = deploymentDate;
+    }
+
+    public void changeSalesDate(LocalDate salesDate) {
+        this.salesDate = salesDate;
+    }
+
+    public void changeInvoiceIssued(boolean invoiceIssued) {
+        this.invoiceIssued = invoiceIssued;
     }
 
     public void changeClientId(String clientId) {

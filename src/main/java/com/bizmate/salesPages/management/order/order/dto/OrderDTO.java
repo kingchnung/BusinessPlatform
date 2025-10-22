@@ -17,6 +17,7 @@ import java.util.List;
 @NoArgsConstructor
 public class OrderDTO {
     private String orderId;
+    private LocalDate orderIdDate;
     private LocalDate orderDate;
     private String projectId;
     private String projectName;

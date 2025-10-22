@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.util.HashMap;
@@ -20,6 +21,19 @@ import java.util.Map;
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    /**
+     * IllegalStateException 처리 (HTTP 500 Internal Server Error)
+     * - 중복 데이터 등록 시도 등 비즈니스 로직 예외에 사용됩니다.
+     */
+    @ExceptionHandler(IllegalStateException.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public Map<String, String> handleIllegalState(IllegalStateException e) {
+        // e.getMessage()에 "이미 등록된..." 같은 구체적인 메시지가 담겨 있습니다.
+        log.warn("비즈니스 로직 예외 발생: {}", e.getMessage());
+        // 구체적인 예외 메시지를 'message' 키에 담아 프론트로 전송합니다.
+        return Map.of("code", "ILLEGAL_STATE", "message", e.getMessage());
+    }
 
     /**
      * @Valid 또는 @Validated 유효성 검증 실패 시 처리 (HTTP 400 Bad Request)
@@ -74,15 +88,27 @@ public class GlobalExceptionHandler {
     /**
      * 기타 예상치 못한 모든 예외 처리 (HTTP 500 Internal Server Error)
      */
+//    @ExceptionHandler(Exception.class)
+//    public ResponseEntity<Map<String, String>> handleAllUncaughtException(Exception ex) {
+//        log.error("예상치 못한 예외 발생: {}", ex.getMessage(), ex);
+//
+//        Map<String, String> error = Map.of(
+//                "error", "INTERNAL_SERVER_ERROR",
+//                "message", "서버 내부에서 알 수 없는 오류가 발생했습니다."
+//        );
+//
+//        return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR); // 500
+//    }
+
+    /**
+     * 위에서 처리되지 않은 모든 기타 예외 처리 (HTTP 500 Internal Server Error)
+     * - 가장 마지막에 위치해야 합니다.
+     */
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<Map<String, String>> handleAllUncaughtException(Exception ex) {
-        log.error("예상치 못한 예외 발생: {}", ex.getMessage(), ex);
-
-        Map<String, String> error = Map.of(
-                "error", "INTERNAL_SERVER_ERROR",
-                "message", "서버 내부에서 알 수 없는 오류가 발생했습니다."
-        );
-
-        return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR); // 500
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public Map<String, String> handleAllOtherExceptions(Exception e) {
+        log.error("예상치 못한 예외 발생:", e.getMessage(), e);
+        // 사용자에게는 일반적인 오류 메시지를 반환합니다.
+        return Map.of("code", "UNHANDLED", "message", "처리 중 오류가 발생했습니다.");
     }
 }

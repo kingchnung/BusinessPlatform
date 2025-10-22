@@ -10,7 +10,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
-public interface CollectionRepository extends JpaRepository<Collection, String> {
+public interface CollectionRepository extends JpaRepository<Collection, String>, CollectionRepositoryCustom {
 
     @Query("SELECT MAX(c.collectionId) FROM Collection c WHERE c.collectionDate = :collectionDate")
     Optional<String> findMaxCollectionIdByCollectionDate(@Param("collectionDate")LocalDate today);

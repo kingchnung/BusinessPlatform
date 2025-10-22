@@ -7,6 +7,7 @@ import com.bizmate.salesPages.report.salesTarget.service.SalesTargetService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -42,5 +43,11 @@ public class SalesTargetController {
     public Map<String, String> remove(@PathVariable(name = "targetId")Long targetId){
         salesTargetService.remove(targetId);
         return Map.of("RRESULT","SUCCESS");
+    }
+
+    @DeleteMapping("/list")
+    public Map<String, String> removeList(@RequestBody List<Long> targetIds){
+        salesTargetService.removeList(targetIds);
+        return Map.of("RESULT", "SUCCESS");
     }
 }

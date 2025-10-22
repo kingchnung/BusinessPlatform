@@ -8,13 +8,11 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
-@Service
+
 public interface ClientService {
-//    Long clientRegister(ClientDTO clientDTO);
     Long clientRegister(ClientDTO clientDTO, MultipartFile file);
     ClientDTO clientGet(Long clientNo);
-//    void clientModify(ClientDTO clientDTO);
-void clientModify(ClientDTO clientDTO, MultipartFile file);
+    void clientModify(ClientDTO clientDTO, MultipartFile file);
     void clientRemove(Long clientNo);
     PageResponseDTO<ClientDTO> clientList(PageRequestDTO pageRequestDTO);
 

@@ -9,4 +9,5 @@ import java.util.Optional;
 
 public interface SalesTargetRepository extends JpaRepository<SalesTarget, Long> {
     Page<SalesTarget> findByTargetYear(Integer year, Pageable pageable);
+    Optional<SalesTarget> findByTargetYearAndTargetMonth(Integer targetYear, Integer targetMonth);
 }

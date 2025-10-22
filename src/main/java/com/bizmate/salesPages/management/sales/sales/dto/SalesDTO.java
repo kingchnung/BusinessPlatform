@@ -16,6 +16,7 @@ import java.util.List;
 public class SalesDTO {
 
     private String salesId;
+    private LocalDate salesIdDate;
     private LocalDate salesDate;
 
     private String projectId;
@@ -29,8 +30,6 @@ public class SalesDTO {
     private String clientId;
     private String clientCompany;
     private String salesNote;
-
-    private String invoiceId;
     private boolean invoiceIssued;
 
     // 연관된 Order 정보는 ID만 포함 (Optional)

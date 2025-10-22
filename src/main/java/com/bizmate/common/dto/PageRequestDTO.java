@@ -6,6 +6,10 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
+import org.springframework.format.annotation.DateTimeFormat;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
 
 @Data
 @SuperBuilder
@@ -22,6 +26,19 @@ public class PageRequestDTO {
     private String search;
     private String keyword;
 
+    // --- ▼ Sales 페이지 검색을 위해 추가된 필드 ▼ ---
     private Integer year;
+
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    private LocalDate startDate;
+
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    private LocalDate endDate;
+
+    private BigDecimal minAmount;
+    private BigDecimal maxAmount;
+
+    private Boolean invoiceIssued;
+    private String orderId;
 
 }

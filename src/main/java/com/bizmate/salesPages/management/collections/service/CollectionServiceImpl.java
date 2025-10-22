@@ -1,6 +1,7 @@
 package com.bizmate.salesPages.management.collections.service;
 
 import com.bizmate.hr.dto.user.UserDTO;
+import com.bizmate.hr.security.UserPrincipal;
 import com.bizmate.salesPages.client.domain.Client;
 import com.bizmate.salesPages.client.repository.ClientRepository;
 import com.bizmate.common.dto.PageRequestDTO;
@@ -85,9 +86,9 @@ public class CollectionServiceImpl implements CollectionService{
 
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        if(principal instanceof UserDTO userDTO){
-            collectionDTO.setUserId(userDTO.getUsername());
-            collectionDTO.setWriter(userDTO.getEmpName());
+        if(principal instanceof UserPrincipal userPrincipal){
+            collectionDTO.setUserId(userPrincipal.getUsername());
+            collectionDTO.setWriter(userPrincipal.getEmpName());
         } else {
             throw new IllegalStateException("주문 등록을 위한 사용자 인증 정보를 찾을 수 없습니다. (비정상 접근)");
         }
@@ -140,13 +141,14 @@ public class CollectionServiceImpl implements CollectionService{
     }
 
     @Override
+    @Transactional(readOnly = true)
     public PageResponseDTO<CollectionDTO> list(PageRequestDTO pageRequestDTO) {
         Pageable pageable = PageRequest.of(
                 pageRequestDTO.getPage() -1,
                 pageRequestDTO.getSize(),
                 Sort.by("collectionId").descending());
 
-        Page<Collection> result = collectionRepository.findAll(pageable);
+        Page<Collection> result = collectionRepository.searchCollection(pageRequestDTO, pageable);
 
         // ModelMapper 대신 수동 헬퍼 메서드 사용
         List<CollectionDTO> dtoList = result.getContent().stream()
