@@ -4,14 +4,13 @@ import com.bizmate.common.dto.PageRequestDTO;
 import com.bizmate.common.dto.PageResponseDTO;
 import com.bizmate.salesPages.report.salesTarget.dto.SalesTargetDTO;
 
+import java.util.List;
+
 public interface SalesTargetService {
-    void remove(Long targetId);
-
-    void modify(SalesTargetDTO salesTargetDTO);
-
-    Long register(SalesTargetDTO salesTargetDTO);
-
-    PageResponseDTO<SalesTargetDTO> list(PageRequestDTO pageRequestDTO);
-
-    SalesTargetDTO get(Long targetId);
+    public Long register(SalesTargetDTO salesTargetDTO);
+    public SalesTargetDTO get(Long targetId);
+    public void modify(SalesTargetDTO salesTargetDTO);
+    public void remove(Long targetId);
+    public void removeList(List<Long> targetIds);
+    public PageResponseDTO<SalesTargetDTO> list(PageRequestDTO pageRequestDTO);
 }

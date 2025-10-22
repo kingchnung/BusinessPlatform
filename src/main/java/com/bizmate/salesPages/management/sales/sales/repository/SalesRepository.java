@@ -8,14 +8,15 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
-public interface SalesRepository extends JpaRepository<Sales, String> {
+public interface SalesRepository extends JpaRepository<Sales, String>, SalesRepositoryCustom {
 
-    @Query("SELECT MAX(s.salesId) FROM Sales s WHERE s.salesDate = :salesDate")
-    Optional<String> findMaxSalesIdBySalesDate(@Param("salesDate") LocalDate today);
+    @Query("SELECT MAX(s.salesId) FROM Sales s WHERE s.salesIdDate = :salesIdDate")
+    Optional<String> findMaxSalesIdBySalesIdDate(@Param("salesIdDate") LocalDate today);
 
     @Query("SELECT s.salesId FROM Sales s ORDER BY s.salesId ASC LIMIT 1")
     Optional<String> findMinSalesId();
@@ -55,4 +56,9 @@ public interface SalesRepository extends JpaRepository<Sales, String> {
         ORDER BY FUNCTION('TO_CHAR', s.salesDate, 'YYYY') DESC, FUNCTION('TO_CHAR', s.salesDate, 'Q') DESC
         """)
     List<QuarterlySalesSummary> findTotalSalesAmountGroupByQuarter();
+
+    @Query("SELECT SUM(s.salesAmount) FROM Sales s WHERE s.order.orderId = :orderId AND s.invoiceIssued = true")
+    BigDecimal findSumOfIssuedSalesByOrderId(@Param("orderId") String orderId);
+
+    boolean existsByOrderOrderId(String orderId);
 }

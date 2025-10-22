@@ -81,6 +81,29 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+    // Querydsl JPA
+    implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
+
+    // Querydsl Annotation Processor (Java 17+ 및 Jakarta EE 9+)
+    annotationProcessor "com.querydsl:querydsl-apt:5.0.0:jakarta"
+    annotationProcessor "jakarta.annotation:jakarta.annotation-api"
+    annotationProcessor "jakarta.persistence:jakarta.persistence-api"
+}
+
+// Gradle 빌드 시 Q-Type 클래스 자동 생성을 위한 설정
+def generated = 'src/main/generated'
+
+sourceSets {
+    main.java.srcDirs += [ generated ]
+}
+
+tasks.withType(JavaCompile) {
+    options.getGeneratedSourceOutputDirectory().set(file(generated))
+}
+
+clean.doLast {
+    file(generated).deleteDir()
 }
 
 tasks.named('test') {

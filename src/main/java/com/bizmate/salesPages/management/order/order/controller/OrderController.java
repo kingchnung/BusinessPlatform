@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -46,4 +47,9 @@ public class OrderController {
         return Map.of("RESULT","SUCCESS");
     }
 
+    @DeleteMapping("/list")
+    public Map<String, String> removeList(@RequestBody List<String> orderIds){
+        orderService.removeList(orderIds);
+        return Map.of("RESULT", "SUCCESS");
+    }
 }

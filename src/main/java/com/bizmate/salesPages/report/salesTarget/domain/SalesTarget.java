@@ -15,7 +15,12 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @Builder
 @Entity
-@Table
+@Table(uniqueConstraints = {
+        @UniqueConstraint(
+            name = "UK_SALES_TARGET_YEAR_MONTH", // 제약조건 이름
+            columnNames = {"targetYear", "targetMonth"} // 이 두 컬럼의 조합이 고유해야 함
+        )}
+)
 @SequenceGenerator(
         name = "SALES_TARGET_SEQ_GENERATOR",
         sequenceName = "SALES_TARGET_SEQ",
