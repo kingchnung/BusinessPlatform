@@ -58,13 +58,6 @@ public class IssuePost extends BaseTimeEntity {
     @PrePersist
     public void PrePersist() {
 
-        if(getRegDate() != null){
-            setRegDate(getRegDate().withNano(0));
-        }
-
-        if(getModDate() != null){
-            setRegDate(getModDate().withNano(0));
-        }
 
     }
 

@@ -25,4 +25,9 @@ public class ProjectBoardServiceImpl implements ProjectBoardService {
         ProjectBoard projectBoard = modelMapper.map(requestDTO, ProjectBoard.class);
         projectBoard.setBoardType(ProjectBoardStatus.valueOf(requestDTO.getBoardType()));
     }
+
+    @Override
+    public void remove(Long id) {
+        projectBoardRepository.deleteById(id);
+    }
 }

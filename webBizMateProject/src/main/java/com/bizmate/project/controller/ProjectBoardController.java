@@ -8,14 +8,21 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/project/board")
+@RequestMapping("/bizmate/project/board")
 @RequiredArgsConstructor
 public class ProjectBoardController {
 
     private final ProjectBoardService projectBoardService;
 
+    @PostMapping("/")
     public Map<String, String> registet(@RequestBody ProjectBoardRequestDTO requestDTO){
         projectBoardService.register(requestDTO);
+        return Map.of("RESULT","SUCCESS");
+    }
+
+    @GetMapping("/{id}")
+    public Map<String, String> remove (@PathVariable (name = "id") Long id){
+        projectBoardService.remove(id);
         return Map.of("RESULT","SUCCESS");
     }
 
