@@ -1,55 +1,63 @@
-//package com.bizmate.project.controller;
-//
-//import com.bizmate.project.dto.request.ProjectMemberDTO;
-//import com.bizmate.project.dto.response.ProjectMemberResponseDTO;
-//import com.bizmate.project.service.ProjectMemberService;
-//import lombok.RequiredArgsConstructor;
-//import org.springframework.web.bind.annotation.*;
-//
-//import java.util.List;
-//import java.util.Map;
-//
-//@RestController
-//@RequestMapping("/bizmate/project/member")
-//@RequiredArgsConstructor
-//public class ProjectMemberController {
-//
-//    private final ProjectMemberService projectMemberService;
-//
-//    @GetMapping("/list")
-//    public List<ProjectMemberResponseDTO> getMembers (Long projectId){
-//        return projectMemberService.list(projectId);
-//    }
-//
-//    @GetMapping("/{projectId}/{userId}")
-//    public ProjectMemberResponseDTO get (
-//            @PathVariable(name = "projectId") Long projectId,
-//            @PathVariable(name = "userId")Long userId){
-//
-//        return projectMemberService.get(projectId,  userId);
-//    }
-//
-//    @PostMapping(value = "/")
-//    public Map<String, String> register(@RequestBody ProjectMemberDTO requestDTO){
-//        projectMemberService.register(requestDTO);
-//        return Map.of("RESULT","SUCCESS");
-//    }
-//
-//    @PutMapping("/{projectId}/{userId}")
-//    public Map<String,String> modify (@RequestBody ProjectMemberDTO requestDTO,
-//                                      @PathVariable(name = "projectId") Long projectId,
-//                                      @PathVariable(name = "userId") Long userId){
-//        projectMemberService.modify(requestDTO, projectId, userId);
-//        return Map.of("RESULT","SUCCESS");
-//    }
-//
-//    @DeleteMapping("/{projectId}/{userId}")
-//    public Map<String, String> remove  (@PathVariable (name = "projectId") Long projectId,
-//                                        @PathVariable (name = "userId") Long userId){
-//        projectMemberService.remove(projectId,userId);
-//        return Map.of("RESULT","SUCCESS");
-//    }
-//
-//
-//
-//}
+package com.bizmate.project.controller;
+
+import com.bizmate.project.dto.projectmember.ProjectMemberDTO;
+import com.bizmate.project.dto.projectmember.ProjectMemberRequest;
+import com.bizmate.project.dto.projectmember.ProjectMemberResponseDTO;
+import com.bizmate.project.service.ProjectMemberService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Map;
+
+@RestController
+@RequestMapping("/api/members")
+@RequiredArgsConstructor
+public class ProjectMemberController {
+
+    private final ProjectMemberService projectMemberService;
+
+    // ✅ 1. 구성원 등록 (POST)
+    @PostMapping
+    public ResponseEntity<ProjectMemberDTO> addMember(@RequestBody ProjectMemberRequest request) {
+        ProjectMemberDTO created = projectMemberService.addMember(request);
+        return ResponseEntity.ok(created);
+    }
+
+    // ✅ 2. 단일 구성원 조회
+    @GetMapping("/{memberId}")
+    public ResponseEntity<ProjectMemberDTO> getMember(@PathVariable Long memberId) {
+        return ResponseEntity.ok(projectMemberService.getMemberById(memberId));
+    }
+
+    // ✅ 3. 프로젝트별 구성원 조회
+    @GetMapping("/project/{projectId}")
+    public ResponseEntity<List<ProjectMemberDTO>> getMembersByProject(@PathVariable Long projectId) {
+        return ResponseEntity.ok(projectMemberService.getMembersByProject(projectId));
+    }
+
+    // ✅ 4. 직원별 참여 프로젝트 조회
+    @GetMapping("/employee/{employeeId}")
+    public ResponseEntity<List<ProjectMemberDTO>> getMembersByEmployee(@PathVariable Long employeeId) {
+        return ResponseEntity.ok(projectMemberService.getMembersByEmployee(employeeId));
+    }
+
+    // ✅ 5. 구성원 정보 수정 (역할 변경)
+    @PatchMapping("/{memberId}")
+    public ResponseEntity<ProjectMemberDTO> updateMember(
+            @PathVariable Long memberId,
+            @RequestBody ProjectMemberRequest request
+    ) {
+        return ResponseEntity.ok(projectMemberService.updateMember(memberId, request));
+    }
+
+    // ✅ 6. 구성원 삭제
+    @DeleteMapping("/{memberId}")
+    public ResponseEntity<Void> deleteMember(@PathVariable Long memberId) {
+        projectMemberService.deleteMember(memberId);
+        return ResponseEntity.noContent().build();
+    }
+
+
+}

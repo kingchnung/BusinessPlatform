@@ -1,6 +1,9 @@
-package com.bizmate.project.dto.request;
+package com.bizmate.project.dto.project;
 
 
+import com.bizmate.project.dto.budgetitem.ProjectBudgetItemDTO;
+import com.bizmate.project.dto.projectmember.ProjectMemberDTO;
+import com.bizmate.project.dto.task.ProjectTaskDTO;
 import lombok.*;
 
 

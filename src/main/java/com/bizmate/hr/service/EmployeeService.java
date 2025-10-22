@@ -8,6 +8,7 @@ public interface EmployeeService { // ★ 인터페이스 이름 변경
 
     EmployeeDTO createEmployee(EmployeeCreateRequestDTO createDTO);
     EmployeeDTO updateEmployee(Long EmpId, EmployeeUpdateRequestDTO updateDTO);
+    EmployeeDTO retireEmployee(Long EmpId);
     List<EmployeeDTO> getAllEmployees();
     EmployeeDTO getEmployee(Long empId);
     void deleteEmployee(Long empId);

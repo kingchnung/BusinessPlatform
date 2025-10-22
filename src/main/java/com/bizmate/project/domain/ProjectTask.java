@@ -1,6 +1,7 @@
 package com.bizmate.project.domain;
 
 import com.bizmate.hr.domain.Employee;
+import com.bizmate.project.domain.enums.task.TaskPriority;
 import com.bizmate.project.domain.enums.task.TaskStatus;
 import jakarta.persistence.*;
 import lombok.*;
@@ -21,8 +22,12 @@ public class ProjectTask {
     private Long taskId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "PROJECT_ID")
+    @JoinColumn(name = "PROJECT_ID", nullable = false)
     private Project project;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ASSIGNEE_MEMBER_ID")
+    private ProjectMember assigneeId; // 담당자
 
     @Column(nullable = false, length = 150)
     private String taskName;
@@ -37,9 +42,17 @@ public class ProjectTask {
     @Column(length = 30)
     private TaskStatus status = TaskStatus.PLANNED;
 
+    @Enumerated(EnumType.STRING)
+    @Column(length = 20)
+    private TaskPriority priority = TaskPriority.MEDIUM;
+
     private int progressRate; // 0~100%
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ASSIGNEE_ID")
-    private Employee assignee; // 담당자
+    @PrePersist
+    @PreUpdate
+    public void validateProgressRate() {
+        if (progressRate < 0) progressRate = 0;
+        if (progressRate > 100) progressRate = 100;
+        if (status == null) status = TaskStatus.PLANNED;
+    }
 }

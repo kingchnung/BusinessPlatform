@@ -69,6 +69,14 @@ public class EmployeeController {
         return ResponseEntity.ok(updated);
     }
 
+    //관리자용 해당직원의 퇴직처리
+    @PutMapping("/{empId}/retire")
+    @PreAuthorize("hasAnyRole('ROLE_CEO', 'ROLE_MANAGER')")
+    public ResponseEntity<EmployeeDTO> retireEmployee(@PathVariable Long empId) {
+        EmployeeDTO retired = employeeService.retireEmployee(empId);
+        return ResponseEntity.ok(retired);
+    }
+
     // 🔹 [관리자용] 특정 직원 상세 조회
     @GetMapping("/{empId}")
     @PreAuthorize("hasRole('MANAGER')")

@@ -53,6 +53,8 @@ dependencies {
 	runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.11.5")
     // ✅ iText 7 HTML → PDF 변환기 (무료버전 html2pdf)
     implementation 'com.itextpdf:html2pdf:4.0.4'
+    implementation 'com.itextpdf:itextpdf:5.5.13.3'
+
 
     // ✅ Lombok
     compileOnly 'org.projectlombok:lombok'

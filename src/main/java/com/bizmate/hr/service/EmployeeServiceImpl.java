@@ -10,9 +10,12 @@ import com.bizmate.hr.repository.*;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -33,7 +36,32 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     @Transactional(readOnly = true)
     public List<EmployeeDTO> getAllEmployees() {
-        return employeeRepository.findAllWithDepartmentAndPosition().stream()
+        // ✅ 현재 로그인 사용자 가져오기
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
+
+        // ✅ 사용자 엔티티 조회 (계정 존재 확인)
+        UserEntity user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다."));
+
+        // ✅ 관리자 여부 판단 (CEO, MANAGER, sys:admin 등)
+        boolean isAdmin = user.getRoles().stream()
+                .anyMatch(role -> role.getRoleName().equals("ROLE_MANAGER")
+                        || role.getRoleName().equals("ROLE_CEO")
+                        || role.getRoleName().equals("sys:admin"));
+
+        // ✅ 직원 목록 조회
+        List<Employee> employees = employeeRepository.findAllWithDepartmentAndPosition();
+
+        // ✅ 관리자가 아니면 퇴직자 제외
+        if (!isAdmin) {
+            employees = employees.stream()
+                    .filter(emp -> !"RETIRED".equalsIgnoreCase(emp.getStatus()))
+                    .collect(Collectors.toList());
+        }
+
+        // ✅ DTO 변환
+        return employees.stream()
                 .map(EmployeeDTO::fromEntity)
                 .collect(Collectors.toList());
     }
@@ -156,6 +184,34 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
+    public EmployeeDTO retireEmployee(Long empId) {
+        Employee employee = employeeRepository.findById(empId)
+                .orElseThrow(() -> new EntityNotFoundException("사원 ID " + empId + "를 찾을 수 없습니다."));
+
+        // 이미 퇴직한 경우 예외 방지
+        if ("RETIRED".equalsIgnoreCase(employee.getStatus())) {
+            throw new IllegalStateException("이미 퇴직 처리된 사원입니다.");
+        }
+
+        // 상태 변경 + 퇴사일 기록
+        employee.setStatus("RETIRED");
+        employee.setLeaveDate(LocalDate.now());
+        employeeRepository.save(employee);
+
+        // 2️⃣ 해당 직원 계정 비활성화 처리
+        userRepository.findByEmployee(employee).ifPresent(user -> {
+            user.setIsActive("N"); // 혹은 user.setIsActive("N");
+            userRepository.save(user);
+        });
+
+        Employee retiredEmployee = employeeRepository.save(employee);
+
+
+        return EmployeeDTO.fromEntity(retiredEmployee);
+    }
+
+
+    @Override
     public List<EmployeeStatisticDTO> getAgeStatistics() {
         List<Object[]> result = employeeRepository.getAgeStatistics();
         return result.stream()
@@ -196,15 +252,19 @@ public class EmployeeServiceImpl implements EmployeeService {
      * 🔹 직원 정보 변경 시 UserEntity의 복제 필드를 동기화하는 메서드
      */
     public void syncUserInfo(Employee employee) {
-        userRepository.findByEmployeeId(employee.getEmpId())
+        userRepository.findByEmployee(employee)
                 .ifPresent(user -> {
                     user.setEmpName(employee.getEmpName());
                     user.setEmail(employee.getEmail());
                     user.setPhone(employee.getPhone());
-                    user.setDeptName(employee.getDepartment().getDeptName());
-                    user.setPositionName(employee.getPosition().getPositionName());
-                    user.setDeptCode(employee.getDepartment().getDeptCode());
-                    userRepository.save(user);
+                    if (employee.getDepartment() != null) {
+                        user.setDeptName(employee.getDepartment().getDeptName());
+                        user.setDeptCode(employee.getDepartment().getDeptCode());
+                    }
+                    if (employee.getPosition() != null) {
+                        user.setPositionName(employee.getPosition().getPositionName());
+                    }
+                    userRepository.saveAndFlush(user);
                 });
     }
 

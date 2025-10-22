@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 @Component
@@ -139,7 +140,7 @@ public class DataInitializer implements CommandLineRunner {
                 .orElseThrow(() -> new IllegalStateException("기본 역할 'EMPLOYEE'가 없습니다."));
 
         for (Employee emp : allEmployees) {
-            Optional<UserEntity> optUser = userRepository.findByEmployeeId(emp.getEmpId());
+            Optional<UserEntity> optUser = userRepository.findByEmployee(emp);
 
             if (optUser.isEmpty()) {
                 createUserAccount(emp, defaultRole);
@@ -175,7 +176,7 @@ public class DataInitializer implements CommandLineRunner {
 
                 if (changed) {
                     user.setUpdDate(LocalDateTime.now());
-                    userRepository.save(user);
+                    userRepository.saveAndFlush(user);
                     updated++;
                 }
             }
@@ -194,6 +195,7 @@ public class DataInitializer implements CommandLineRunner {
                     return permissionRepository.save(Permission.builder()
                             .permName(name)
                             .description(desc)
+
                             .build());
                 });
     }
@@ -206,6 +208,7 @@ public class DataInitializer implements CommandLineRunner {
                             .roleName(name)
                             .description(desc)
                             .permissions(perms)
+
                             .build());
                 });
     }
@@ -215,6 +218,7 @@ public class DataInitializer implements CommandLineRunner {
                 .orElseGet(() -> positionRepository.save(Position.builder()
                         .positionName(name)
                         .description(desc)
+                        .isUsed("Y")
                         .build()));
     }
 
@@ -223,6 +227,7 @@ public class DataInitializer implements CommandLineRunner {
                 .orElseGet(() -> gradeRepository.save(Grade.builder()
                         .gradeName(name)
                         .gradeOrder(order)
+                        .isUsed("Y")
                         .build()));
     }
 
@@ -245,6 +250,16 @@ public class DataInitializer implements CommandLineRunner {
         return COMPANY_CODE + deptCode + String.format("%03d", nextSerial);
     }
 
+    private double calculateCareerYears(LocalDate startDate) {
+        if (startDate == null) return 0.0;
+
+        long months = ChronoUnit.MONTHS.between(startDate, LocalDate.now());
+        double years = months / 12.0;
+
+        // 소수점 1자리 반올림 (예: 7.4년)
+        return Math.round(years * 10) / 10.0;
+    }
+
     private String generateRandomPhone() {
         return String.format("010-%04d-%04d",
                 random.nextInt(9000) + 1000,
@@ -262,13 +277,21 @@ public class DataInitializer implements CommandLineRunner {
         String email = empNo + "@bizmate.com";
         String phone = generateRandomPhone();
         String address = "서울특별시 강남구 테헤란로 100";
-        LocalDate birthDate = LocalDate.of(random.nextInt(26) + 1975, random.nextInt(12) + 1, random.nextInt(28) + 1);
         String gender = random.nextBoolean() ? "M" : "F";
-        final int MIN_AGE = 19;
-        final int MAX_AGE = 25;
+        LocalDate birthDate = LocalDate.of(random.nextInt(14) + 1985, random.nextInt(12) + 1, random.nextInt(28) + 1);
 
-        int yearToHire = random.nextInt(MAX_AGE - MIN_AGE + 1) + MIN_AGE;
-        LocalDate startDate = birthDate.plusYears(yearToHire);
+        double careerYears = Math.round((random.nextDouble() * 9 + 2) * 10) / 10.0; // 2.0 ~ 11.0
+
+        int totalMonths = (int) Math.round(careerYears * 12);
+
+        LocalDate startDate = LocalDate.now().minusMonths(totalMonths);
+
+        int ageAtHire = startDate.getYear() - birthDate.getYear();
+        if (ageAtHire < 19) {
+            startDate = birthDate.plusYears(19);
+        }
+
+
 
 
         Employee emp = Employee.builder()
@@ -284,6 +307,7 @@ public class DataInitializer implements CommandLineRunner {
                 .birthDate(birthDate)
                 .gender(gender)
                 .startDate(startDate)
+                .careerYears(careerYears)
                 .creDate(LocalDateTime.now())
                 .build();
 
