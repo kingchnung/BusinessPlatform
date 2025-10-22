@@ -1,6 +1,7 @@
 package com.bizmate.groupware.approval.domain.document;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum DocumentType {
@@ -21,10 +22,12 @@ public enum DocumentType {
         this.label = label;
     }
 
+    @JsonProperty("code")
     public String getCode() {
         return code;
     }
 
+    @JsonProperty("label")
     public String getLabel() {
         return label;
     }
