@@ -40,6 +40,10 @@ public interface ApprovalDocumentsService {
     ApprovalDocumentsDto get(String docId);
 
     PageResponseDTO<ApprovalDocumentsDto> getPagedApprovals(PageRequestDTO pageRequestDTO);
+    PageResponseDTO<ApprovalDocumentsDto> getPagedApprovals(PageRequestDTO pageRequestDTO, String status);
+
+    PageResponseDTO<ApprovalDocumentsDto> getPagedApprovalsByUser(PageRequestDTO pageRequestDTO, String username);
+    PageResponseDTO<ApprovalDocumentsDto> getPagedApprovalsByUserAndStatus(PageRequestDTO pageRequestDTO, String username, String status);
 
     List<ApprovalDocumentsDto> findMyApprovals(Long userId);
 
@@ -54,11 +58,12 @@ public interface ApprovalDocumentsService {
 
     void restoreDocument(String docId);
 
-    PageResponseDTO<ApprovalDocumentsDto> getPagedApprovalsByUser(PageRequestDTO pageRequestDTO, String username);
 
     @Transactional
     void forceApprove(String docId, UserPrincipal adminUser, String reason);
 
     @Transactional
     void forceReject(String docId, UserPrincipal adminUser, String reason);
+
+    PageResponseDTO<ApprovalDocumentsDto> getPagedApprovalsByStatus(PageRequestDTO pageRequestDTO, String status);
 }

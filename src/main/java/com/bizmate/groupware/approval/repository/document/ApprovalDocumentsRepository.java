@@ -30,12 +30,12 @@ public interface ApprovalDocumentsRepository extends JpaRepository<ApprovalDocum
     /**
      * 작성자별 문서 목록
      */
-    List<ApprovalDocuments> findByAuthorUser(UserEntity authorUser);
+    Page<ApprovalDocuments> findByAuthorUser_UsernameAndStatus(String username, DocumentStatus status, Pageable pageable);
 
     /**
      * 상태별 문서 목록
      */
-    List<ApprovalDocuments> findByStatus(DocumentStatus status);
+    Page<ApprovalDocuments> findByStatus(DocumentStatus status, Pageable pageable);
 
     /**
      * 작성자 userId로 조회 (JWT 기반)

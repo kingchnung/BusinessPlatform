@@ -31,6 +31,7 @@ public class ApprovalDocumentsController {
      ------------------------------------------------------------- */
     @GetMapping
     public ResponseEntity<PageResponseDTO<ApprovalDocumentsDto>> getApprovalList(
+            @RequestParam(value = "status", required = false) String status,
             PageRequestDTO pageRequestDTO,
             @AuthenticationPrincipal UserPrincipal principal
     ) {
@@ -40,10 +41,11 @@ public class ApprovalDocumentsController {
                         a.getAuthority().equals("ROLE_ADMIN")
                 );
 
-        log.info("📄 결재문서 목록 조회 요청: page={}, size={}, keyword={}, user={}, isAdmin={}",
+        log.info("📄 결재문서 목록 조회 요청: page={}, size={}, keyword={}, status={}, user={}, isAdmin={}",
                 pageRequestDTO.getPage(),
                 pageRequestDTO.getSize(),
                 pageRequestDTO.getKeyword(),
+                status,
                 principal.getUsername(),
                 isAdmin
         );
@@ -51,14 +53,26 @@ public class ApprovalDocumentsController {
         PageResponseDTO<ApprovalDocumentsDto> result;
 
         if (isAdmin) {
-            // ✅ 관리자: 전체 문서 조회 (검색 포함)
-            result = approvalDocumentsService.getPagedApprovals(pageRequestDTO);
+            // ✅ 관리자: 전체 문서 조회 (상태 필터 지원)
+            if (status != null && !status.isBlank() && !"ALL".equalsIgnoreCase(status)) {
+                result = approvalDocumentsService.getPagedApprovalsByStatus(pageRequestDTO, status);
+            } else {
+                result = approvalDocumentsService.getPagedApprovals(pageRequestDTO);
+            }
         } else {
-            // ✅ 일반 사용자: 본인(username 기준) 문서만 조회
-            result = approvalDocumentsService.getPagedApprovalsByUser(
-                    pageRequestDTO,
-                    principal.getUsername()   // username 기반
-            );
+            // ✅ 일반 사용자: 본인 문서만, 상태 필터 지원
+            if (status != null && !status.isBlank() && !"ALL".equalsIgnoreCase(status)) {
+                result = approvalDocumentsService.getPagedApprovalsByUserAndStatus(
+                        pageRequestDTO,
+                        principal.getUsername(),
+                        status
+                );
+            } else {
+                result = approvalDocumentsService.getPagedApprovalsByUser(
+                        pageRequestDTO,
+                        principal.getUsername()
+                );
+            }
         }
 
         return ResponseEntity.ok(result);

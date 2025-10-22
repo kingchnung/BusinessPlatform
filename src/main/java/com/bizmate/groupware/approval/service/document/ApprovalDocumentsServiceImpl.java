@@ -581,6 +581,7 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
         Pageable pageable = PageRequest.of(req.getPage() - 1, req.getSize());
 
         Page<ApprovalDocuments> resultPage;
+        // ✅ 상태값이 전달된 경우 (예: DRAFT, IN_PROGRESS, APPROVED, REJECTED)
         if (req.getKeyword() != null && !req.getKeyword().isEmpty()) {
             resultPage = approvalDocumentsRepository.searchDocuments(req.getKeyword(), pageable);
         } else {
@@ -589,6 +590,85 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
 
         List<ApprovalDocumentsDto> dtoList = resultPage.getContent()
                 .stream()
+                .map(ApprovalDocumentsDto::fromEntity)
+                .toList();
+
+        return PageResponseDTO.<ApprovalDocumentsDto>withAll()
+                .dtoList(dtoList)
+                .pageRequestDTO(req)
+                .totalCount(resultPage.getTotalElements())
+                .build();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public PageResponseDTO<ApprovalDocumentsDto> getPagedApprovals(PageRequestDTO req, String status) {
+        Pageable pageable = PageRequest.of(req.getPage() - 1, req.getSize());
+
+        Page<ApprovalDocuments> resultPage;
+        // ✅ 상태값이 전달된 경우 (예: DRAFT, IN_PROGRESS, APPROVED, REJECTED)
+        if (status != null && !status.equalsIgnoreCase("ALL")) {
+            DocumentStatus documentStatus = DocumentStatus.valueOf(status.toUpperCase());
+            resultPage = approvalDocumentsRepository.findByStatus(documentStatus, pageable);
+        } else if (req.getKeyword() != null && !req.getKeyword().isEmpty()) {
+            resultPage = approvalDocumentsRepository.searchDocuments(req.getKeyword(), pageable);
+        } else {
+            resultPage = approvalDocumentsRepository.findAll(pageable);
+        }
+
+        List<ApprovalDocumentsDto> dtoList = resultPage.getContent()
+                .stream()
+                .map(ApprovalDocumentsDto::fromEntity)
+                .toList();
+
+        return PageResponseDTO.<ApprovalDocumentsDto>withAll()
+                .dtoList(dtoList)
+                .pageRequestDTO(req)
+                .totalCount(resultPage.getTotalElements())
+                .build();
+    }
+
+    @Override
+    @Transactional
+    public PageResponseDTO<ApprovalDocumentsDto> getPagedApprovalsByUser(PageRequestDTO req, String username) {
+        Pageable pageable = PageRequest.of(req.getPage() - 1, req.getSize());
+
+        Page<ApprovalDocuments> resultPage;
+
+        if (req.getKeyword() != null && !req.getKeyword().isEmpty()) {
+            resultPage = approvalDocumentsRepository.searchDocumentsByUserAndKeyword(username, req.getKeyword(), pageable);
+        } else {
+            resultPage = approvalDocumentsRepository.findByAuthorUser_Username(username, pageable);
+        }
+
+        List<ApprovalDocumentsDto> dtoList = resultPage.getContent().stream()
+                .map(ApprovalDocumentsDto::fromEntity)
+                .toList();
+
+        return PageResponseDTO.<ApprovalDocumentsDto>withAll()
+                .dtoList(dtoList)
+                .pageRequestDTO(req)
+                .totalCount(resultPage.getTotalElements())
+                .build();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public PageResponseDTO<ApprovalDocumentsDto> getPagedApprovalsByUserAndStatus(PageRequestDTO req, String username, String status) {
+        Pageable pageable = PageRequest.of(req.getPage() - 1, req.getSize());
+
+        Page<ApprovalDocuments> resultPage;
+
+        if (status != null && !status.equalsIgnoreCase("ALL")) {
+            DocumentStatus documentStatus = DocumentStatus.valueOf(status.toUpperCase());
+            resultPage = approvalDocumentsRepository.findByAuthorUser_UsernameAndStatus(username, documentStatus, pageable);
+        } else if (req.getKeyword() != null && !req.getKeyword().isEmpty()) {
+            resultPage = approvalDocumentsRepository.searchDocumentsByUserAndKeyword(username, req.getKeyword(), pageable);
+        } else {
+            resultPage = approvalDocumentsRepository.findByAuthorUser_Username(username, pageable);
+        }
+
+        List<ApprovalDocumentsDto> dtoList = resultPage.getContent().stream()
                 .map(ApprovalDocumentsDto::fromEntity)
                 .toList();
 
@@ -634,28 +714,6 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
     @Override
     public void restoreDocument(String docId) {
 
-    }
-
-    @Override
-    public PageResponseDTO<ApprovalDocumentsDto> getPagedApprovalsByUser(PageRequestDTO req, String username) {
-        Pageable pageable = PageRequest.of(req.getPage() - 1, req.getSize());
-
-        Page<ApprovalDocuments> resultPage;
-        if (req.getKeyword() != null && !req.getKeyword().isEmpty()) {
-            resultPage = approvalDocumentsRepository.searchDocumentsByUserAndKeyword(username, req.getKeyword(), pageable);
-        } else {
-            resultPage = approvalDocumentsRepository.findByAuthorUser_Username(username, pageable);
-        }
-
-        List<ApprovalDocumentsDto> dtoList = resultPage.getContent().stream()
-                .map(ApprovalDocumentsDto::fromEntity)
-                .toList();
-
-        return PageResponseDTO.<ApprovalDocumentsDto>withAll()
-                .dtoList(dtoList)
-                .pageRequestDTO(req)
-                .totalCount(resultPage.getTotalElements())
-                .build();
     }
 
 
@@ -759,6 +817,26 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
         approvalDocumentsRepository.save(document);
 
         log.warn("⚠️ 관리자 {}가 문서 {}를 강제반려 처리함", adminUser.getUsername(), docId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public PageResponseDTO<ApprovalDocumentsDto> getPagedApprovalsByStatus(PageRequestDTO req, String status) {
+        Pageable pageable = PageRequest.of(req.getPage() - 1, req.getSize(), Sort.by("createdAt").descending());
+        DocumentStatus docStatus = DocumentStatus.valueOf(status.toUpperCase());
+
+        Page<ApprovalDocuments> resultPage = approvalDocumentsRepository.findByStatus(docStatus, pageable);
+
+        List<ApprovalDocumentsDto> dtoList = resultPage.getContent()
+                .stream()
+                .map(ApprovalDocumentsDto::fromEntity)
+                .toList();
+
+        return PageResponseDTO.<ApprovalDocumentsDto>withAll()
+                .dtoList(dtoList)
+                .pageRequestDTO(req)
+                .totalCount(resultPage.getTotalElements())
+                .build();
     }
 
     private void validateDraft(ApprovalDocumentsDto dto) {
