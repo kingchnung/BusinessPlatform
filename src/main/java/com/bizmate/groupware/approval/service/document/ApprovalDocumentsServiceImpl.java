@@ -13,7 +13,6 @@ import com.bizmate.groupware.approval.domain.document.DocumentType;
 import com.bizmate.groupware.approval.domain.policy.ApprovalPolicy;
 import com.bizmate.groupware.approval.domain.policy.ApproverStep;
 import com.bizmate.groupware.approval.dto.approval.ApprovalDocumentsDto;
-import com.bizmate.groupware.approval.dto.approval.DocumentSearchRequestDto;
 import com.bizmate.groupware.approval.dto.approval.ApprovalFileAttachmentDto;
 import com.bizmate.groupware.approval.infrastructure.ApprovalPolicyMapper;
 import com.bizmate.groupware.approval.notification.NotificationService;
@@ -21,7 +20,7 @@ import com.bizmate.groupware.approval.repository.document.ApprovalDocumentsRepos
 import com.bizmate.groupware.approval.repository.attachment.ApprovalFileAttachmentRepository;
 import com.bizmate.groupware.approval.repository.Policy.ApprovalPolicyRepository;
 import com.bizmate.groupware.approval.repository.PDF.EmployeeSignatureRepository;
-import com.bizmate.groupware.approval.service.FileStorageService;
+import com.bizmate.groupware.approval.service.attachment.FileStorageService;
 import com.bizmate.hr.domain.Department;
 import com.bizmate.hr.domain.Employee;
 import com.bizmate.hr.domain.UserEntity;
@@ -266,8 +265,13 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
         }
 
         // 3️⃣ 부서코드 검증 (변경 불가)
-        if (!document.getDepartment().getDeptCode().equals(dto.getDepartmentCode())) {
-            throw new VerificationFailedException("부서 정보가 일치하지 않습니다.");
+        if (dto.getDepartmentCode() == null || dto.getDepartmentCode().isBlank()) {
+            dto.setDepartmentCode(document.getDepartment().getDeptCode());
+        } else if (!document.getDepartment().getDeptCode().equals(dto.getDepartmentCode())) {
+            log.warn("📋 재상신 부서 불일치 → 자동 보정: DB={}, DTO={}",
+                    document.getDepartment().getDeptCode(),
+                    dto.getDepartmentCode());
+            dto.setDepartmentCode(document.getDepartment().getDeptCode());
         }
 
         /* -------------------------------------------------------------
@@ -580,136 +584,80 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
     public PageResponseDTO<ApprovalDocumentsDto> getPagedApprovals(PageRequestDTO req) {
         Pageable pageable = PageRequest.of(req.getPage() - 1, req.getSize());
 
+        // ✅ 키워드가 있으면 검색, 없으면 전체 문서 (삭제 포함)
         Page<ApprovalDocuments> resultPage;
-        // ✅ 상태값이 전달된 경우 (예: DRAFT, IN_PROGRESS, APPROVED, REJECTED)
         if (req.getKeyword() != null && !req.getKeyword().isEmpty()) {
             resultPage = approvalDocumentsRepository.searchDocuments(req.getKeyword(), pageable);
         } else {
+            // ✅ DELETED 포함 모든 문서 조회 (관리자 전용)
             resultPage = approvalDocumentsRepository.findAll(pageable);
         }
 
         List<ApprovalDocumentsDto> dtoList = resultPage.getContent()
-                .stream()
-                .map(ApprovalDocumentsDto::fromEntity)
-                .toList();
-
-        return PageResponseDTO.<ApprovalDocumentsDto>withAll()
-                .dtoList(dtoList)
-                .pageRequestDTO(req)
-                .totalCount(resultPage.getTotalElements())
-                .build();
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public PageResponseDTO<ApprovalDocumentsDto> getPagedApprovals(PageRequestDTO req, String status) {
-        Pageable pageable = PageRequest.of(req.getPage() - 1, req.getSize());
-
-        Page<ApprovalDocuments> resultPage;
-        // ✅ 상태값이 전달된 경우 (예: DRAFT, IN_PROGRESS, APPROVED, REJECTED)
-        if (status != null && !status.equalsIgnoreCase("ALL")) {
-            DocumentStatus documentStatus = DocumentStatus.valueOf(status.toUpperCase());
-            resultPage = approvalDocumentsRepository.findByStatus(documentStatus, pageable);
-        } else if (req.getKeyword() != null && !req.getKeyword().isEmpty()) {
-            resultPage = approvalDocumentsRepository.searchDocuments(req.getKeyword(), pageable);
-        } else {
-            resultPage = approvalDocumentsRepository.findAll(pageable);
-        }
-
-        List<ApprovalDocumentsDto> dtoList = resultPage.getContent()
-                .stream()
-                .map(ApprovalDocumentsDto::fromEntity)
-                .toList();
-
-        return PageResponseDTO.<ApprovalDocumentsDto>withAll()
-                .dtoList(dtoList)
-                .pageRequestDTO(req)
-                .totalCount(resultPage.getTotalElements())
-                .build();
-    }
-
-    @Override
-    @Transactional
-    public PageResponseDTO<ApprovalDocumentsDto> getPagedApprovalsByUser(PageRequestDTO req, String username) {
-        Pageable pageable = PageRequest.of(req.getPage() - 1, req.getSize());
-
-        Page<ApprovalDocuments> resultPage;
-
-        if (req.getKeyword() != null && !req.getKeyword().isEmpty()) {
-            resultPage = approvalDocumentsRepository.searchDocumentsByUserAndKeyword(username, req.getKeyword(), pageable);
-        } else {
-            resultPage = approvalDocumentsRepository.findByAuthorUser_Username(username, pageable);
-        }
-
-        List<ApprovalDocumentsDto> dtoList = resultPage.getContent().stream()
-                .map(ApprovalDocumentsDto::fromEntity)
-                .toList();
-
-        return PageResponseDTO.<ApprovalDocumentsDto>withAll()
-                .dtoList(dtoList)
-                .pageRequestDTO(req)
-                .totalCount(resultPage.getTotalElements())
-                .build();
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public PageResponseDTO<ApprovalDocumentsDto> getPagedApprovalsByUserAndStatus(PageRequestDTO req, String username, String status) {
-        Pageable pageable = PageRequest.of(req.getPage() - 1, req.getSize());
-
-        Page<ApprovalDocuments> resultPage;
-
-        if (status != null && !status.equalsIgnoreCase("ALL")) {
-            DocumentStatus documentStatus = DocumentStatus.valueOf(status.toUpperCase());
-            resultPage = approvalDocumentsRepository.findByAuthorUser_UsernameAndStatus(username, documentStatus, pageable);
-        } else if (req.getKeyword() != null && !req.getKeyword().isEmpty()) {
-            resultPage = approvalDocumentsRepository.searchDocumentsByUserAndKeyword(username, req.getKeyword(), pageable);
-        } else {
-            resultPage = approvalDocumentsRepository.findByAuthorUser_Username(username, pageable);
-        }
-
-        List<ApprovalDocumentsDto> dtoList = resultPage.getContent().stream()
-                .map(ApprovalDocumentsDto::fromEntity)
-                .toList();
-
-        return PageResponseDTO.<ApprovalDocumentsDto>withAll()
-                .dtoList(dtoList)
-                .pageRequestDTO(req)
-                .totalCount(resultPage.getTotalElements())
-                .build();
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<ApprovalDocumentsDto> findMyApprovals(Long userId) {
-        return approvalDocumentsRepository.findByAuthorUser_UserId(userId)
                 .stream()
                 .map(this::mapEntityToDto)
                 .toList();
+
+        return PageResponseDTO.<ApprovalDocumentsDto>withAll()
+                .dtoList(dtoList)
+                .pageRequestDTO(req)
+                .totalCount(resultPage.getTotalElements())
+                .build();
     }
+
 
     @Override
     @Transactional(readOnly = true)
-    public Page<ApprovalDocumentsDto> search(DocumentSearchRequestDto req) {
-        PageRequest pageable = PageRequest.of(req.getPage(), req.getSize(), Sort.by("createdAt").descending());
-        return approvalDocumentsRepository.findAll(pageable)
-                .map(this::mapEntityToDto);
+    public PageResponseDTO<ApprovalDocumentsDto> getPagedAccessibleDocuments(
+            PageRequestDTO req,
+            String username,
+            String status
+    ) {
+        Pageable pageable = PageRequest.of(req.getPage() - 1, req.getSize());
+
+        // ① 작성자 + 열람자 문서 가져오기 (Employee까지 Fetch Join)
+        List<ApprovalDocuments> accessibleDocs =
+                approvalDocumentsRepository.findAccessibleDocuments(username);
+
+        // ② 결재자(JSON approverId 포함)까지 필터링
+        List<ApprovalDocuments> filtered = accessibleDocs.stream()
+                .filter(d ->
+                        d.getAuthorUser().getUsername().equals(username)
+                                || (d.getViewerIds() != null && d.getViewerIds().contains(username))
+                                || (d.getApprovalLine() != null && d.getApprovalLine().stream()
+                                .anyMatch(step -> step.approverId().equals(username)))
+                )
+                .filter(d -> {
+                    if (status == null || status.equalsIgnoreCase("ALL")) return true;
+                    return d.getStatus().name().equalsIgnoreCase(status);
+                })
+                .filter(d -> {
+                    if (req.getKeyword() == null || req.getKeyword().isBlank()) return true;
+                    String keyword = req.getKeyword().toUpperCase();
+                    return (d.getTitle() != null && d.getTitle().toUpperCase().contains(keyword))
+                            || (d.getAuthorUser() != null &&
+                            d.getAuthorUser().getEmployee() != null &&
+                            d.getAuthorUser().getEmployee().getEmpName().toUpperCase().contains(keyword));
+                })
+                .sorted((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()))
+                .toList();
+
+        // ③ 페이징 처리
+        int start = (int) pageable.getOffset();
+        int end = Math.min(start + pageable.getPageSize(), filtered.size());
+        List<ApprovalDocumentsDto> dtoList = filtered.subList(start, end)
+                .stream()
+                .map(this::mapEntityToDto)
+                .toList();
+
+        return PageResponseDTO.<ApprovalDocumentsDto>withAll()
+                .dtoList(dtoList)
+                .pageRequestDTO(req)
+                .totalCount(filtered.size())
+                .build();
     }
 
-    @Override
-    public List<ApprovalDocumentsDto> findByDepartment(Department department) {
-        return List.of();
-    }
 
-    @Override
-    public List<ApprovalDocumentsDto> findByAuthor(UserEntity author) {
-        return List.of();
-    }
-
-    @Override
-    public List<ApprovalDocumentsDto> findByStatus(DocumentStatus status) {
-        return List.of();
-    }
 
     @Override
     public void restoreDocument(String docId) {
@@ -965,8 +913,26 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
 
 
     private ApprovalDocumentsDto mapEntityToDto(ApprovalDocuments entity) {
-
         UserEntity user = entity.getAuthorUser();
+
+        // 🔍 작성자 이름 로깅
+        log.info("🧾 Author debug: username={}, empName={}, employeeEmpName={}",
+                user != null ? user.getUsername() : "null",
+                user != null ? user.getEmpName() : "null",
+                (user != null && user.getEmployee() != null)
+                        ? user.getEmployee().getEmpName()
+                        : "null");
+
+        // ✅ 작성자 이름 (Employee에서 가져오기)
+        String authorName = "-";
+        if (user != null) {
+            if (user.getEmployee() != null && user.getEmployee().getEmpName() != null) {
+                authorName = user.getEmployee().getEmpName();
+            } else if (user.getEmpName() != null) {
+                authorName = user.getEmpName();
+            }
+        }
+
         List<ApprovalFileAttachmentDto> attachments = fileAttachmentRepository
                 .findByDocument_DocId(entity.getDocId())
                 .stream()
@@ -983,8 +949,7 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
                 .finalDocNumber(entity.getFinalDocNumber())
                 .userId(user != null ? user.getUserId() : null)
                 .username(user != null ? user.getUsername() : null)
-                .authorName(user != null ? user.getEmpName() : "-")   // ✅ users.emp_name 사용
-                .departmentCode(user != null ? user.getDeptCode() : null)
+                .authorName(authorName) // ✅ 작성자명
                 .docContent(entity.getDocContent())
                 .approvalLine(entity.getApprovalLine())
                 .createdAt(entity.getCreatedAt())

@@ -1,5 +1,5 @@
 // ApprovalPolicyStepResponse.java
-package com.bizmate.groupware.approval.dto.approval;
+package com.bizmate.groupware.approval.dto.policy;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

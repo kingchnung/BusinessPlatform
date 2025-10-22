@@ -40,21 +40,6 @@ public interface ApprovalDocumentsService {
     ApprovalDocumentsDto get(String docId);
 
     PageResponseDTO<ApprovalDocumentsDto> getPagedApprovals(PageRequestDTO pageRequestDTO);
-    PageResponseDTO<ApprovalDocumentsDto> getPagedApprovals(PageRequestDTO pageRequestDTO, String status);
-
-    PageResponseDTO<ApprovalDocumentsDto> getPagedApprovalsByUser(PageRequestDTO pageRequestDTO, String username);
-    PageResponseDTO<ApprovalDocumentsDto> getPagedApprovalsByUserAndStatus(PageRequestDTO pageRequestDTO, String username, String status);
-
-    List<ApprovalDocumentsDto> findMyApprovals(Long userId);
-
-    Page<ApprovalDocumentsDto> search(DocumentSearchRequestDto req);
-
-    /* ----------------------------- 필터별 조회 ------------------------------ */
-    List<ApprovalDocumentsDto> findByDepartment(Department department);
-
-    List<ApprovalDocumentsDto> findByAuthor(UserEntity author);
-
-    List<ApprovalDocumentsDto> findByStatus(DocumentStatus status);
 
     void restoreDocument(String docId);
 
@@ -66,4 +51,6 @@ public interface ApprovalDocumentsService {
     void forceReject(String docId, UserPrincipal adminUser, String reason);
 
     PageResponseDTO<ApprovalDocumentsDto> getPagedApprovalsByStatus(PageRequestDTO pageRequestDTO, String status);
+
+    PageResponseDTO<ApprovalDocumentsDto> getPagedAccessibleDocuments(PageRequestDTO pageRequestDTO, String username, String status);
 }

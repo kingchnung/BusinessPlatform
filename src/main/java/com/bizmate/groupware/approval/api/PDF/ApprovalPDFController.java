@@ -1,4 +1,4 @@
-package com.bizmate.groupware.approval.api;
+package com.bizmate.groupware.approval.api.PDF;
 
 import com.bizmate.groupware.approval.service.PDF.PDFGeneratorService;
 import lombok.RequiredArgsConstructor;

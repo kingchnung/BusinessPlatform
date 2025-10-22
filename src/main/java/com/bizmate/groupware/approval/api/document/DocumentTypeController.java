@@ -1,5 +1,6 @@
-package com.bizmate.groupware.approval.api.admin;
+package com.bizmate.groupware.approval.api.document;
 
+import com.bizmate.groupware.approval.domain.document.DocumentStatus;
 import com.bizmate.groupware.approval.domain.document.DocumentType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,5 +25,15 @@ public class DocumentTypeController {
                 .toList();
 
         return ResponseEntity.ok(list);
+    }
+
+    @GetMapping("/document-status")
+    public List<Map<String, String>> getDocumentStatuses() {
+        return Arrays.stream(DocumentStatus.values())
+                .map(status -> Map.of(
+                        "code", status.name(),
+                        "label", status.getLabel()
+                ))
+                .toList();
     }
 }

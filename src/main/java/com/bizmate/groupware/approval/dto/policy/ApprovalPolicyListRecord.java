@@ -1,4 +1,4 @@
-package com.bizmate.groupware.approval.dto.approval;
+package com.bizmate.groupware.approval.dto.policy;
 
 public record ApprovalPolicyListRecord (
         Long id,

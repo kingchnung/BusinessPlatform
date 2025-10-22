@@ -11,4 +11,5 @@ public interface ApprovalPolicyRepository extends JpaRepository<ApprovalPolicy, 
     Optional<ApprovalPolicy> findByDocType(String docType);
     List<ApprovalPolicy> findAll();
     Optional<ApprovalPolicy> findByDocTypeAndIsActiveTrue(DocumentType docType);
+    Optional<ApprovalPolicy> findByDocTypeAndIsActiveTrue(String docType);
 }

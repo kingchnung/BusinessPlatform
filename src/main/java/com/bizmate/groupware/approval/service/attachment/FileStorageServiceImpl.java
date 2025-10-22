@@ -1,4 +1,4 @@
-package com.bizmate.groupware.approval.service;
+package com.bizmate.groupware.approval.service.attachment;
 
 import com.bizmate.groupware.approval.domain.document.ApprovalDocuments;
 import com.bizmate.groupware.approval.domain.attachment.ApprovalFileAttachment;

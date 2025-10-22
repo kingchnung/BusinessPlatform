@@ -1,4 +1,4 @@
-package com.bizmate.groupware.approval.api;
+package com.bizmate.groupware.approval.api.document;
 
 import com.bizmate.common.dto.PageRequestDTO;
 import com.bizmate.common.dto.PageResponseDTO;
@@ -38,7 +38,7 @@ public class ApprovalDocumentsController {
         boolean isAdmin = principal.getAuthorities().stream()
                 .anyMatch(a ->
                         a.getAuthority().equals("ROLE_CEO") ||
-                        a.getAuthority().equals("ROLE_ADMIN")
+                                a.getAuthority().equals("ROLE_ADMIN")
                 );
 
         log.info("📄 결재문서 목록 조회 요청: page={}, size={}, keyword={}, status={}, user={}, isAdmin={}",
@@ -53,26 +53,19 @@ public class ApprovalDocumentsController {
         PageResponseDTO<ApprovalDocumentsDto> result;
 
         if (isAdmin) {
-            // ✅ 관리자: 전체 문서 조회 (상태 필터 지원)
+            // ✅ 관리자: 전체 문서 조회 (기존 로직 유지)
             if (status != null && !status.isBlank() && !"ALL".equalsIgnoreCase(status)) {
                 result = approvalDocumentsService.getPagedApprovalsByStatus(pageRequestDTO, status);
             } else {
                 result = approvalDocumentsService.getPagedApprovals(pageRequestDTO);
             }
         } else {
-            // ✅ 일반 사용자: 본인 문서만, 상태 필터 지원
-            if (status != null && !status.isBlank() && !"ALL".equalsIgnoreCase(status)) {
-                result = approvalDocumentsService.getPagedApprovalsByUserAndStatus(
-                        pageRequestDTO,
-                        principal.getUsername(),
-                        status
-                );
-            } else {
-                result = approvalDocumentsService.getPagedApprovalsByUser(
-                        pageRequestDTO,
-                        principal.getUsername()
-                );
-            }
+            // ✅ 일반 사용자: 작성자/열람자/결재자 포함 조회
+            result = approvalDocumentsService.getPagedAccessibleDocuments(
+                    pageRequestDTO,
+                    principal.getUsername(),
+                    status
+            );
         }
 
         return ResponseEntity.ok(result);

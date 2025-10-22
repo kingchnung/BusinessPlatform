@@ -33,7 +33,8 @@ public class ApprovalDocumentsDto {
     private String title;             // 제목
     private DocumentType docType;     // 문서 유형
     private String docTypeLabel;      // 문서 유형 라벨
-    private String status;            // 상태 (문자열)
+    private String status;
+    private String statusLabel;       // 상태 (문자열)
 
     @NotNull(message = "부서 ID는 필수입니다.")
     private Long departmentId;
@@ -88,23 +89,27 @@ public class ApprovalDocumentsDto {
                 .title(entity.getTitle())
                 .docType(entity.getDocType())
                 .docTypeLabel(entity.getDocType() != null ? entity.getDocType().getLabel() : null)
-                .status(entity.getStatus().name())
+                .status(entity.getStatus() != null ? entity.getStatus().name() : null)
+                .statusLabel(entity.getStatus() != null ? entity.getStatus().getLabel() : null) // ✅ [추가]
                 .departmentId(entity.getDepartment() != null ? entity.getDepartment().getDeptId() : null)
+                .departmentCode(entity.getDepartment() != null ? entity.getDepartment().getDeptCode() : null) // ✅ [추가]
                 .departmentName(entity.getDepartment() != null ? entity.getDepartment().getDeptName() : null)
                 .finalDocNumber(entity.getFinalDocNumber())
                 .userId(entity.getAuthorUser() != null ? entity.getAuthorUser().getUserId() : null)
                 .username(entity.getAuthorUser() != null ? entity.getAuthorUser().getUsername() : null)
                 .empId(entity.getAuthorEmployee() != null ? entity.getAuthorEmployee().getEmpId() : null)
+                .authorName(entity.getAuthorEmployee() != null ? entity.getAuthorEmployee().getEmpName() : "-") // ✅ [추가]
                 .roleId(entity.getAuthorRole() != null ? entity.getAuthorRole().getRoleId() : null)
                 .docContent(entity.getDocContent())
                 .approvalLine(entity.getApprovalLine())
+                .viewerIds(entity.getViewerIds() != null ? entity.getViewerIds() : new ArrayList<>()) // ✅ [추가]
                 .createdAt(entity.getCreatedAt())
                 .updatedAt(entity.getUpdatedAt())
                 .attachments(entity.getAttachments() != null
                         ? entity.getAttachments().stream()
                         .map(ApprovalFileAttachmentDto::fromEntity)
                         .toList()
-                        : null)
+                        : new ArrayList<>()) // ✅ null → empty list 대체
                 .build();
     }
 
@@ -116,12 +121,13 @@ public class ApprovalDocumentsDto {
                 .docId(this.id)
                 .title(this.title)
                 .docType(this.docType)
-                .status(status)
+                .status(status != null ? status : DocumentStatus.DRAFT) // ✅ [보완] 기본값 설정
                 .department(department)
                 .finalDocNumber(this.finalDocNumber)
                 .approvalLine(this.approvalLine)
                 .docContent(this.docContent)
                 .currentApproverIndex(0)
+                .viewerIds(this.viewerIds != null ? this.viewerIds : new ArrayList<>()) // ✅ [보완]
                 .build();
     }
 }

@@ -1,4 +1,4 @@
-package com.bizmate.groupware.approval.api;
+package com.bizmate.groupware.approval.api.attachment;
 
 import com.bizmate.common.exception.VerificationFailedException;
 import com.bizmate.groupware.approval.domain.document.ApprovalDocuments;
