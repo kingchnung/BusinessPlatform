@@ -1,4 +1,4 @@
-package com.bizmate.groupware.approval.domain;
+package com.bizmate.groupware.approval.domain.document;
 
 import static com.querydsl.core.types.PathMetadataFactory.*;
 
@@ -15,7 +15,7 @@ import com.querydsl.core.types.Path;
 @Generated("com.querydsl.codegen.DefaultEntitySerializer")
 public class QApprovalHistory extends EntityPathBase<ApprovalHistory> {
 
-    private static final long serialVersionUID = 1387701277L;
+    private static final long serialVersionUID = 1529718770L;
 
     public static final QApprovalHistory approvalHistory = new QApprovalHistory("approvalHistory");
 

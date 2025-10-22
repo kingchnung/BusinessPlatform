@@ -1,4 +1,4 @@
-package com.bizmate.groupware.approval.domain;
+package com.bizmate.groupware.approval.domain.document;
 
 import static com.querydsl.core.types.PathMetadataFactory.*;
 
@@ -16,7 +16,7 @@ import com.querydsl.core.types.dsl.PathInits;
 @Generated("com.querydsl.codegen.DefaultEntitySerializer")
 public class QApprovalDocuments extends EntityPathBase<ApprovalDocuments> {
 
-    private static final long serialVersionUID = 1359107073L;
+    private static final long serialVersionUID = 398964374L;
 
     private static final PathInits INITS = PathInits.DIRECT2;
 
@@ -24,7 +24,7 @@ public class QApprovalDocuments extends EntityPathBase<ApprovalDocuments> {
 
     public final com.bizmate.common.domain.QBaseEntity _super = new com.bizmate.common.domain.QBaseEntity(this);
 
-    public final ListPath<ApproverStep, SimplePath<ApproverStep>> approvalLine = this.<ApproverStep, SimplePath<ApproverStep>>createList("approvalLine", ApproverStep.class, SimplePath.class, PathInits.DIRECT2);
+    public final ListPath<com.bizmate.groupware.approval.domain.policy.ApproverStep, SimplePath<com.bizmate.groupware.approval.domain.policy.ApproverStep>> approvalLine = this.<com.bizmate.groupware.approval.domain.policy.ApproverStep, SimplePath<com.bizmate.groupware.approval.domain.policy.ApproverStep>>createList("approvalLine", com.bizmate.groupware.approval.domain.policy.ApproverStep.class, SimplePath.class, PathInits.DIRECT2);
 
     public final StringPath approvedBy = createString("approvedBy");
 
@@ -32,7 +32,7 @@ public class QApprovalDocuments extends EntityPathBase<ApprovalDocuments> {
 
     public final NumberPath<Long> approvedEmpId = createNumber("approvedEmpId", Long.class);
 
-    public final ListPath<FileAttachment, QFileAttachment> attachments = this.<FileAttachment, QFileAttachment>createList("attachments", FileAttachment.class, QFileAttachment.class, PathInits.DIRECT2);
+    public final ListPath<com.bizmate.groupware.approval.domain.attachment.ApprovalFileAttachment, com.bizmate.groupware.approval.domain.attachment.QApprovalFileAttachment> attachments = this.<com.bizmate.groupware.approval.domain.attachment.ApprovalFileAttachment, com.bizmate.groupware.approval.domain.attachment.QApprovalFileAttachment>createList("attachments", com.bizmate.groupware.approval.domain.attachment.ApprovalFileAttachment.class, com.bizmate.groupware.approval.domain.attachment.QApprovalFileAttachment.class, PathInits.DIRECT2);
 
     public final com.bizmate.hr.domain.QEmployee authorEmployee;
 

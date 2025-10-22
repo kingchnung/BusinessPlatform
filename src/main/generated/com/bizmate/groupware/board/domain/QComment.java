@@ -24,7 +24,9 @@ public class QComment extends EntityPathBase<Comment> {
 
     public final com.bizmate.common.domain.QBaseEntity _super = new com.bizmate.common.domain.QBaseEntity(this);
 
-    public final NumberPath<Long> authorId = createNumber("authorId", Long.class);
+    public final BooleanPath anonymous = createBoolean("anonymous");
+
+    public final StringPath authorId = createString("authorId");
 
     public final StringPath authorName = createString("authorName");
 

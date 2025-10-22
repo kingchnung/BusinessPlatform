@@ -1,4 +1,4 @@
-package com.bizmate.groupware.approval.domain;
+package com.bizmate.groupware.approval.domain.attachment;
 
 import static com.querydsl.core.types.PathMetadataFactory.*;
 
@@ -11,20 +11,20 @@ import com.querydsl.core.types.dsl.PathInits;
 
 
 /**
- * QFileAttachment is a Querydsl query type for FileAttachment
+ * QApprovalFileAttachment is a Querydsl query type for ApprovalFileAttachment
  */
 @Generated("com.querydsl.codegen.DefaultEntitySerializer")
-public class QFileAttachment extends EntityPathBase<FileAttachment> {
+public class QApprovalFileAttachment extends EntityPathBase<ApprovalFileAttachment> {
 
-    private static final long serialVersionUID = 1833490163L;
+    private static final long serialVersionUID = 341285529L;
 
     private static final PathInits INITS = PathInits.DIRECT2;
 
-    public static final QFileAttachment fileAttachment = new QFileAttachment("fileAttachment");
+    public static final QApprovalFileAttachment approvalFileAttachment = new QApprovalFileAttachment("approvalFileAttachment");
 
     public final StringPath contentType = createString("contentType");
 
-    public final QApprovalDocuments document;
+    public final com.bizmate.groupware.approval.domain.document.QApprovalDocuments document;
 
     public final StringPath filePath = createString("filePath");
 
@@ -40,25 +40,25 @@ public class QFileAttachment extends EntityPathBase<FileAttachment> {
 
     public final com.bizmate.hr.domain.QUserEntity uploader;
 
-    public QFileAttachment(String variable) {
-        this(FileAttachment.class, forVariable(variable), INITS);
+    public QApprovalFileAttachment(String variable) {
+        this(ApprovalFileAttachment.class, forVariable(variable), INITS);
     }
 
-    public QFileAttachment(Path<? extends FileAttachment> path) {
+    public QApprovalFileAttachment(Path<? extends ApprovalFileAttachment> path) {
         this(path.getType(), path.getMetadata(), PathInits.getFor(path.getMetadata(), INITS));
     }
 
-    public QFileAttachment(PathMetadata metadata) {
+    public QApprovalFileAttachment(PathMetadata metadata) {
         this(metadata, PathInits.getFor(metadata, INITS));
     }
 
-    public QFileAttachment(PathMetadata metadata, PathInits inits) {
-        this(FileAttachment.class, metadata, inits);
+    public QApprovalFileAttachment(PathMetadata metadata, PathInits inits) {
+        this(ApprovalFileAttachment.class, metadata, inits);
     }
 
-    public QFileAttachment(Class<? extends FileAttachment> type, PathMetadata metadata, PathInits inits) {
+    public QApprovalFileAttachment(Class<? extends ApprovalFileAttachment> type, PathMetadata metadata, PathInits inits) {
         super(type, metadata, inits);
-        this.document = inits.isInitialized("document") ? new QApprovalDocuments(forProperty("document"), inits.get("document")) : null;
+        this.document = inits.isInitialized("document") ? new com.bizmate.groupware.approval.domain.document.QApprovalDocuments(forProperty("document"), inits.get("document")) : null;
         this.uploader = inits.isInitialized("uploader") ? new com.bizmate.hr.domain.QUserEntity(forProperty("uploader"), inits.get("uploader")) : null;
     }
 

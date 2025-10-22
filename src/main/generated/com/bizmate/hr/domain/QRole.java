@@ -22,6 +22,8 @@ public class QRole extends EntityPathBase<Role> {
 
     public final StringPath description = createString("description");
 
+    public final StringPath isUsed = createString("isUsed");
+
     public final SetPath<Permission, QPermission> permissions = this.<Permission, QPermission>createSet("permissions", Permission.class, QPermission.class, PathInits.DIRECT2);
 
     public final NumberPath<Long> roleId = createNumber("roleId", Long.class);
