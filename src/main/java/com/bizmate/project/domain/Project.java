@@ -37,6 +37,7 @@ public class Project extends BaseEntity {
     @Lob
     private String expectedEffect;
 
+
     private Long totalBudget;
 
     private LocalDate startDate;

@@ -1,4 +1,4 @@
-package com.bizmate.project.dto.response;
+package com.bizmate.project.dto.project;
 
 import lombok.*;
 

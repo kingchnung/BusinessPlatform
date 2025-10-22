@@ -22,7 +22,6 @@ public class ProjectMember extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long projectMemberId;
 
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "PROJECT_ID")
     private Project project;
@@ -32,6 +31,6 @@ public class ProjectMember extends BaseEntity {
     private Employee employee;  // HR 모듈 연동
 
     @Column(length = 50)
-    private String role; // 예: PL, 개발, 디자이너 등
+    private String projectRole; // 예: PL, 개발, 디자이너 등
 
 }

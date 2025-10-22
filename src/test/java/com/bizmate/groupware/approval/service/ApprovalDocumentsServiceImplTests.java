@@ -10,7 +10,7 @@ import com.bizmate.hr.domain.Employee;
 import com.bizmate.hr.dto.user.UserDTO;
 import com.bizmate.hr.repository.EmployeeRepository;
 import com.bizmate.hr.repository.UserRepository;
-import com.bizmate.project.dto.request.ProjectRequestDTO;
+import com.bizmate.project.dto.project.ProjectRequestDTO;
 import com.bizmate.project.service.ProjectService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -113,7 +113,7 @@ class ApprovalDocumentsServiceImplTests {
         // then
         assertThat(result.getStatus()).isEqualTo(DocumentStatus.APPROVED.name());
         verify(projectService, times(1))
-                .createProject(any(ProjectRequestDTO.class), eq(document));
+                .createProjectByApproval(any(ProjectRequestDTO.class), eq(document));
 
         verify(approvalDocumentsRepository, times(1)).saveAndFlush(document);
         verify(notificationService, atLeastOnce())
@@ -135,6 +135,6 @@ class ApprovalDocumentsServiceImplTests {
 
         // then
         assertThat(result.getStatus()).isEqualTo(DocumentStatus.APPROVED.name());
-        verify(projectService, never()).createProject(any(), any());
+        verify(projectService, never()).createProjectByApproval(any(), any());
     }
 }
