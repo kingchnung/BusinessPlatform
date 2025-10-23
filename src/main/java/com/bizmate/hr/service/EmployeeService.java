@@ -18,5 +18,6 @@ public interface EmployeeService { // ★ 인터페이스 이름 변경
     List<EmployeeStatisticDTO> getAgeStatistics();
     List<EmployeeStatisticDTO> getGradeStatistics();
     List<EmployeeDTO> getEmployeesByDepartment(Long deptId);
-
+    List<EmployeeDTO> getActiveEmployees();
+    List<EmployeeSummaryDTO> getEmployeeSummaries();
 }

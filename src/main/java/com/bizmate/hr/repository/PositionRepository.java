@@ -9,4 +9,5 @@ import java.util.Optional;
 @Repository
 public interface PositionRepository extends JpaRepository<Position, Long> {
     Optional<Position> findByPositionName(String positionName); // ★ 메서드명 변경
+
 }

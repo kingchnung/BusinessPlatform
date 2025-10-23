@@ -1,6 +1,7 @@
 package com.bizmate.hr.repository;
 
 import com.bizmate.hr.domain.Employee;
+import com.bizmate.hr.dto.employee.EmployeeSummaryDTO;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -45,7 +46,7 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
         END AS age_group,
         COUNT(e)
     FROM Employee e
-    WHERE e.birthDate IS NOT NULL
+    WHERE e.birthDate IS NOT NULL AND UPPER(e.status) <> 'RETIRED'
     GROUP BY age_group
     ORDER BY age_group
     """)
@@ -58,6 +59,7 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
             SELECT g.gradeName AS label, COUNT(e)
             FROM Employee e
             JOIN e.grade g
+            WHERE UPPER(e.status) <> 'RETIRED'
             GROUP BY g.gradeName
             ORDER BY g.gradeName
             """)
@@ -67,4 +69,22 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
 
 
     Optional<Employee> findByEmpId(Long empId);
+
+    @Query("""
+        SELECT new com.bizmate.hr.dto.employee.EmployeeSummaryDTO(
+            e.empId,
+            e.empNo,
+            e.empName,
+            g.gradeName,
+            p.positionName,
+            e.phone,
+            e.email,
+            d.deptName
+        )
+        FROM Employee e
+        LEFT JOIN e.department d
+        LEFT JOIN e.grade g
+        LEFT JOIN e.position p
+        """)
+    List<EmployeeSummaryDTO> findEmployeeSummaries();
 }

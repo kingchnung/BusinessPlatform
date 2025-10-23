@@ -48,8 +48,8 @@ public class CustomUserDetailsService implements UserDetailsService {
         }
 
         // 3) 상태 값 매핑 (Entity의 필드명에 맞게)
-        boolean active = Boolean.TRUE.equals(user.getIsActive());   // 예: getIsActive()
-        boolean locked = Boolean.TRUE.equals(user.getIsLocked());   // 예: getIsLocked()
+        boolean active = "Y".equalsIgnoreCase(user.getIsActive());
+        boolean locked = "Y".equalsIgnoreCase(user.getIsLocked());
 
         Long empId = null;
         if(user.getEmployee() != null){
@@ -62,7 +62,7 @@ public class CustomUserDetailsService implements UserDetailsService {
                 empId,
                 user.getUsername(),
                 user.getPwHash(),      // 비밀번호 해시
-                true,
+                active,
                 locked,
                 authorities
         );
