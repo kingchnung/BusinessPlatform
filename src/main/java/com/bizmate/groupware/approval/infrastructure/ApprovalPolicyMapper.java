@@ -1,17 +1,25 @@
 package com.bizmate.groupware.approval.infrastructure;
 
+import com.bizmate.common.exception.VerificationFailedException;
 import com.bizmate.groupware.approval.domain.document.Decision;
+import com.bizmate.groupware.approval.domain.policy.ApprovalPolicy;
 import com.bizmate.groupware.approval.domain.policy.ApprovalPolicyStep;
 import com.bizmate.groupware.approval.domain.policy.ApproverStep;
+import com.bizmate.groupware.approval.dto.policy.ApprovalPolicyStepRequest;
+import com.bizmate.groupware.approval.dto.policy.ApprovalPolicyStepResponse;
 import com.bizmate.hr.domain.Department;
 import com.bizmate.hr.domain.Employee;
+import com.bizmate.hr.domain.UserEntity;
 import com.bizmate.hr.repository.DepartmentRepository;
 import com.bizmate.hr.repository.EmployeeRepository;
+import com.bizmate.hr.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -25,63 +33,36 @@ import java.util.stream.Collectors;
 public class ApprovalPolicyMapper {
 
     private final EmployeeRepository employeeRepository;
+    private final UserRepository userRepository;
     private final DepartmentRepository departmentRepository;
 
-    /**
-     * ✅ 정책 단계 목록을 실제 결재선으로 변환
-     */
-    public List<ApproverStep> toApproverSteps(List<ApprovalPolicyStep> policySteps) {
-        if (policySteps == null || policySteps.isEmpty()) {
-            log.warn("⚠️ 결재선 정책이 비어 있습니다.");
-            return List.of();
-        }
+    public List<ApprovalPolicyStep> toEntities(List<ApprovalPolicyStepRequest> stepRequests, ApprovalPolicy policy) {
+        return stepRequests.stream().map(req -> {
+            Employee emp = employeeRepository.findById(req.getEmpId())
+                    .orElseThrow(() -> new VerificationFailedException("결재자 정보를 찾을 수 없습니다."));
 
-        return policySteps.stream()
-                .sorted((a, b) -> Integer.compare(a.getStepOrder(), b.getStepOrder()))
-                .map(this::mapToApproverStep)
-                .filter(step -> step != null)
-                .collect(Collectors.toList());
+            return ApprovalPolicyStep.builder()
+                    .stepOrder(req.getStepOrder())
+                    .deptCode(req.getDeptCode())
+                    .deptName(emp.getDepartment().getDeptName())
+                    .positionCode(req.getPositionCode())
+                    .positionName(emp.getPosition().getPositionName())
+                    .approver(emp)
+                    .approverName(emp.getEmpName()) // ✅ 이름 포함
+                    .policy(policy)
+                    .build();
+        }).collect(Collectors.toList());
     }
 
-    /**
-     * ✅ 단일 단계 변환 로직
-     */
-    private ApproverStep mapToApproverStep(ApprovalPolicyStep step) {
-        if (step == null) return null;
-
-        String deptName = step.getDeptName();
-        String positionName = step.getPositionName();
-
-        // ✅ 부서코드 + 직급코드 기반으로 실제 직원 조회
-        Department dept = null;
-        if (step.getDeptCode() != null) {
-            dept = departmentRepository.findByDeptCode(step.getDeptCode()).orElse(null);
-        }
-
-        Employee emp = null;
-        if (dept != null && step.getPositionCode() != null) {
-            emp = employeeRepository.findByDepartmentAndPositionCode(dept, step.getPositionCode()).orElse(null);
-        }
-
-        // ✅ 결재자 표시명
-        String empName = emp != null ? emp.getEmpName() : "(미지정)";
-        String displayName = String.format("%s / %s / %s",
-                deptName != null ? deptName : "-",
-                positionName != null ? positionName : "-",
-                empName);
-
-        if (emp == null) {
-            log.warn("⚠️ {} / {} 결재자를 찾을 수 없습니다.", deptName, positionName);
-        }
-
-        return new ApproverStep(
-                step.getStepOrder(),
-                emp != null ? emp.getEmpId().toString() : null, // 결재자 ID
-                displayName.trim(),
-                Decision.PENDING, // 초기 상태
-                "", // 서명 이미지 경로
-                null, // 결재일자
-                null  // 기타 비고
-        );
+    /** 🔹 Entity → Response */
+    public List<ApprovalPolicyStepResponse> toResponses(List<ApprovalPolicyStep> steps) {
+        return steps.stream()
+                .map(s -> ApprovalPolicyStepResponse.builder()
+                        .stepOrder(s.getStepOrder())
+                        .deptName(s.getDeptName())
+                        .positionName(s.getPositionName())
+                        .empName(s.getApproverName()) // ✅ 이름 바로 출력
+                        .build()
+                ).collect(Collectors.toList());
     }
 }

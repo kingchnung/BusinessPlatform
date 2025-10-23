@@ -23,7 +23,9 @@ public class ApprovalPolicyStep {
     private String deptCode;
     private String deptName;
 
-    private String positionCode;
+    private String approverName;
+
+    private Long positionCode;
     private String positionName;
 
     @ManyToOne(fetch = FetchType.LAZY)

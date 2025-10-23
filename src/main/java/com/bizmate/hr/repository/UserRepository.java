@@ -61,4 +61,6 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
      * ✅ 6️⃣ 이메일 중복체크
      */
     boolean existsByEmailIgnoreCase(String email);
+
+    Optional<UserEntity> findByEmpName(String empName);
 }

@@ -10,6 +10,8 @@ import com.bizmate.groupware.approval.domain.document.ApprovalDocuments;
 import com.bizmate.groupware.approval.domain.document.Decision;
 import com.bizmate.groupware.approval.domain.document.DocumentStatus;
 import com.bizmate.groupware.approval.domain.document.DocumentType;
+import com.bizmate.groupware.approval.domain.policy.ApprovalPolicy;
+import com.bizmate.groupware.approval.domain.policy.ApprovalPolicyStep;
 import com.bizmate.groupware.approval.domain.policy.ApproverStep;
 import com.bizmate.groupware.approval.dto.approval.ApprovalDocumentsDto;
 import com.bizmate.groupware.approval.dto.approval.ApprovalFileAttachmentDto;
@@ -45,6 +47,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Slf4j
 @Service
@@ -61,7 +64,6 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
     private final EmployeeSignatureRepository employeeSignatureRepository;
     private final FileStorageService fileStorageService;
     private final ApprovalPolicyRepository approvalPolicyRepository;
-    private final ApprovalPolicyMapper approvalPolicyMapper;
     private final ProjectService projectService;
     private final ObjectMapper objectMapper;
 
@@ -102,16 +104,34 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
         dto.setId(docNumber);
         dto.setFinalDocNumber(docNumber);
 
-        /* -------------------------------------------------------------
-   🧩 자동 결재선 구성 (관리자 정책 기반)
-   ------------------------------------------------------------- */
-        if (dto.getApprovalLine() == null || dto.getApprovalLine().isEmpty()) {
-            approvalPolicyRepository.findByDocTypeAndIsActiveTrue(dto.getDocType())
-                    .ifPresent(policy -> {
-                        List<ApproverStep> autoLine = approvalPolicyMapper.toApproverSteps(policy.getSteps());
-                        dto.setApprovalLine(autoLine);
-                        log.info("✅ 자동 결재선 구성 완료 ({}단계)", autoLine.size());
-                    });
+        Optional<ApprovalPolicy> policyOpt =
+                approvalPolicyRepository.findByDocTypeAndIsActiveTrue(dto.getDocType());
+
+        if (policyOpt.isPresent()) {
+            ApprovalPolicy policy = policyOpt.get();
+            log.info("📋 [{}] 문서유형에 정책 존재 → 자동 결재선 세팅", dto.getDocType());
+
+            List<ApproverStep> autoSteps = policy.getSteps().stream()
+                    .sorted(Comparator.comparingInt(ApprovalPolicyStep::getStepOrder))
+                    .map(s -> new ApproverStep(
+                            s.getStepOrder(),
+                            s.getApprover() != null ? s.getApprover().getEmpNo() : null,   // approverId
+                            s.getApproverName() != null
+                                    ? s.getApprover().getEmpName()
+                                    : (s.getApprover() != null ? s.getApprover().getEmpName() : "-"), // approverName
+                            Decision.PENDING,   // 결재 상태
+                            "",                 // comment
+                            null,               // decidedAt
+                            null                // signImagePath
+                    ))
+                    .collect(Collectors.toList());   // ✅ 여기 반드시 추가!
+
+            dto.setApprovalLine(autoSteps);
+            log.info("✅ 정책 기반 결재선 자동 생성 완료 (총 {}단계)", autoSteps.size());
+        } else {
+            log.info("⚙️ [{}] 정책 없음 → 프론트에서 전달된 결재선 수동 적용", dto.getDocType());
+            if (dto.getApprovalLine() == null || dto.getApprovalLine().isEmpty())
+                throw new VerificationFailedException("결재선이 존재하지 않습니다. 수동으로 지정해주세요.");
         }
 
 
@@ -172,6 +192,8 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
             dto.setDepartmentCode(departmentCode);
         }
 
+
+
         // ✅ 3. 신규 vs 임시저장 구분
         boolean isDraft = "DRAFT".equalsIgnoreCase(dto.getStatus());
         ApprovalDocuments entity;
@@ -191,22 +213,40 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
             dto.setId(docNumber);
             dto.setFinalDocNumber(docNumber);
 
-            /* -------------------------------------------------------------
-   🧩 자동 결재선 구성 (관리자 정책 기반)
-   ------------------------------------------------------------- */
-            if (dto.getApprovalLine() == null || dto.getApprovalLine().isEmpty()) {
-                approvalPolicyRepository.findByDocTypeAndIsActiveTrue(dto.getDocType())
-                        .ifPresent(policy -> {
-                            List<ApproverStep> autoLine = approvalPolicyMapper.toApproverSteps(policy.getSteps());
-                            dto.setApprovalLine(autoLine);
-                            log.info("✅ 자동 결재선 구성 완료 ({}단계)", autoLine.size());
-                        });
+            Optional<ApprovalPolicy> policyOpt =
+                    approvalPolicyRepository.findByDocTypeAndIsActiveTrue(dto.getDocType());
 
+            if (policyOpt.isPresent()) {
+                ApprovalPolicy policy = policyOpt.get();
+                log.info("📋 [{}] 문서유형에 정책 존재 → 자동 결재선 세팅", dto.getDocType());
+
+                List<ApproverStep> autoSteps = policy.getSteps().stream()
+                        .sorted(Comparator.comparingInt(ApprovalPolicyStep::getStepOrder))
+                        .map(s -> new ApproverStep(
+                                s.getStepOrder(),
+                                s.getApprover() != null ? s.getApprover().getEmpNo() : null,   // approverId
+                                s.getApproverName() != null
+                                        ? s.getApproverName()
+                                        : (s.getApprover() != null ? s.getApprover().getEmpName() : "-"), // approverName
+                                Decision.PENDING,   // 결재 상태
+                                "",                 // comment
+                                null,               // decidedAt
+                                null                // signImagePath
+                        ))
+                        .collect(Collectors.toList());   // ✅ 여기 반드시 추가!
+
+                dto.setApprovalLine(autoSteps);
+                log.info("✅ 정책 기반 결재선 자동 생성 완료 (총 {}단계)", autoSteps.size());
+            } else {
+                log.info("⚙️ [{}] 정책 없음 → 프론트에서 전달된 결재선 수동 적용", dto.getDocType());
+                if (dto.getApprovalLine() == null || dto.getApprovalLine().isEmpty())
+                    throw new VerificationFailedException("결재선이 존재하지 않습니다. 수동으로 지정해주세요.");
             }
 
             log.info("🆕 신규 상신 생성: {}", docNumber);
             entity = mapDtoToEntity(dto, DocumentStatus.IN_PROGRESS);
             entity.markCreated(loginUser);
+            entity.setCurrentApproverIndex(0);
         }
 
         // ✅ 열람자 정보 반영
@@ -572,9 +612,37 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
     @Override
     @Transactional(readOnly = true)
     public ApprovalDocumentsDto get(String docId) {
-        return approvalDocumentsRepository.findById(docId)
-                .map(this::mapEntityToDto)
+        log.info("📄 [문서 상세 조회] docId={}", docId);
+
+        // ✅ 결재문서 + 작성자/부서 정보 Fetch Join으로 조회
+        ApprovalDocuments entity = approvalDocumentsRepository.findWithDetailsByDocId(docId)
                 .orElseThrow(() -> new VerificationFailedException("문서를 찾을 수 없습니다."));
+
+        // ✅ Lazy 로딩 강제 초기화 (approvalLine, attachments 등)
+        try {
+            if (entity.getApprovalLine() != null) {
+                entity.getApprovalLine().size(); // Hibernate initialize
+            }
+            if (entity.getAttachments() != null) {
+                entity.getAttachments().size();
+            }
+        } catch (Exception e) {
+            log.warn("⚠️ Lazy load 초기화 중 예외: {}", e.getMessage());
+        }
+
+        // ✅ DTO 변환
+        ApprovalDocumentsDto dto = mapEntityToDto(entity);
+
+        // ✅ 결재선이 비어 있을 경우 방어
+        if (dto.getApprovalLine() == null) {
+            dto.setApprovalLine(List.of());
+        }
+
+        log.info("✅ [문서 상세 조회 완료] title={}, approvalLine.size={}",
+                dto.getTitle(),
+                dto.getApprovalLine().size());
+
+        return dto;
     }
 
     @Override
@@ -603,7 +671,6 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
                 .build();
     }
 
-
     @Override
     @Transactional(readOnly = true)
     public PageResponseDTO<ApprovalDocumentsDto> getPagedAccessibleDocuments(
@@ -613,34 +680,42 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
     ) {
         Pageable pageable = PageRequest.of(req.getPage() - 1, req.getSize());
 
-        // ① 작성자 + 열람자 문서 가져오기 (Employee까지 Fetch Join)
-        List<ApprovalDocuments> accessibleDocs =
-                approvalDocumentsRepository.findAccessibleDocuments(username);
+        // ✅ 모든 문서 가져오기
+        List<ApprovalDocuments> allDocs = approvalDocumentsRepository.findAllWithAuthorAndEmployee();
 
-        // ② 결재자(JSON approverId 포함)까지 필터링
-        List<ApprovalDocuments> filtered = accessibleDocs.stream()
-                .filter(d ->
-                        d.getAuthorUser().getUsername().equals(username)
-                                || (d.getViewerIds() != null && d.getViewerIds().contains(username))
-                                || (d.getApprovalLine() != null && d.getApprovalLine().stream()
-                                .anyMatch(step -> step.approverId().equals(username)))
-                )
-                .filter(d -> {
-                    if (status == null || status.equalsIgnoreCase("ALL")) return true;
-                    return d.getStatus().name().equalsIgnoreCase(status);
+        // ✅ username → empName 변환 (approverName 비교용)
+        String empName = userRepository.findByUsername(username)
+                .map(UserEntity::getEmpName)
+                .orElse(null);
+
+        // ✅ 필터링 로직
+        List<ApprovalDocuments> filtered = allDocs.stream()
+                .filter(doc -> {
+                    boolean isAuthor = doc.getAuthorUser() != null &&
+                            username.equals(doc.getAuthorUser().getUsername());
+
+                    boolean isViewer = doc.getViewerIds() != null &&
+                            doc.getViewerIds().contains(username);
+
+                    boolean isApprover = doc.getApprovalLine() != null &&
+                            empName != null &&
+                            doc.getApprovalLine().stream()
+                                    .anyMatch(step -> empName.equals(step.approverName()));
+
+                    if (!(isAuthor || isViewer || isApprover)) return false;
+
+                    // ✅ 상태 필터
+                    if (isAuthor) {
+                        return doc.getStatus() != DocumentStatus.DELETED;
+                    } else {
+                        return doc.getStatus() != DocumentStatus.DELETED
+                                && doc.getStatus() != DocumentStatus.DRAFT;
+                    }
                 })
-                .filter(d -> {
-                    if (req.getKeyword() == null || req.getKeyword().isBlank()) return true;
-                    String keyword = req.getKeyword().toUpperCase();
-                    return (d.getTitle() != null && d.getTitle().toUpperCase().contains(keyword))
-                            || (d.getAuthorUser() != null &&
-                            d.getAuthorUser().getEmployee() != null &&
-                            d.getAuthorUser().getEmployee().getEmpName().toUpperCase().contains(keyword));
-                })
-                .sorted((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()))
+                .sorted(Comparator.comparing(ApprovalDocuments::getCreatedAt).reversed())
                 .toList();
 
-        // ③ 페이징 처리
+        // ✅ 페이징 처리
         int start = (int) pageable.getOffset();
         int end = Math.min(start + pageable.getPageSize(), filtered.size());
         List<ApprovalDocumentsDto> dtoList = filtered.subList(start, end)
@@ -655,6 +730,14 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
                 .build();
     }
 
+    /**
+     * username → empName 변환용 헬퍼
+     */
+    private String getEmpNameByUsername(String username) {
+        return userRepository.findByUsername(username)
+                .map(u -> u.getEmpName() != null ? u.getEmpName() : username)
+                .orElse(username);
+    }
 
 
     @Override
@@ -666,7 +749,6 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
     /* -------------------------------------------------------------
        ✅ 내부 유틸
        ------------------------------------------------------------- */
-    // ApprovalDocumentsServiceImpl.java
     private void handleFileAttachments(ApprovalDocumentsDto dto, ApprovalDocuments document, UserDTO loginUser) {
         if (document == null || document.getDocId() == null) {
             throw new VerificationFailedException("📎 첨부파일 연결 실패: 문서 정보가 없습니다.");

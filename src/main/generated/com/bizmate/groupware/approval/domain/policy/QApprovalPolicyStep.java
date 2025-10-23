@@ -24,6 +24,8 @@ public class QApprovalPolicyStep extends EntityPathBase<ApprovalPolicyStep> {
 
     public final com.bizmate.hr.domain.QEmployee approver;
 
+    public final StringPath approverName = createString("approverName");
+
     public final StringPath deptCode = createString("deptCode");
 
     public final StringPath deptName = createString("deptName");
@@ -32,7 +34,7 @@ public class QApprovalPolicyStep extends EntityPathBase<ApprovalPolicyStep> {
 
     public final QApprovalPolicy policy;
 
-    public final StringPath positionCode = createString("positionCode");
+    public final NumberPath<Long> positionCode = createNumber("positionCode", Long.class);
 
     public final StringPath positionName = createString("positionName");
 

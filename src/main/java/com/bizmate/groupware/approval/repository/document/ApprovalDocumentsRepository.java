@@ -13,6 +13,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * 전자결재 문서 Repository
@@ -22,25 +23,12 @@ import java.util.List;
 @Repository
 public interface ApprovalDocumentsRepository extends JpaRepository<ApprovalDocuments, String> {
 
-    /**
-     * 특정 부서 내 문서 목록
-     */
-    List<ApprovalDocuments> findByDepartment(Department department);
-
-    /**
-     * 작성자별 문서 목록
-     */
-    Page<ApprovalDocuments> findByAuthorUser_UsernameAndStatus(String username, DocumentStatus status, Pageable pageable);
 
     /**
      * 상태별 문서 목록
      */
     Page<ApprovalDocuments> findByStatus(DocumentStatus status, Pageable pageable);
 
-    /**
-     * 작성자 userId로 조회 (JWT 기반)
-     */
-    List<ApprovalDocuments> findByAuthorUser_UserId(Long userId);
 
     /**
      * 날짜 범위 내 부서별 카운트 (문서번호 생성용)
@@ -54,10 +42,6 @@ public interface ApprovalDocumentsRepository extends JpaRepository<ApprovalDocum
      */
     Page<ApprovalDocuments> findAll(Pageable pageable);
 
-    @Query("SELECT d FROM ApprovalDocuments d WHERE d.status <> 'DELETED'")
-    List<ApprovalDocuments> findAllActive();
-
-    ApprovalDocuments findByDocId(String docId);
 
     @Query("""
             SELECT d
@@ -72,32 +56,20 @@ public interface ApprovalDocumentsRepository extends JpaRepository<ApprovalDocum
     Page<ApprovalDocuments> searchDocuments(@Param("keyword") String keyword, Pageable pageable);
 
 
-    Page<ApprovalDocuments> findByAuthorUser_Username(String username, Pageable pageable);
-
     @Query("""
-            SELECT d
+            SELECT DISTINCT d
             FROM ApprovalDocuments d
-            LEFT JOIN d.authorEmployee e
-            WHERE d.authorUser.username = :username
-              AND (
-                :keyword IS NULL
-                OR UPPER(FUNCTION('REPLACE', d.title, ' ', '')) LIKE UPPER(FUNCTION('REPLACE', CONCAT('%', :keyword, '%'), ' ', ''))
-                OR UPPER(FUNCTION('REPLACE', e.empName, ' ', '')) LIKE UPPER(FUNCTION('REPLACE', CONCAT('%', :keyword, '%'), ' ', ''))
-              )
+            LEFT JOIN FETCH d.authorUser au
+            LEFT JOIN FETCH au.employee e
             """)
-    Page<ApprovalDocuments> searchDocumentsByUserAndKeyword(String username, String keyword, Pageable pageable);
-
+    List<ApprovalDocuments> findAllWithAuthorAndEmployee();
 
     @Query("""
-        SELECT DISTINCT d
-        FROM ApprovalDocuments d
-        LEFT JOIN FETCH d.authorUser u
-        LEFT JOIN FETCH u.employee e
-        WHERE d.status <> 'DELETED'
-          AND (
-               u.username = :username
-            OR :username IN elements(d.viewerIds)
-          )
+        SELECT d FROM ApprovalDocuments d
+        LEFT JOIN FETCH d.department dept
+        LEFT JOIN FETCH d.authorUser user
+        LEFT JOIN FETCH user.employee emp
+        WHERE d.docId = :docId
     """)
-    List<ApprovalDocuments> findAccessibleDocuments(@Param("username") String username);
+    Optional<ApprovalDocuments> findWithDetailsByDocId(@Param("docId") String docId);
 }

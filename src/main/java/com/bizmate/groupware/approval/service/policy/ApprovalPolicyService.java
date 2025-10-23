@@ -56,9 +56,12 @@ public class ApprovalPolicyService {
                     .map(Position::getPositionName)
                     .orElse("미지정");
 
+            // ✅ 결재자 조회 (empId 기반)
             Employee approver = null;
-            if (dept != null) {
-                approver = employeeRepository.findByDepartmentAndPositionCode(dept, dto.getPositionCode()).orElse(null);
+            String approverName = null;
+            if (dto.getEmpId() != null) {
+                approver = employeeRepository.findById(dto.getEmpId()).orElse(null);
+                approverName = approver != null ? approver.getEmpName() : null;
             }
 
             policy.addStep(ApprovalPolicyStep.builder()
@@ -68,6 +71,7 @@ public class ApprovalPolicyService {
                     .positionCode(dto.getPositionCode())
                     .positionName(positionName)
                     .approver(approver)
+                    .approverName(approver != null ? approver.getEmpName() : null) // ✅ 결재자 이름 저장
                     .build());
         }
 
@@ -118,18 +122,20 @@ public class ApprovalPolicyService {
                     .orElse("미지정");
 
             Employee approver = null;
-            if (dept != null) {
-                approver = employeeRepository.findByDepartmentAndPositionCode(dept, dto.getPositionCode())
-                        .orElse(null);
+            String approverName = null;
+            if (dto.getEmpId() != null) {
+                approver = employeeRepository.findById(dto.getEmpId()).orElse(null);
+                approverName = approver != null ? approver.getEmpName() : null;
             }
 
             policy.addStep(ApprovalPolicyStep.builder()
                     .stepOrder(dto.getStepOrder())
                     .deptCode(dto.getDeptCode())
-                    .deptName(dept != null ? dept.getDeptName() : null)
+                    .deptName(dept != null ? dept.getDeptName() : dto.getDeptName())
                     .positionCode(dto.getPositionCode())
                     .positionName(positionName)
                     .approver(approver)
+                    .approverName(approverName)
                     .build());
         }
 
@@ -171,7 +177,8 @@ public class ApprovalPolicyService {
                                 s.getStepOrder(),
                                 s.getDeptName(),
                                 s.getPositionName(),
-                                s.getApprover() != null ? s.getApprover().getEmpName() : null))
+                                s.getApprover() != null ? s.getApprover().getEmpName() : (s.getApproverName() != null ? s.getApproverName() : "-")
+                        ))
                         .collect(Collectors.toList()))
                 .build();
     }

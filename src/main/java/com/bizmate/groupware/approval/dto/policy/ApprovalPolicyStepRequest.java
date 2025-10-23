@@ -14,6 +14,6 @@ public class ApprovalPolicyStepRequest {
     private int stepOrder;
     private String deptCode;
     private String deptName;
-    private String positionCode;
+    private Long positionCode;
     private Long empId;
 }

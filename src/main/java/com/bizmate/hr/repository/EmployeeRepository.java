@@ -72,7 +72,7 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
     Optional<Employee> findByEmpId(Long empId);
 
     @Query("SELECT e FROM Employee e WHERE e.department = :dept AND e.position.positionCode = :posCode")
-    Optional<Employee> findByDepartmentAndPositionCode(@Param("dept") Department dept, @Param("posCode") String posCode);
+    Optional<Employee> findByDepartmentAndPositionCode(@Param("dept") Department dept, @Param("posCode") Long posCode);
 
     @Query("""
         SELECT new com.bizmate.hr.dto.employee.EmployeeSummaryDTO(
@@ -91,4 +91,8 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
         LEFT JOIN e.position p
         """)
     List<EmployeeSummaryDTO> findEmployeeSummaries();
+
+    Employee findByDepartment_DeptNameAndPosition_PositionName(String deptName, String positionName);
+
+    Optional<Employee> findByEmpName(String empName);
 }
