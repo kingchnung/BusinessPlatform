@@ -15,7 +15,8 @@ import com.bizmate.hr.domain.Employee;
 import com.bizmate.hr.dto.user.UserDTO;
 import com.bizmate.hr.repository.EmployeeRepository;
 import com.bizmate.hr.repository.UserRepository;
-import com.bizmate.project.dto.project.ProjectRequestDTO;
+
+import com.bizmate.project.dto.request.ProjectRequestDTO;
 import com.bizmate.project.service.ProjectService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -108,8 +109,6 @@ class ApprovalDocumentsServiceImplTests {
         when(objectMapper.convertValue(any(), eq(ProjectRequestDTO.class)))
                 .thenReturn(ProjectRequestDTO.builder()
                         .projectName("스마트팩토리 구축")
-                        .projectGoal("생산 자동화")
-                        .totalBudget(3000000L)
                         .build());
 
         // when

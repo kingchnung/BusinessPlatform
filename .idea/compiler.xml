@@ -28,17 +28,9 @@
         <module name="webBizMateProject.test" />
       </profile>
     </annotationProcessing>
-    <bytecodeTargetLevel>
-      <module name="com.bizmate.webBizMateProject.main" target="21" />
-      <module name="webBizMateProject" target="21" />
-      <module name="webBizMateProject.test" target="21" />
-    </bytecodeTargetLevel>
+    <bytecodeTargetLevel target="21" />
   </component>
   <component name="JavacSettings">
-    <option name="ADDITIONAL_OPTIONS_OVERRIDE">
-      <module name="com.bizmate.webBizMateProject.main" options="-parameters" />
-      <module name="webBizMateProject" options="-parameters" />
-      <module name="webBizMateProject.test" options="-parameters" />
-    </option>
+    <option name="ADDITIONAL_OPTIONS_STRING" value="-parameters" />
   </component>
 </project>

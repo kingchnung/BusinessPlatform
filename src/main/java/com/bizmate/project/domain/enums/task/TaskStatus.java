@@ -1,10 +1,20 @@
 package com.bizmate.project.domain.enums.task;
 
+import lombok.Getter;
 
+@Getter
 public enum TaskStatus {
-    PLANNED,       // 계획됨
-    IN_PROGRESS,   // 진행 중
-    COMPLETED,     // 완료
-    DELAYED,       // 지연됨
-    CANCELED       // 취소됨
+    BEFORE_START("업무 시작 전"),
+    IN_PROGRESS("업무 진행 중"),
+    COMPLETED("업무 완료");
+
+
+    private final String status;
+
+
+    TaskStatus(String status) {
+        this.status = status;
+    }
+
+
 }

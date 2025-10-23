@@ -27,8 +27,6 @@ public class IIssuePostController {
         return Map.of("RESULT","SUCCESS");
     }
 
-    @GetMapping("/list")
-    public PageResponseDTO<IssuePostResponseDTO> list ()
 
 
 
