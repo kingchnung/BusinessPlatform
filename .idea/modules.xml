@@ -2,13 +2,9 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/backend.iml" filepath="$PROJECT_DIR$/.idea/backend.iml" />
-<<<<<<< HEAD
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/com.bizmate.webBizMateProject.main.iml" filepath="$PROJECT_DIR$/.idea/modules/com.bizmate.webBizMateProject.main.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/com.bizmate.webBizMateProject.test.iml" filepath="$PROJECT_DIR$/.idea/modules/com.bizmate.webBizMateProject.test.iml" />
-=======
->>>>>>> e41c8756d99f86adfacf976ef40cbc28eba9bbc4
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/webBizMateProject.iml" filepath="$PROJECT_DIR$/.idea/modules/webBizMateProject.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/webBizMateProject.main.iml" filepath="$PROJECT_DIR$/.idea/modules/webBizMateProject.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/webBizMateProject.test.iml" filepath="$PROJECT_DIR$/.idea/modules/webBizMateProject.test.iml" />
     </modules>
   </component>
 </project>
