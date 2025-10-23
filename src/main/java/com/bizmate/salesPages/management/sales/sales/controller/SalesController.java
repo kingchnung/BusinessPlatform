@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -45,4 +46,8 @@ public class SalesController {
         return Map.of("RESULT","SUCCESS");
     }
 
+    @GetMapping("/client/{clientId}")
+    public List<SalesDTO> listByClient(@PathVariable("clientId") String clientId) {
+        return salesService.listByClient(clientId);
+    }
 }

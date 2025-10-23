@@ -28,18 +28,6 @@ public class ClientController {
         return clientService.clientList(pageRequestDTO);
     }
 
-//    @PostMapping(value = "/")
-//    public Map<String,Long> register(@RequestBody ClientDTO clientDTO){
-//        Long clientNo = clientService.clientRegister(clientDTO);
-//        return Map.of("ClientNo",clientNo);
-//    }
-    //    @PutMapping("/{clientNo}")
-//    public Map<String,String> modify(@PathVariable(name = "clientNo")Long clientNo, @RequestBody ClientDTO clientDTO){
-//        clientDTO.setClientNo(clientNo);
-//        clientService.clientModify(clientDTO);
-//        return Map.of("RESULT","SUCCESS");
-//    }
-
     @PostMapping(value = "/")
     public Map<String,Long> register(
             @RequestPart("clientDTO") ClientDTO clientDTO,

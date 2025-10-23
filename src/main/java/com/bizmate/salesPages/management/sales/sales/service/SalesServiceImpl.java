@@ -208,6 +208,20 @@ public class SalesServiceImpl implements SalesService {
                 .build();
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public List<SalesDTO> listByClient(String clientId) {
+        return salesRepository.findByClientIdOrderBySalesDateDesc(clientId)
+                .stream()
+                .map(s -> {
+                    SalesDTO dto = modelMapper.map(s, SalesDTO.class);
+                    // 💡 수동 매핑: get() 메소드에서 사용한 것과 동일
+                    dto.setOrderId(s.getOrder() != null ? s.getOrder().getOrderId() : null);
+                    return dto;
+                })
+                .collect(Collectors.toList());
+    }
+
     /**
      * 특정 Order ID를 기준으로 연결된 Sales 건들을 분석하여
      * Order의 상태를 (시작전/진행중/완료)로 업데이트합니다.

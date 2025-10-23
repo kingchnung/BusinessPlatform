@@ -14,10 +14,6 @@ public interface CollectionService {
     public void remove(String collectionId);
     public PageResponseDTO<CollectionDTO> list(PageRequestDTO pageRequestDTO);
 
-    List<CollectionSummary> getClientTotalCollectionSummary();
 
-    List<ClientSalesSummary> getClientTotalSalesSummary();
-    List<ProjectSalesSummary> getProjectTotalSalesSummary();
-    List<QuarterlySalesSummary> getQuarterlyTotalSalesSummary();
-    List<ClientReceivablesDTO> getClientReceivablesSummary();
+    List<CollectionDTO> listByClient(String clientId);
 }
