@@ -163,68 +163,12 @@ public class CollectionServiceImpl implements CollectionService{
     }
 
     @Override
-    public List<CollectionSummary> getClientTotalCollectionSummary() {
-        return collectionRepository.findTotalCollectionAmountGroupByClient();
-    }
-
-    @Override
-    public List<ClientSalesSummary> getClientTotalSalesSummary() {
-        return salesRepository.findTotalSalesAmountGroupByClient();
-    }
-
-    @Override
-    public List<ProjectSalesSummary> getProjectTotalSalesSummary() {
-        return salesRepository.findTotalSalesAmountGroupByProject();
-    }
-
-    @Override
-    public List<QuarterlySalesSummary> getQuarterlyTotalSalesSummary() {
-        return salesRepository.findTotalSalesAmountGroupByQuarter();
-    }
-
-    @Override
     @Transactional(readOnly = true)
-    public List<ClientReceivablesDTO> getClientReceivablesSummary() {
-        List<ClientSalesSummary> salesSummaries = salesRepository.findTotalSalesAmountGroupByClient();
-        List<CollectionSummary> collectionSummaries = collectionRepository.findTotalCollectionAmountGroupByClient();
-
-        Map<String, ClientReceivablesDTO> receivablesMap = new HashMap<>();
-
-        // 매출액 데이터 집계
-        for(ClientSalesSummary sale : salesSummaries){
-            ClientReceivablesDTO dto = ClientReceivablesDTO.builder()
-                    .clientId(sale.getClientId())
-                    .clientCompany(sale.getClientCompany())
-                    .totalSalesAmount(sale.getTotalSalesAmount())
-                    .totalCollectionAmount(BigDecimal.ZERO)
-                    .build();
-            receivablesMap.put(sale.getClientId(),dto);
-        }
-
-        // 수금액 데이터 맵에 업뎃
-        for(CollectionSummary collection : collectionSummaries){
-            String clientId = collection.getClientId();
-
-            if(receivablesMap.containsKey(clientId)){
-                ClientReceivablesDTO dto = receivablesMap.get(clientId);
-                dto.setTotalCollectionAmount(collection.getTotalCollectionAmount());
-            } else {
-                ClientReceivablesDTO dto = ClientReceivablesDTO.builder()
-                        .clientId(clientId)
-                        .clientCompany(collection.getClientCompany())
-                        .totalSalesAmount(BigDecimal.ZERO)
-                        .totalCollectionAmount(collection.getTotalCollectionAmount())
-                        .build();
-                receivablesMap.put(clientId, dto);
-            }
-        }
-
-        return receivablesMap.values().stream()
-                .peek(dto -> {
-                    BigDecimal outstanding = dto.getTotalSalesAmount().subtract(dto.getTotalCollectionAmount());
-                    dto.setOutstandingBalance(outstanding);
-                })
-                .sorted(Comparator.comparing(ClientReceivablesDTO::getClientCompany))
+    public List<CollectionDTO> listByClient(String clientId) {
+        // 💡 DTO 변환은 기존 convertToDTO 헬퍼 메소드 재사용
+        return collectionRepository.findByClient_ClientIdOrderByCollectionDateDesc(clientId)
+                .stream()
+                .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
 }
