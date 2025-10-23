@@ -4,6 +4,8 @@ import com.bizmate.hr.security.UserPrincipal;
 import io.jsonwebtoken.*;
 
 import io.jsonwebtoken.security.Keys;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -158,4 +160,47 @@ public class JWTProvider {
 
         return new UsernamePasswordAuthenticationToken(principal, null, authorities);
     }
+
+    // ✅ Refresh Token 추출
+    public String extractRefreshToken(HttpServletRequest request) {
+        // 1. Authorization 헤더에서 가져오기 시도
+        String header = request.getHeader("Authorization");
+        if (header != null && header.startsWith("Bearer ")) {
+            return header.substring(7);
+        }
+
+        // 2. 쿠키에서 가져오기 시도
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                if ("refreshToken".equals(cookie.getName())) {
+                    return cookie.getValue();
+                }
+            }
+        }
+        return null;
+    }
+
+    // ✅ Refresh Token 재발급 시 AccessToken 생성
+    public String generateAccessTokenFromRefresh(String refreshToken) {
+        if (!validateToken(refreshToken)) {
+            throw new JwtException("Refresh Token is invalid or expired");
+        }
+
+        Claims claims = parseClaims(refreshToken);
+        String username = claims.getSubject();
+
+        // ★ username 기반 UserPrincipal 재구성은 Service 단에서 수행해도 무방
+        Date now = new Date();
+        Date expiry = new Date(now.getTime() + accessTokenValidityMillis);
+
+        return Jwts.builder()
+                .setSubject(username)
+                .setIssuedAt(now)
+                .setExpiration(expiry)
+                .signWith(ks, SignatureAlgorithm.HS256)
+                .compact();
+    }
+
+
+
 }

@@ -20,20 +20,26 @@ import java.util.Map;
 public class EmployeeController {
     private final EmployeeService employeeService;
 
-    // ★ 권한 설정: 'emp:read' 권한이 있는 사용자만 접근 가능
     @GetMapping
-    @PreAuthorize("hasRole('EMPLOYEE')")
-    public List<EmployeeDTO> getAllEmployees(){
-        // ★ 변경: DTO List 반환
-        return employeeService.getAllEmployees();
+    @PreAuthorize("isAuthenticated()") // 진입 보장
+    public List<EmployeeDTO> getAllEmployees(Authentication authentication) {
+        var principal = (UserPrincipal) authentication.getPrincipal();
+        boolean admin = principal.getAuthorities().stream().anyMatch(a ->
+                a.getAuthority().equals("sys:admin")
+                        || a.getAuthority().equals("ROLE_ADMIN")
+                        || a.getAuthority().equals("ROLE_CEO")
+                        || a.getAuthority().equals("data:read:all")
+        );
+
+        return admin ? employeeService.getAllEmployees()
+                : employeeService.getActiveEmployees();
     }
 
-    // ★ 권한 설정: 'emp:read' 권한이 있는 사용자만 접근 가능
-    @GetMapping("/{empId}/summary")
+
+    @GetMapping("/summary")
     @PreAuthorize("hasRole('EMPLOYEE')")
-    public ResponseEntity<EmployeeDTO> getEmployee(@PathVariable Long empId){
-        EmployeeDTO dto = employeeService.getEmployee(empId);
-        return ResponseEntity.ok(dto);
+    public List<EmployeeSummaryDTO> getEmployeeSummaries() {
+        return employeeService.getEmployeeSummaries();
     }
 
     @GetMapping("/{empId}/detail")

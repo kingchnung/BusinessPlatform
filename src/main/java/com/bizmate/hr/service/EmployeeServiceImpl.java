@@ -36,31 +36,19 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     @Transactional(readOnly = true)
     public List<EmployeeDTO> getAllEmployees() {
-        // ✅ 현재 로그인 사용자 가져오기
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String username = authentication.getName();
-
-        // ✅ 사용자 엔티티 조회 (계정 존재 확인)
-        UserEntity user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다."));
-
-        // ✅ 관리자 여부 판단 (CEO, MANAGER, sys:admin 등)
-        boolean isAdmin = user.getRoles().stream()
-                .anyMatch(role -> role.getRoleName().equals("ROLE_MANAGER")
-                        || role.getRoleName().equals("ROLE_CEO")
-                        || role.getRoleName().equals("sys:admin"));
-
-        // ✅ 직원 목록 조회
         List<Employee> employees = employeeRepository.findAllWithDepartmentAndPosition();
+        return employees.stream()
+                .map(EmployeeDTO::fromEntity)
+                .collect(Collectors.toList());
+    }
 
-        // ✅ 관리자가 아니면 퇴직자 제외
-        if (!isAdmin) {
-            employees = employees.stream()
-                    .filter(emp -> !"RETIRED".equalsIgnoreCase(emp.getStatus()))
-                    .collect(Collectors.toList());
-        }
-
-        // ✅ DTO 변환
+    @Override
+    @Transactional(readOnly = true)
+    public List<EmployeeDTO> getActiveEmployees() {
+        List<Employee> employees = employeeRepository.findAllWithDepartmentAndPosition()
+                .stream()
+                .filter(emp -> !"RETIRED".equalsIgnoreCase(emp.getStatus()))
+                .collect(Collectors.toList());
         return employees.stream()
                 .map(EmployeeDTO::fromEntity)
                 .collect(Collectors.toList());
@@ -72,6 +60,11 @@ public class EmployeeServiceImpl implements EmployeeService {
         Employee employee = employeeRepository.findByIdWithDepartmentAndPosition(empId)
                 .orElseThrow(() -> new EntityNotFoundException("사원 ID " + empId + "를 찾을 수 없습니다."));
         return EmployeeDTO.fromEntity(employee);
+    }
+
+    @Override
+    public List<EmployeeSummaryDTO> getEmployeeSummaries() {
+        return employeeRepository.findEmployeeSummaries();
     }
 
     @Override
@@ -236,8 +229,15 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
+    @Transactional
     public void deleteEmployee(Long empId) {
-        employeeRepository.deleteById(empId);
+        Employee employee = employeeRepository.findById(empId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 직원을 찾을 수 없습니다."));
+
+        // ✅ 논리 삭제 처리
+        employee.setStatus("DELETED");
+
+        employeeRepository.save(employee);
     }
 
     @Override

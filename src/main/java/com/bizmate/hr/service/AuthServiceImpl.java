@@ -40,7 +40,7 @@ public class AuthServiceImpl implements AuthService {
      * [로그인]
      * - 사용자 인증 후 JWT AccessToken / RefreshToken 발급
      */
-    @Transactional
+
     public Map<String, Object> login(LoginRequestDTO request) {
         log.info("🔐 로그인 시도: {}", request.getUsername());
 
