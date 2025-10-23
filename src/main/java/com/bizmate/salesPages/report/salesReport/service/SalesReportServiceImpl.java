@@ -1,7 +1,8 @@
 package com.bizmate.salesPages.report.salesReport.service;
 
-import com.bizmate.common.dto.PageRequestDTO;
-import com.bizmate.common.dto.PageResponseDTO;
+
+import com.bizmate.common.page.PageRequestDTO;
+import com.bizmate.common.page.PageResponseDTO;
 import com.bizmate.salesPages.client.domain.Client;
 import com.bizmate.salesPages.client.repository.ClientRepository;
 import com.bizmate.salesPages.management.collections.repository.CollectionRepository;
