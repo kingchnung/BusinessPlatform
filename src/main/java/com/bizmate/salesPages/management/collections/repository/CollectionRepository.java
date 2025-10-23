@@ -28,5 +28,8 @@ public interface CollectionRepository extends JpaRepository<Collection, String>,
         """
     )
     List<CollectionSummary> findTotalCollectionAmountGroupByClient();
+
+    List<Collection> findByClient_ClientIdOrderByCollectionDateDesc(String clientId);
+
 }
 

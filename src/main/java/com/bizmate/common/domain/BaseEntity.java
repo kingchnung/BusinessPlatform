@@ -64,6 +64,8 @@ public abstract class BaseEntity {
         log.info("✏️ [Entity Updated] {} | updatedBy={} | updatedAt={}",
                 this.getClass().getSimpleName(), updatedBy, updatedAt);
     }
+
+    /* ✅ 도메인 내부(Aggregate Root 내부)에서만 접근 가능한 Setter */
     protected void setCreatedBy(String empName) { this.createdBy = empName; }
     protected void setUpdatedBy(String empName) { this.updatedBy = empName; }
     protected void setUpdatedAt(LocalDateTime time) { this.updatedAt = time; }
