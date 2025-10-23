@@ -1,8 +1,10 @@
 package com.bizmate.hr.controller;
 
 
+import com.bizmate.hr.dto.role.RoleCreateRequestDTO;
 import com.bizmate.hr.dto.role.RoleDTO;
 import com.bizmate.hr.dto.role.RoleRequestDTO;
+import com.bizmate.hr.dto.role.RoleUpdateRequestDTO;
 import com.bizmate.hr.service.RoleService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -14,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@Controller
+@RestController
 @RequestMapping("/api/roles")
 @RequiredArgsConstructor
 public class RoleController {
@@ -23,23 +25,21 @@ public class RoleController {
 
     // 역할 관리는 최고 관리자(예: 'system:manage' 권한)만 가능하도록 설정
     @GetMapping
-    @PreAuthorize("hasAuthority('system:manage')")
-    public List<RoleDTO> getAllRoles() {
-        return roleService.getAllRoles();
+    @PreAuthorize("hasRole('EMPLOYEE')")
+    public ResponseEntity<List<RoleDTO>> getAllRoles() {
+        return ResponseEntity.ok(roleService.getAllRoles());
     }
 
     @PostMapping
-    @PreAuthorize("hasAuthority('system:manage')")
-    public ResponseEntity<RoleDTO> createRole(@RequestBody @Valid RoleRequestDTO requestDTO) {
-        RoleDTO createdDto = roleService.saveRole(null, requestDTO);
-        return new ResponseEntity<>(createdDto, HttpStatus.CREATED);
+    @PreAuthorize("hasRole('MANAGER')")
+    public ResponseEntity<RoleDTO> createRole(@RequestBody @Valid RoleCreateRequestDTO dto) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(roleService.createRole(dto));
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAuthority('system:manage')")
+    @PreAuthorize("hasRole('MANAGER')")
     public ResponseEntity<RoleDTO> updateRole(@PathVariable Long id,
-                                              @RequestBody @Valid RoleRequestDTO requestDTO) {
-        RoleDTO updatedDto = roleService.saveRole(id, requestDTO);
-        return ResponseEntity.ok(updatedDto);
+                                              @RequestBody @Valid RoleUpdateRequestDTO dto) {
+        return ResponseEntity.ok(roleService.updateRole(id, dto));
     }
 }

@@ -1,15 +1,17 @@
 package com.bizmate.salesPages.management.order.order.service;
 
-import com.bizmate.salesPages.common.dto.PageRequestDTO;
-import com.bizmate.salesPages.common.dto.PageResponseDTO;
+import com.bizmate.common.page.PageRequestDTO;
+import com.bizmate.common.page.PageResponseDTO;
 import com.bizmate.salesPages.management.order.order.dto.OrderDTO;
-import org.springframework.stereotype.Service;
 
-@Service
+import java.util.List;
+
 public interface OrderService {
-    String register(OrderDTO orderDTO);
-    OrderDTO get(String orderId);
-    void modify(OrderDTO orderDTO);
-    void remove(String orderId);
-    PageResponseDTO<OrderDTO> list(PageRequestDTO pageRequestDTO);
+    public String register(OrderDTO orderDTO);
+    public OrderDTO get(String orderId);
+    public void modify(OrderDTO orderDTO);
+    public void remove(String orderId);
+    public PageResponseDTO<OrderDTO> list(PageRequestDTO pageRequestDTO);
+
+    public void removeList(List<String> orderIds);
 }

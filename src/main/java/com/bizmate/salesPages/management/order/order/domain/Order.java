@@ -28,20 +28,24 @@ public class Order implements Serializable {
 
     @CreationTimestamp
     @Temporal(TemporalType.DATE)
+    private LocalDate orderIdDate;
+
+    @Temporal(TemporalType.DATE)
     private LocalDate orderDate;
 
     private String projectId;
     private String projectName;
     private LocalDate orderDueDate;
     private BigDecimal orderAmount;
+    private BigDecimal totalSubAmount;
+    private BigDecimal totalVatAmount;
     private String userId;
     private String writer;
     private String clientId;
     private String clientCompany;
     private String orderNote;
 
-    @Builder.Default
-    private String orderStatus = "시작전";
+    private String orderStatus;
 
     @Builder.Default
     @OneToMany(
@@ -56,40 +60,67 @@ public class Order implements Serializable {
         orderItem.setOrder(this);
     }
 
+    public void calculateOrderAmount(){
+        if(this.orderItems == null || this.orderItems.isEmpty()){
+            this.orderAmount = BigDecimal.ZERO.setScale(2,BigDecimal.ROUND_HALF_UP);
+            this.totalSubAmount = BigDecimal.ZERO.setScale(2,BigDecimal.ROUND_HALF_UP);
+            this.totalVatAmount = BigDecimal.ZERO.setScale(2,BigDecimal.ROUND_HALF_UP);
+            return;
+        }
+
+        BigDecimal subAmountSum = BigDecimal.ZERO;
+        BigDecimal vatAmountSum = BigDecimal.ZERO;
+
+        for(OrderItem item : this.orderItems){
+            if(item.getUnitPrice() != null && item.getQuantity() != null){
+                BigDecimal itemSubTotal = item.getUnitPrice().multiply(BigDecimal.valueOf(item.getQuantity()));
+                subAmountSum = subAmountSum.add(itemSubTotal);
+
+                if(item.getUnitVat() != null){
+                    BigDecimal itemTotalVat = item.getUnitVat().multiply(BigDecimal.valueOf(item.getQuantity()));
+                    vatAmountSum = vatAmountSum.add(itemTotalVat);
+                }
+            }
+        }
+
+        this.totalSubAmount = subAmountSum.setScale(2, BigDecimal.ROUND_HALF_UP);
+        this.totalVatAmount = vatAmountSum.setScale(2, BigDecimal.ROUND_HALF_UP);
+
+        this.orderAmount = this.totalSubAmount.add(this.totalVatAmount).setScale(2, BigDecimal.ROUND_HALF_UP);
+    }
+
+    public void updateOrderItems(List<OrderItem> newOrderItems){
+        this.orderItems.clear();
+
+        if(newOrderItems != null){
+            for(OrderItem orderItem : newOrderItems){
+                orderItem.calculateAmount();
+                this.addOrderItem(orderItem);
+            }
+        }
+    }
 
     public void changeProjectId(String projectId) {
         this.projectId = projectId;
-    }
-
-    public void changeProjectName(String projectName) {
-        this.projectName = projectName;
     }
 
     public void changeOrderDueDate(LocalDate orderDueDate) {
         this.orderDueDate = orderDueDate;
     }
 
-    public void changeOrderAmount(BigDecimal orderAmount) {
-        this.orderAmount = orderAmount;
-    }
-
-    public void changeUserId(String userId) {
-        this.userId = userId;
-    }
-
-    public void changeWriter(String writer) {
-        this.writer = writer;
+    public void changeOrderDate(LocalDate orderDate) {
+        this.orderDate = orderDate;
     }
 
     public void changeClientId(String clientId) {
         this.clientId = clientId;
     }
 
-    public void changeClientCompany(String clientCompany) {
-        this.clientCompany = clientCompany;
-    }
-
     public void changeOrderNote(String orderNote) {
         this.orderNote = orderNote;
+    }
+
+    public void changeOrderStatus(String orderStatus) {
+        this.orderStatus = orderStatus;
     }
 }

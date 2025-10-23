@@ -19,4 +19,6 @@ public class PermissionCreateRequestDTO {
 
     @Size(max = 255, message = "설명은 255자 이하로 입력해야 합니다.")
     private String description; // 권한 설명
+
+    private String isUsed = "Y";
 }

@@ -9,11 +9,15 @@ import lombok.Data;
 public class PermissionDTO {
     private Long permId;
     private String permName;
+    private String description;
+    private String isUsed;
 
     public static PermissionDTO fromEntity(Permission permission) {
         return PermissionDTO.builder()
                 .permId(permission.getPermId())
                 .permName(permission.getPermName())
+                .description(permission.getDescription())
+                .isUsed(permission.getIsUsed())
                 .build();
     }
 }

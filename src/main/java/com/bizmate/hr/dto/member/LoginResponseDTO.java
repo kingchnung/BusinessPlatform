@@ -16,6 +16,9 @@ public class LoginResponseDTO {
     private String empName;
     private Long userId;
     private String username;
+    private String deptName;
+    private String deptCode;
+    private String email;
 
     private List<String> roles; // 역할 목록 (예: "CEO", "MANAGER")
     private List<String> perms; // 권한 목록 (예: "sys:admin", "emp:read")

@@ -20,6 +20,8 @@ public class RoleUpdateRequestDTO {
     @Size(max = 255, message = "설명은 255자 이하로 입력해야 합니다.")
     private String description; // 새로운 설명
 
+    private String isUsed;
+
     // 수정할 권한 ID 목록 (기존 목록을 대체하거나 추가/삭제)
     private List<Long> permissionIds;
 }

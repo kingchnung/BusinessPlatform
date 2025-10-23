@@ -4,6 +4,7 @@ import com.bizmate.hr.domain.Employee;
 import com.bizmate.hr.domain.Role;
 import com.bizmate.hr.domain.UserEntity;
 import com.bizmate.hr.dto.user.UserDTO;
+import com.bizmate.hr.dto.user.UserPwChangeRequest;
 import com.bizmate.hr.dto.user.UserUpdateRequestDTO;
 import com.bizmate.hr.repository.EmployeeRepository;
 import com.bizmate.hr.repository.RoleRepository;
@@ -11,14 +12,18 @@ import com.bizmate.hr.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import org.springframework.security.access.AccessDeniedException;
+
+import java.security.SecureRandom;
+import java.time.LocalDateTime;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -30,6 +35,7 @@ public class UserServiceImpl implements UserService {
     private final EmployeeRepository employeeRepository;
     private final PasswordEncoder passwordEncoder;
     private final RoleRepository roleRepository;
+    private final MailService mailService;
 
     /**
      * 신규 직원 생성 시 사용자 계정을 자동 생성하고 기본 역할을 부여합니다.
@@ -85,22 +91,6 @@ public class UserServiceImpl implements UserService {
         return createUserAccount(employee, "0000");
     }
 
-
-    /**
-     * 전체 사용자 계정 목록을 조회합니다. (관리자 기능)
-     */
-    @Override
-    @Transactional(readOnly = true)
-    public List<UserDTO> findAllUsers() {
-        // [TODO: JPA 최적화 필수] N+1 문제를 방지하기 위해 UserEntity, Employee, Role, Permission을 모두 Fetch Join 해야 합니다.
-        // 예: userRepository.findAllWithDetails(); 와 같은 메서드 사용 권장
-        List<UserEntity> users = userRepository.findAll();
-
-        // DTO 변환 시, fromEntity에서 Employee와 Role 정보를 사용하므로 지연 로딩 문제가 발생하지 않도록 Repository 단에서 처리해야 함
-        return users.stream()
-                .map(UserDTO::fromEntity)
-                .collect(Collectors.toList());
-    }
 
     /**
      * 특정 사용자 계정 정보를 조회합니다.
@@ -175,4 +165,158 @@ public class UserServiceImpl implements UserService {
         userRepository.deleteById(userId);
         log.info("사용자 ID {} 의 계정이 성공적으로 삭제되었습니다.", userId);
     }
+
+    @Override
+    @Transactional
+    public void updateActiveStatus(Long userId, String activeStatus) {
+        UserEntity user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다."));
+
+        if (!"Y".equalsIgnoreCase(activeStatus) && !"N".equalsIgnoreCase(activeStatus)) {
+            throw new IllegalArgumentException("활성 상태 값은 'Y' 또는 'N' 이어야 합니다.");
+        }
+
+        user.setIsActive(activeStatus.toUpperCase());
+        user.setUpdDate(LocalDateTime.now());
+        userRepository.save(user);
+    }
+
+
+
+    @Override
+    public void changePw(Long userId, UserPwChangeRequest dto) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+        Object principal = auth.getPrincipal();
+        Long currentUserId;
+
+        if (principal instanceof com.bizmate.hr.security.UserPrincipal userPrincipal) {
+            currentUserId = userPrincipal.getUserId(); // ✅ principal에서 userId 직접 가져오기
+        } else {
+            throw new AccessDeniedException("인증 정보를 확인할 수 없습니다.");
+        }
+
+        // ✅ 본인 확인
+        if (!currentUserId.equals(userId)) {
+            throw new AccessDeniedException("본인 계정만 수정할 수 있습니다.");
+        }
+
+        UserEntity user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+
+        if (!passwordEncoder.matches(dto.getCurrentPw(), user.getPwHash())) {
+            throw new RuntimeException("현재 비밀번호가 일치하지 않습니다.");
+        }
+
+        log.info("입력된 비밀번호: {}", dto.getCurrentPw());
+        log.info("DB 비밀번호 해시: {}", user.getPwHash());
+        log.info("비교 결과: {}", passwordEncoder.matches(dto.getCurrentPw(), user.getPwHash()));
+
+        user.setPwHash(passwordEncoder.encode(dto.getNewPw()));
+        userRepository.save(user);
+
+    }
+
+    @Override
+    public void unlockUser(Long userId) {
+        UserEntity user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다."));
+        user.setIsLocked("N");
+        user.setFailedCount(0);
+        user.setUpdDate(LocalDateTime.now());
+        userRepository.saveAndFlush(user);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<UserDTO> getAllUsers() {
+        return userRepository.findAll().stream()
+                .map(UserDTO::fromEntity)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public String resetUserLock(Long userId) {
+        UserEntity user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 ID의 사용자를 찾을 수 없습니다."));
+
+        String tempPw = generateTempPassword();
+        user.setPwHash(passwordEncoder.encode(tempPw));
+        user.setIsLocked("N");
+        user.setFailedCount(0);
+        user.setUpdDate(LocalDateTime.now());
+        userRepository.save(user);
+
+        mailService.sendPasswordResetMail(user.getEmail(), tempPw);
+        return tempPw;
+    }
+
+    /**
+     * 🔹 랜덤 임시 비밀번호 생성 (대문자 + 소문자 + 숫자 8자리)
+     */
+    private String generateTempPassword() {
+        int length = 8;
+        String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        SecureRandom random = new SecureRandom();
+
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < length; i++) {
+            int index = random.nextInt(chars.length());
+            sb.append(chars.charAt(index));
+        }
+        return sb.toString();
+    }
+    // ==========================================================
+    // ▼ [신규 추가] 로그인 실패 처리를 위한 별도 트랜잭션 메서드
+    // ==========================================================
+    @Override
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public int processLoginFailure(String username) {
+
+        // [참고] findActiveUserWithDetails를 사용하시거나,
+        // username(empNo)으로 찾는 메서드를 사용해야 합니다.
+        // 여기서는 username이 empNo라고 가정합니다.
+        UserEntity user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다: " + username));
+
+        int prev = Optional.ofNullable(user.getFailedCount()).orElse(0);
+        int newCount = prev + 1;
+        user.setFailedCount(newCount);
+
+        if (newCount >= 5) {
+            user.setIsLocked("Y");
+            log.warn("🔒 [TX-NEW] 계정 [{}] 잠금 처리됨 (실패: {}회)", user.getUsername(), newCount);
+        } else {
+            log.warn("🔔 [TX-NEW] 계정 [{}] 로그인 실패 (실패: {}회)", user.getUsername(), newCount);
+        }
+
+        userRepository.save(user); // 여기서는 saveAndFlush보다 save가 권장됩니다.
+        return newCount;
+    }
+
+    // ==========================================================
+    // ▼ [신규 추가] 로그인 성공 처리를 위한 별도 트랜잭션 메서드
+    // ==========================================================
+    @Override
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void processLoginSuccess(String username) {
+        UserEntity user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다: " + username));
+
+        // 이미 성공했거나 잠겨있지 않은 상태면 굳이 DB를 건드리지 않습니다.
+        if (user.getFailedCount() > 0 || "Y".equalsIgnoreCase(user.getIsLocked())) {
+            user.setFailedCount(0);
+            user.setIsLocked("N");
+            user.setLastLogin(LocalDateTime.now());
+            userRepository.save(user);
+            log.info("✅ [TX-NEW] 계정 [{}] 로그인 성공 처리 (횟수 리셋)", user.getUsername());
+        } else {
+            // 마지막 로그인 시간만 업데이트
+            user.setLastLogin(LocalDateTime.now());
+            userRepository.save(user);
+        }
+    }
+
+
+
 }

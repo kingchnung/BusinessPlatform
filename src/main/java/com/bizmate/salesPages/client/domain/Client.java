@@ -33,6 +33,9 @@ public class Client {
     private String clientBusinessType;
     private String clientAddress;
     private String clientContact;
+    private String clientEmail;
+    private String writer;
+    private String userId;
 
     @CreationTimestamp
     @Temporal(TemporalType.DATE)
@@ -44,17 +47,6 @@ public class Client {
     @Builder.Default
     private Boolean validationStatus = false;
 
-    private String empName;
-    private String clientEmail;
-    private String userId;
-
-//    public void setClientNo(Long clientNo){
-//        this.clientNo = clientNo;
-//    }
-//
-//    public void setClientId(String clientId) {
-//        this.clientId = clientId;
-//    }
 
     public void changeClientId(String clientId){
         this.clientId = clientId;
@@ -80,13 +72,7 @@ public class Client {
     public void changeBusinessLicenseFile(String businessLicenseFile) {
         this.businessLicenseFile = businessLicenseFile;
     }
-    public void changeEmpName(String empName) {
-        this.empName = empName;
-    }
     public void changeClientEmail(String clientEmail) {
         this.clientEmail = clientEmail;
-    }
-    public void changeUserId(String userId) {
-        this.userId = userId;
     }
 }

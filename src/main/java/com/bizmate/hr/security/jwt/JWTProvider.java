@@ -4,6 +4,8 @@ import com.bizmate.hr.security.UserPrincipal;
 import io.jsonwebtoken.*;
 
 import io.jsonwebtoken.security.Keys;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -30,6 +32,7 @@ public class JWTProvider {
     // 비밀 키: 보안상 32바이트 이상 권장. (테스트용)
     private static final String SECRET_KEY = "1234567890123456789012345678901234567890";
     private static final Key ks = Keys.hmacShaKeyFor(SECRET_KEY.getBytes(StandardCharsets.UTF_8));
+
     private final long accessTokenValidityMillis = 1000L * 60 * 60;    // 1시간
     private final long refreshTokenValidityMillis = 1000L * 60 * 60 * 24 * 7; // 7일
     // ★★★ --------------------- ★★★
@@ -40,7 +43,7 @@ public class JWTProvider {
      * Access Token을 생성합니다.
      */
     public String createAccessToken(UserPrincipal principal) {
-        log.info("jwt생성 직전 권한 목록 : {}",principal.getAuthorities());
+        log.info("jwt생성 직전 권한 목록 : {}, user : {}",principal.getAuthorities(), principal.getUsername());
         return createToken(principal, accessTokenValidityMillis);
     }
 
@@ -57,8 +60,8 @@ public class JWTProvider {
         Date expiry = new Date(now.getTime() + refreshTokenValidityMillis);
 
         return Jwts.builder()
-                .setSubject(principal.getUsername())
                 .setClaims(claims)
+                .setSubject(principal.getUsername())
                 .setIssuedAt(now)
                 .setExpiration(expiry)
                 .signWith(ks, SignatureAlgorithm.HS256 )
@@ -66,8 +69,21 @@ public class JWTProvider {
     }
 
     private String createToken(UserPrincipal principal, long validityMillis) {
+        log.info("🔍 createAccessToken() principal 정보 확인:");
+        log.info(" - userId: {}", principal.getUserId());
+        log.info(" - username: {}", principal.getUsername());
+        log.info(" - empName: {}", principal.getEmpName());
+        log.info(" - email: {}", principal.getEmail());
+
         Map<String, Object> claims = new HashMap<>();
+
         claims.put("uid", principal.getUserId());
+        claims.put("username", principal.getUsername());
+        claims.put("empName", principal.getEmpName());
+        claims.put("email", principal.getEmail());
+        claims.put("empId",principal.getEmpId());
+        claims.put("deptCode", principal.getDeptCode());
+        claims.put("deptName", principal.getDeptName());
         claims.put("roles", principal.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.toList()));
@@ -93,8 +109,10 @@ public class JWTProvider {
     public boolean validateToken(String token) {
         try {
             Jwts.parser().setSigningKey(ks).parseClaimsJws(token);
+            log.debug("✅ 토큰 검증 성공");
             return true;
-        } catch (JwtException | IllegalArgumentException e) {
+        } catch (JwtException e) {
+            log.warn("❌ 토큰 검증 실패: {}", e.getMessage());
             return false;
         }
     }
@@ -107,8 +125,17 @@ public class JWTProvider {
     public Authentication getAuthentication(String token) {
         Claims claims = parseClaims(token);
 
-        String username = claims.getSubject();
+        String username = claims.get("username", String.class);
+        if (username == null) {
+            username = claims.getSubject();
+        }
+
         Long userId = claims.get("uid", Long.class);
+        Long empId = claims.get("empId", Long.class);
+        String empName = claims.get("empName", String.class);
+        String email = claims.get("email", String.class);
+        String deptName = claims.get("deptName", String.class);
+        String deptCode = claims.get("deptCode", String.class);
 
         @SuppressWarnings("unchecked")
         List<String> roles = (List<String>) claims.getOrDefault("roles", Collections.emptyList());
@@ -119,13 +146,61 @@ public class JWTProvider {
 
         UserPrincipal principal = new UserPrincipal(
                 userId,
+                empId,
                 username,
                 "",  // 비밀번호는 JWT 안에 없음
                 true,
                 false,
                 authorities
         );
+        principal.setEmpName(empName);
+        principal.setEmail(email);
+        principal.setDeptCode(deptCode);
+        principal.setDeptName(deptName);
 
         return new UsernamePasswordAuthenticationToken(principal, null, authorities);
     }
+
+    // ✅ Refresh Token 추출
+    public String extractRefreshToken(HttpServletRequest request) {
+        // 1. Authorization 헤더에서 가져오기 시도
+        String header = request.getHeader("Authorization");
+        if (header != null && header.startsWith("Bearer ")) {
+            return header.substring(7);
+        }
+
+        // 2. 쿠키에서 가져오기 시도
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                if ("refreshToken".equals(cookie.getName())) {
+                    return cookie.getValue();
+                }
+            }
+        }
+        return null;
+    }
+
+    // ✅ Refresh Token 재발급 시 AccessToken 생성
+    public String generateAccessTokenFromRefresh(String refreshToken) {
+        if (!validateToken(refreshToken)) {
+            throw new JwtException("Refresh Token is invalid or expired");
+        }
+
+        Claims claims = parseClaims(refreshToken);
+        String username = claims.getSubject();
+
+        // ★ username 기반 UserPrincipal 재구성은 Service 단에서 수행해도 무방
+        Date now = new Date();
+        Date expiry = new Date(now.getTime() + accessTokenValidityMillis);
+
+        return Jwts.builder()
+                .setSubject(username)
+                .setIssuedAt(now)
+                .setExpiration(expiry)
+                .signWith(ks, SignatureAlgorithm.HS256)
+                .compact();
+    }
+
+
+
 }

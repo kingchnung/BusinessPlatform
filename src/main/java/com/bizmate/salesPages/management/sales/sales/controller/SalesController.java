@@ -1,16 +1,19 @@
 package com.bizmate.salesPages.management.sales.sales.controller;
 
-import com.bizmate.salesPages.common.dto.PageRequestDTO;
-import com.bizmate.salesPages.common.dto.PageResponseDTO;
+
+import com.bizmate.common.page.PageRequestDTO;
+import com.bizmate.common.page.PageResponseDTO;
 import com.bizmate.salesPages.management.sales.sales.dto.SalesDTO;
 import com.bizmate.salesPages.management.sales.sales.service.SalesService;
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/sales")
+@RequestMapping("/api/sales/sales")
 @RequiredArgsConstructor
 public class SalesController {
     private final SalesService salesService;
@@ -20,7 +23,7 @@ public class SalesController {
         return salesService.get(salesId);
     }
 
-    @GetMapping("/salesList")
+    @GetMapping("/list")
     public PageResponseDTO<SalesDTO> List(PageRequestDTO pageRequestDTO){
         return salesService.list(pageRequestDTO);
     }
@@ -44,4 +47,8 @@ public class SalesController {
         return Map.of("RESULT","SUCCESS");
     }
 
+    @GetMapping("/client/{clientId}")
+    public List<SalesDTO> listByClient(@PathVariable("clientId") String clientId) {
+        return salesService.listByClient(clientId);
+    }
 }

@@ -30,7 +30,7 @@ public class UserEntity {
     // 2. 직원 ID (FK & Unique - 직원 당 하나의 계정)
     // EMPLOYEES와 1:1 관계 (FK)
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "emp_id", unique = true, nullable = false)
+    @JoinColumn(name = "emp_id", unique = true, nullable = true)
     private Employee employee;
 
     // 3. 사용자명 (로그인 ID)
@@ -43,10 +43,12 @@ public class UserEntity {
 
     // 5. 계정 활성 여부 ('Y'/'N')
     @Column(name = "is_active", nullable = false, length = 1)
+    @Builder.Default
     private String isActive = "Y";
 
     // 6. 계정 잠금 여부 ('Y'/'N')
     @Column(name = "is_locked", nullable = false, length = 1)
+    @Builder.Default
     private String isLocked = "N";
 
     // 7. 마지막 로그인
@@ -55,6 +57,7 @@ public class UserEntity {
 
     // 8. 로그인 실패 횟수
     @Column(name = "failed_count")
+    @Builder.Default
     private Integer failedCount = 0;
 
     // 9. 생성일

@@ -6,6 +6,12 @@ import java.util.List;
 
 public interface AssignmentsHistoryService {
     List<AssignmentHistoryDTO> getAllHistories();
-    List<AssignmentHistoryDTO> getHistoriesByEmployee(Long empId);
+
     AssignmentHistoryDTO createAssignment(AssignmentHistoryRequestDTO requestDTO, String createdByUsername);
+
+    // 🔹 직원별 이력 조회
+    List<AssignmentHistoryDTO> getHistoryByEmployee(Long empId);
+
+    // 🔹 부서별 이력 조회
+    List<AssignmentHistoryDTO> getHistoryByDepartment(Long deptId);
 }

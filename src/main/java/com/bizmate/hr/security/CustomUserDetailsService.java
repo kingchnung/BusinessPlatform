@@ -48,17 +48,38 @@ public class CustomUserDetailsService implements UserDetailsService {
         }
 
         // 3) 상태 값 매핑 (Entity의 필드명에 맞게)
-        boolean active = Boolean.TRUE.equals(user.getIsActive());   // 예: getIsActive()
-        boolean locked = Boolean.TRUE.equals(user.getIsLocked());   // 예: getIsLocked()
+        boolean active = "Y".equalsIgnoreCase(user.getIsActive());
+        boolean locked = "Y".equalsIgnoreCase(user.getIsLocked());
+
+        Long empId = null;
+        if(user.getEmployee() != null){
+            empId = user.getEmployee().getEmpId();
+        }
 
         // 4) UserPrincipal 생성
-        return new UserPrincipal(
+        UserPrincipal principal = new UserPrincipal(
                 user.getUserId(),
+                empId,
                 user.getUsername(),
                 user.getPwHash(),      // 비밀번호 해시
-                true,
-                false,
+                active,
+                locked,
                 authorities
         );
+// 5️⃣ ✅ 추가 정보 세팅 (JWT 클레임용)
+        if (user.getEmployee() != null) {
+            principal.setEmpName(user.getEmployee().getEmpName()); // ✅ 사원 이름
+        } else {
+            principal.setEmpName("미등록");
+        }
+
+        principal.setEmail(user.getEmail()); // ✅ 이메일 추가
+        principal.setDeptCode(user.getEmployee().getDepartment().getDeptCode());
+        principal.setDeptName(user.getEmployee().getDepartment().getDeptName());
+
+        log.info("✅ 로그인 사용자 로드 완료: userId={}, username={}, empName={}, email={}, deptCode={}, deptName={}",
+                principal.getUserId(), principal.getUsername(), principal.getEmpName(), principal.getEmail(), principal.getDeptCode(), principal.getDeptName());
+
+        return principal;
     }
 }

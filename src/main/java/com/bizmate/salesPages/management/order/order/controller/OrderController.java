@@ -1,16 +1,19 @@
 package com.bizmate.salesPages.management.order.order.controller;
 
-import com.bizmate.salesPages.common.dto.PageRequestDTO;
-import com.bizmate.salesPages.common.dto.PageResponseDTO;
+
+import com.bizmate.common.page.PageRequestDTO;
+import com.bizmate.common.page.PageResponseDTO;
 import com.bizmate.salesPages.management.order.order.dto.OrderDTO;
 import com.bizmate.salesPages.management.order.order.service.OrderService;
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/order")
+@RequestMapping("/api/sales/order")
 @RequiredArgsConstructor
 public class OrderController {
     private final OrderService orderService;
@@ -20,7 +23,7 @@ public class OrderController {
         return orderService.get(orderId);
     }
 
-    @GetMapping("/orderList")
+    @GetMapping("/list")
     public PageResponseDTO<OrderDTO> List(PageRequestDTO pageRequestDTO){
         return orderService.list(pageRequestDTO);
     }
@@ -44,4 +47,9 @@ public class OrderController {
         return Map.of("RESULT","SUCCESS");
     }
 
+    @DeleteMapping("/list")
+    public Map<String, String> removeList(@RequestBody List<String> orderIds){
+        orderService.removeList(orderIds);
+        return Map.of("RESULT", "SUCCESS");
+    }
 }

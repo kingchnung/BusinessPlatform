@@ -40,8 +40,18 @@ public class AssignmentsHistoryServiceImpl implements AssignmentsHistoryService 
 
     @Override
     @Transactional(readOnly = true)
-    public List<AssignmentHistoryDTO> getHistoriesByEmployee(Long empId) {
-        return historyRepository.findByEmployee_EmpId(empId).stream()
+    public List<AssignmentHistoryDTO> getHistoryByEmployee(Long empId) {
+        return historyRepository.findByEmployee_EmpIdOrderByAssDateDesc(empId)
+                .stream()
+                .map(AssignmentHistoryDTO::fromEntity)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<AssignmentHistoryDTO> getHistoryByDepartment(Long deptId) {
+        return historyRepository.findByNewDepartment_DeptIdOrderByAssDateDesc(deptId)
+                .stream()
                 .map(AssignmentHistoryDTO::fromEntity)
                 .collect(Collectors.toList());
     }
@@ -66,24 +76,18 @@ public class AssignmentsHistoryServiceImpl implements AssignmentsHistoryService 
                 .orElseThrow(() -> new EntityNotFoundException("신규 직급코드 " + dto.getNewGradeCode() + "를 찾을 수 없습니다."));
 
         // 2. 이전 정보는 Optional
-        Department prevDept = (dto.getPrevDeptId() != null)
-                ? departmentRepository.findById(dto.getPrevDeptId()).orElse(null)
-                : null;
+        Department prevDept = employee.getDepartment();
 
-        Position prevPosition = (dto.getPrevPositionCode() != null)
-                ? positionRepository.findById(dto.getPrevPositionCode()).orElse(null)
-                : null;
+        Position prevPosition = employee.getPosition();
 
-        Grade prevGrade = (dto.getPrevGradeCode() != null)
-                ? gradeRepository.findById(dto.getPrevGradeCode()).orElse(null)
-                : null;
+        Grade prevGrade = employee.getGrade();
 
         // 3. 등록자 조회
         UserEntity createdBy = userRepository.findByUsername(createdByUsername)
                 .orElseThrow(() -> new EntityNotFoundException("등록자 계정(" + createdByUsername + ")을 찾을 수 없습니다."));
 
         // 4. 엔티티 생성 (Builder)
-        AssignmentsHistory entity = AssignmentsHistory.builder()
+        AssignmentsHistory history = AssignmentsHistory.builder()
                 .employee(employee)
                 .assDate(dto.getAssDate())
                 .reason(dto.getReason())
@@ -97,7 +101,13 @@ public class AssignmentsHistoryServiceImpl implements AssignmentsHistoryService 
                 .build();
 
         // 5. 저장 후 DTO 변환
-        AssignmentsHistory saved = historyRepository.save(entity);
-        return AssignmentHistoryDTO.fromEntity(saved);
+        historyRepository.save(history);
+
+        employee.setDepartment(newDept);
+        employee.setPosition(newPosition);
+        employee.setGrade(newGrade);
+        employeeRepository.save(employee);
+
+        return AssignmentHistoryDTO.fromEntity(history);
     }
 }

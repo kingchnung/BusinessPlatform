@@ -48,7 +48,7 @@ public class SalesItemServiceImpl implements SalesItemService{
         updateSalesItem.changeItemName(salesItem.getItemName());
         updateSalesItem.changeQuantity(salesItem.getQuantity());
         updateSalesItem.changeUnitPrice(salesItem.getUnitPrice());
-        updateSalesItem.changeVat(salesItem.getVat());
+        updateSalesItem.changeUnitVat(salesItem.getUnitVat());
         updateSalesItem.changeTotalAmount(salesItem.getTotalAmount());
         updateSalesItem.changeItemNote(salesItem.getItemNote());
 

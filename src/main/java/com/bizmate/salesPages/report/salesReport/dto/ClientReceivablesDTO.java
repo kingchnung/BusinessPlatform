@@ -12,5 +12,5 @@ public class ClientReceivablesDTO {
     private String clientCompany;
     private BigDecimal totalSalesAmount;
     private BigDecimal totalCollectionAmount;
-    private BigDecimal outstandingBalance;    // 미수금액 (매출 - 수금)
+    private BigDecimal outstandingBalance;
 }
