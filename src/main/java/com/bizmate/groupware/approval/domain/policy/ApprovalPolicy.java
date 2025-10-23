@@ -26,6 +26,7 @@ public class ApprovalPolicy extends BaseEntity {
     @Column(nullable = false, length = 50)
     private String docType;
 
+    @Builder.Default
     private boolean isActive = true;
     private String createdBy;
     private String createdDept;

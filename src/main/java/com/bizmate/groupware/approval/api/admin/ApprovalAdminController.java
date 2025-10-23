@@ -1,7 +1,7 @@
 package com.bizmate.groupware.approval.api.admin;
 
-import com.bizmate.common.dto.PageRequestDTO;
-import com.bizmate.common.dto.PageResponseDTO;
+import com.bizmate.common.page.PageRequestDTO;
+import com.bizmate.common.page.PageResponseDTO;
 import com.bizmate.groupware.approval.dto.approval.ApprovalDocumentsDto;
 import com.bizmate.groupware.approval.service.document.ApprovalDocumentsService;
 import com.bizmate.hr.security.UserPrincipal;

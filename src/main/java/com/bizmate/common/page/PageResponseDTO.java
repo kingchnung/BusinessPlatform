@@ -1,4 +1,4 @@
-package com.bizmate.common.dto;
+package com.bizmate.common.page;
 
 import lombok.Builder;
 import lombok.Data;

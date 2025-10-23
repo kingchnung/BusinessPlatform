@@ -1,6 +1,6 @@
 package com.bizmate.salesPages.management.sales.sales.repository;
 
-import com.bizmate.common.dto.PageRequestDTO;
+import com.bizmate.common.page.PageRequestDTO;
 import com.bizmate.salesPages.management.sales.sales.domain.QSales;
 import com.bizmate.salesPages.management.sales.sales.domain.Sales;
 import com.bizmate.salesPages.management.sales.salesItem.domain.QSalesItem;

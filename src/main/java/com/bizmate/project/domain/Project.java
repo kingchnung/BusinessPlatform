@@ -45,6 +45,7 @@ public class Project extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(length = 30)
+    @Builder.Default
     private ProjectStatus status = ProjectStatus.PLANNING;
 
     @ManyToOne(fetch = FetchType.LAZY)

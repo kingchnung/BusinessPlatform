@@ -1,8 +1,8 @@
 package com.bizmate.groupware.approval.service.document;
 
 
-import com.bizmate.common.dto.PageRequestDTO;
-import com.bizmate.common.dto.PageResponseDTO;
+import com.bizmate.common.page.PageRequestDTO;
+import com.bizmate.common.page.PageResponseDTO;
 import com.bizmate.common.exception.VerificationFailedException;
 import com.bizmate.groupware.approval.domain.PDF.EmployeeSignature;
 import com.bizmate.groupware.approval.domain.attachment.ApprovalFileAttachment;
@@ -10,7 +10,6 @@ import com.bizmate.groupware.approval.domain.document.ApprovalDocuments;
 import com.bizmate.groupware.approval.domain.document.Decision;
 import com.bizmate.groupware.approval.domain.document.DocumentStatus;
 import com.bizmate.groupware.approval.domain.document.DocumentType;
-import com.bizmate.groupware.approval.domain.policy.ApprovalPolicy;
 import com.bizmate.groupware.approval.domain.policy.ApproverStep;
 import com.bizmate.groupware.approval.dto.approval.ApprovalDocumentsDto;
 import com.bizmate.groupware.approval.dto.approval.ApprovalFileAttachmentDto;
@@ -32,7 +31,6 @@ import com.bizmate.hr.security.UserPrincipal;
 import com.bizmate.project.dto.project.ProjectRequestDTO;
 import com.bizmate.project.service.ProjectService;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -958,43 +956,5 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
                 .build();
     }
 
-    /**
-     * ✅ 정책 기반 결재문서 생성
-     */
-    @Transactional
-    public ApprovalDocuments createFromPolicy(String docType, String title, String content) {
-        log.info("📄 정책 기반 문서 생성 요청: {}", docType);
 
-        ObjectMapper objectMapper = new ObjectMapper();
-        Map<String, Object> contentMap = new HashMap<>();
-
-        // 1️⃣ 문서 유형별 정책 조회
-        ApprovalPolicy policy = approvalPolicyRepository.findByDocType(docType)
-                .orElseThrow(() -> new IllegalArgumentException("해당 문서유형의 정책이 존재하지 않습니다: " + docType));
-
-        // 2️⃣ 정책 단계 → ApproverStep record로 변환
-        List<ApproverStep> approverSteps = approvalPolicyMapper.toApproverSteps(policy.getSteps());
-
-        try {
-            if (content != null && !content.isBlank()) {
-                contentMap = objectMapper.readValue(content, new TypeReference<Map<String, Object>>() {});
-            }
-        } catch (Exception e) {
-            log.error("❌ 문서 내용(JSON) 파싱 실패: {}", e.getMessage());
-        }
-
-        // 3️⃣ 문서 생성 및 저장
-        ApprovalDocuments document = ApprovalDocuments.builder()
-                .docType(DocumentType.from(docType))
-                .title(title)
-                .docContent(contentMap)
-                .approvalLine(approverSteps)
-                .status(DocumentStatus.DRAFT)
-                .build();
-
-        ApprovalDocuments saved = approvalDocumentsRepository.save(document);
-        log.info("✅ 문서 저장 완료: {}", saved.getDocId());
-
-        return saved;
-    }
 }

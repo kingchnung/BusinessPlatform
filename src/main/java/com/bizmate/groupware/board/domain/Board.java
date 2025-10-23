@@ -2,8 +2,10 @@ package com.bizmate.groupware.board.domain;
 
 import com.bizmate.common.domain.BaseEntity;
 import com.bizmate.hr.dto.user.UserDTO;
+import com.bizmate.hr.security.UserPrincipal;
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -11,6 +13,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "BOARD")
+@EntityListeners(AuditingEntityListener.class)
 @Getter
 @Setter
 @Builder
@@ -46,15 +49,15 @@ public class Board extends BaseEntity {
     @Builder.Default
     private List<Comment> comments = new ArrayList<>();
 
-    public void markCreated(UserDTO user) {
-        super.setCreatedBy(user.getUsername());
-        super.setUpdatedBy(user.getUsername());
+    public void markCreated(UserPrincipal user) {
+        super.setCreatedBy(user.getEmpName());
+        super.setUpdatedBy(user.getEmpName());
         super.setCreatedAt(LocalDateTime.now());
         super.setUpdatedAt(LocalDateTime.now());
     }
 
-    public void markUpdated(UserDTO user) {
-        super.setUpdatedBy(user.getUsername());
+    public void markUpdated(UserPrincipal user) {
+        super.setUpdatedBy(user.getEmpName());
         super.setUpdatedAt(LocalDateTime.now());
     }
 

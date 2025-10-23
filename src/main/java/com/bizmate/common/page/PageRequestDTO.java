@@ -1,6 +1,5 @@
-package com.bizmate.common.dto;
+package com.bizmate.common.page;
 
-import com.sun.jdi.PrimitiveValue;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -10,8 +9,6 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-
-import java.time.LocalDateTime;
 
 @Data
 @SuperBuilder

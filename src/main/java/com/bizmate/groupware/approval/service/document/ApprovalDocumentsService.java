@@ -1,16 +1,11 @@
 package com.bizmate.groupware.approval.service.document;
 
-import com.bizmate.common.dto.PageRequestDTO;
-import com.bizmate.common.dto.PageResponseDTO;
-import com.bizmate.groupware.approval.domain.document.DocumentStatus;
+import com.bizmate.common.page.PageRequestDTO;
+import com.bizmate.common.page.PageResponseDTO;
 import com.bizmate.groupware.approval.dto.approval.ApprovalDocumentsDto;
-import com.bizmate.groupware.approval.dto.approval.DocumentSearchRequestDto;
-import com.bizmate.hr.domain.Department;
-import com.bizmate.hr.domain.UserEntity;
 import com.bizmate.hr.dto.user.UserDTO;
 import com.bizmate.hr.security.UserPrincipal;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import org.springframework.data.domain.Page;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 

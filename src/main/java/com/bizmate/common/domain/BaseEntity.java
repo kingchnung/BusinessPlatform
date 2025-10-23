@@ -1,5 +1,7 @@
 package com.bizmate.common.domain;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -29,12 +31,14 @@ public abstract class BaseEntity {
 
     /** 생성 시각 */
     @CreatedDate
-    @Column(name = "created_date", nullable = false, updatable = false)
+    @Column(name = "created_at", updatable = false)
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createdAt;
 
     /** 수정 시각 */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @LastModifiedDate
-    @Column(name = "updated_date", nullable = false)
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
     /** 생성자  */
@@ -60,10 +64,4 @@ public abstract class BaseEntity {
         log.info("✏️ [Entity Updated] {} | updatedBy={} | updatedAt={}",
                 this.getClass().getSimpleName(), updatedBy, updatedAt);
     }
-
-    /* ✅ 도메인 내부(Aggregate Root 내부)에서만 접근 가능한 Setter */
-    protected void setCreatedBy(String empName) { this.createdBy = empName; }
-    protected void setUpdatedBy(String empName) { this.updatedBy = empName; }
-    protected void setUpdatedAt(LocalDateTime time) { this.updatedAt = time; }
-    protected void setCreatedAt(LocalDateTime time) { this.createdAt = time; }
 }

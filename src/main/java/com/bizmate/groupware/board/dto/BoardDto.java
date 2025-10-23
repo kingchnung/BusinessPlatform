@@ -2,6 +2,7 @@ package com.bizmate.groupware.board.dto;
 
 import com.bizmate.groupware.board.domain.Board;
 import com.bizmate.groupware.board.domain.BoardType;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -22,7 +23,9 @@ public class BoardDto {
     private String authorName; // 표시용 (익명 처리 포함)
     private boolean isDeleted;
 
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createdAt;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime updatedAt;
 
     private List<CommentDto> comments;
@@ -33,11 +36,7 @@ public class BoardDto {
                 .boardType(entity.getBoardType())
                 .title(entity.getTitle())
                 .content(entity.getContent())
-                .authorName(
-                        entity.getBoardType() == BoardType.SUGGESTION
-                                ? "익명"
-                                : entity.getAuthorName()
-                )
+                .authorName(entity.getAuthorName())
                 .authorId(entity.getAuthorId())
                 .isDeleted(entity.isDeleted())
                 .createdAt(entity.getCreatedAt())
@@ -52,14 +51,13 @@ public class BoardDto {
     }
 
     public Board toEntity() {
-        return Board.builder()
-                .boardNo(this.boardNo)
-                .boardType(this.boardType)
-                .title(this.title)
-                .content(this.content)
-                .authorName(this.authorName)
-                .authorId(this.authorId)
-                .isDeleted(this.isDeleted)
-                .build();
+        Board board = new Board();
+        board.setBoardType(this.boardType);
+        board.setTitle(this.title);
+        board.setContent(this.content);
+        board.setAuthorName(this.authorName);
+        board.setAuthorId(this.authorId);
+        board.setDeleted(this.isDeleted);
+        return board;
     }
 }

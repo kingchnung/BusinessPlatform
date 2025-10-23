@@ -2,6 +2,7 @@ package com.bizmate.groupware.board.domain;
 
 import com.bizmate.common.domain.BaseEntity;
 import com.bizmate.hr.dto.user.UserDTO;
+import com.bizmate.hr.security.UserPrincipal;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -37,17 +38,18 @@ public class Comment extends BaseEntity {
     @Builder.Default
     private boolean isDeleted = false;
 
+    @Builder.Default
     private boolean anonymous = false;
 
-    public void markCreated(UserDTO user) {
-        super.setCreatedBy(user.getUsername());
-        super.setUpdatedBy(user.getUsername());
+    public void markCreated(UserPrincipal user) {
+        super.setCreatedBy(user.getEmpName());
+        super.setUpdatedBy(user.getEmpName());
         super.setCreatedAt(LocalDateTime.now());
         super.setUpdatedAt(LocalDateTime.now());
     }
 
-    public void markUpdated(UserDTO user) {
-        super.setUpdatedBy(user.getUsername());
+    public void markUpdated(UserPrincipal user) {
+        super.setUpdatedBy(user.getEmpName());
         super.setUpdatedAt(LocalDateTime.now());
     }
 }

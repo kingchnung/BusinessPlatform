@@ -17,7 +17,6 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-@Transactional
 public class CommentServiceImpl implements CommentService{
     private final CommentRepository commentRepository;
     private final BoardRepository boardRepository;
@@ -26,6 +25,7 @@ public class CommentServiceImpl implements CommentService{
      * ✅ 댓글 등록
      */
     @Override
+    @Transactional
     public CommentDto addComment(Long boardNo, String content, UserPrincipal user) {
         Board board = boardRepository.findById(boardNo)
                 .orElseThrow(() -> new IllegalArgumentException("해당 게시글을 찾을 수 없습니다."));
@@ -52,13 +52,14 @@ public class CommentServiceImpl implements CommentService{
      * ✅ 댓글 삭제
      */
     @Override
+    @Transactional
     public void deleteComment(Long id, UserPrincipal user) {
         Comment comment = commentRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("댓글을 찾을 수 없습니다."));
 
         // 삭제 권한 체크 (본인 또는 관리자만)
         boolean isAdmin = user.getAuthorities().stream()
-                .anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMIN"));
+                .anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMIN") || auth.getAuthority().equals("ROLE_CEO"));
 
         if (!user.getUsername().equals(comment.getAuthorId()) && !isAdmin) {
             throw new SecurityException("삭제 권한이 없습니다.");

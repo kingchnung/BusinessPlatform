@@ -40,10 +40,12 @@ public class ProjectTask {
 
     @Enumerated(EnumType.STRING)
     @Column(length = 30)
+    @Builder.Default
     private TaskStatus status = TaskStatus.PLANNED;
 
     @Enumerated(EnumType.STRING)
     @Column(length = 20)
+    @Builder.Default
     private TaskPriority priority = TaskPriority.MEDIUM;
 
     private int progressRate; // 0~100%
