@@ -1,5 +1,6 @@
 package com.bizmate;
 
+
 import com.bizmate.common.config.QuerydslConfig;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
