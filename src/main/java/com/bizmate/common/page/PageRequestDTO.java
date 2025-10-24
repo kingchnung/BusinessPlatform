@@ -1,9 +1,6 @@
 package com.bizmate.common.page;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.springframework.format.annotation.DateTimeFormat;
 
@@ -14,6 +11,8 @@ import java.time.LocalDate;
 @SuperBuilder
 @AllArgsConstructor
 @NoArgsConstructor
+@Getter
+@Setter
 public class PageRequestDTO {
 
     @Builder.Default
@@ -42,5 +41,13 @@ public class PageRequestDTO {
     private String search = "";
     @Builder.Default
     private String keyword = "";
+
+
+    // 게시판 조회용 필드
+    private String searchType;
+    private String type;
+    private com.bizmate.groupware.board.domain.BoardType boardType;
+
+
 
 }

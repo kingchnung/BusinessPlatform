@@ -9,6 +9,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -141,6 +142,21 @@ public class GlobalExceptionHandler {
         return ResponseEntity.internalServerError().body(Map.of(
                 "code", "UNHANDLED_ERROR",
                 "message", "서버 내부에서 알 수 없는 오류가 발생했습니다."
+        ));
+    }
+
+    /**
+     * [권한 거부 / 접근 제한] (HTTP 403 Forbidden)
+     * - SecurityException, AccessDeniedException 등 권한 관련 예외를 처리합니다.
+     * - 공지사항 수정/삭제, 관리자 전용 기능 접근 시 권한이 없을 경우 발생합니다.
+     * - 클라이언트에는 "FORBIDDEN" 코드와 함께 사용자 친화적인 메시지를 반환합니다.
+     */
+    @ExceptionHandler(ForbiddenOperationException.class)
+    public ResponseEntity<?> handleForbiddenOperation(ForbiddenOperationException e) {
+        log.warn("권한 거부(도메인): {}", e.getMessage());
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of(
+                "code", "FORBIDDEN",
+                "message", e.getMessage() != null ? e.getMessage() : "권한이 없습니다."
         ));
     }
 }

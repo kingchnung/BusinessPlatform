@@ -22,7 +22,7 @@ public class ClientRepositoryTests {
 
     @Test
     public void testInsert(){
-        for(int i = 11; i <= 30; i++){
+        for(int i = 11; i <= 40; i++){
             Client client = Client.builder()
                     .clientId("132-86-18174-" + i)
                     .clientCompany("테스트용" + i)

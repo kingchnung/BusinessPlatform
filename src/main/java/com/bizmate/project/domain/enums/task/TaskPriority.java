@@ -8,14 +8,9 @@ public enum TaskPriority {
     MEDIUM("중요"),
     LOW("보통");
 
-    private final String label;
+    private final String priority;
 
-    TaskPriority(String label) {
-        this.label = label;
-    }
-
-    @Override
-    public String toString() {
-        return label;
+    TaskPriority(String priority) {
+        this.priority = priority;
     }
 }
