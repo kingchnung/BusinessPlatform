@@ -9,7 +9,6 @@ import org.springframework.context.annotation.Import;
 
 import java.util.Arrays;
 
-@Import(QuerydslConfig.class)
 @SpringBootTest
 class WebBizMateProjectApplicationTests {
 
