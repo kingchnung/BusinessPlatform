@@ -20,6 +20,7 @@ public class RoleDTO {
     private String description;
     private String isUsed;
 
+    @Builder.Default
     private Set<PermissionDTO> permissions = new HashSet<>();
 
     public static RoleDTO fromEntity(Role role) {

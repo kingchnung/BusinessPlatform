@@ -14,6 +14,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class SalesDTO {
+    private Long salesNo;
 
     private String salesId;
     private LocalDate salesIdDate;

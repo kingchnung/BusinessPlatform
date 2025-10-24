@@ -19,9 +19,21 @@ import java.time.LocalDate;
 @Entity
 @Table
 @Audited
+@SequenceGenerator(
+        name = "COLLECTION_SEQ_GENERATOR",
+        sequenceName = "COLLECTION_SEQ",
+        initialValue = 1,
+        allocationSize = 1
+)
 public class Collection {
     @Id
-    @Column(length = 20)
+    @GeneratedValue(
+            strategy = GenerationType.SEQUENCE,
+            generator = "COLLECTION_SEQ_GENERATOR"
+    )
+    private Long collectionNo;
+
+    @Column(unique = true, nullable = false, length = 20)
     private String collectionId;
 
     @CreationTimestamp

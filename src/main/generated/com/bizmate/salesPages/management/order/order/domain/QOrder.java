@@ -36,6 +36,8 @@ public class QOrder extends EntityPathBase<Order> {
 
     public final ListPath<com.bizmate.salesPages.management.order.orderItem.domain.OrderItem, com.bizmate.salesPages.management.order.orderItem.domain.QOrderItem> orderItems = this.<com.bizmate.salesPages.management.order.orderItem.domain.OrderItem, com.bizmate.salesPages.management.order.orderItem.domain.QOrderItem>createList("orderItems", com.bizmate.salesPages.management.order.orderItem.domain.OrderItem.class, com.bizmate.salesPages.management.order.orderItem.domain.QOrderItem.class, PathInits.DIRECT2);
 
+    public final NumberPath<Long> orderNo = createNumber("orderNo", Long.class);
+
     public final StringPath orderNote = createString("orderNote");
 
     public final StringPath orderStatus = createString("orderStatus");

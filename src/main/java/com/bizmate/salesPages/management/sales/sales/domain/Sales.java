@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.envers.Audited;
+import org.hibernate.envers.NotAudited;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -16,12 +17,24 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table
+@Table(name = "SALES")
 @Builder
 @Audited
+@SequenceGenerator(
+        name = "SALES_SEQ_GENERATOR",
+        sequenceName = "SALES_SEQ",
+        initialValue = 1,
+        allocationSize = 1
+)
 public class Sales {
     @Id
-    @Column(length = 20)
+    @GeneratedValue(
+            strategy = GenerationType.SEQUENCE,
+            generator = "SALES_SEQ_GENERATOR"
+    )
+    private Long salesNo;
+
+    @Column(unique = true, nullable = false, length = 20)
     private String salesId;
 
     @CreationTimestamp
@@ -45,8 +58,10 @@ public class Sales {
     @OneToMany(
             mappedBy = "sales",
             cascade = CascadeType.ALL,
-            orphanRemoval = true
+            orphanRemoval = true,
+            fetch = FetchType.LAZY
     )
+    @NotAudited
     private List<SalesItem> salesItems = new ArrayList<>();
 
     public void addSalesItem(SalesItem salesItem){
@@ -55,7 +70,8 @@ public class Sales {
     }
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "order_id")
+    @JoinColumn(name = "order_no")
+    @ToString.Exclude
     private Order order;
 
     public void calculateSalesAmount(){

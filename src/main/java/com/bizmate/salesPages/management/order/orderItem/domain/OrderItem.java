@@ -39,7 +39,7 @@ public class OrderItem {
     private Integer lineNum;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "order_id", nullable = false)
+    @JoinColumn(name = "order_no", nullable = false)
     @JsonBackReference
     private Order order;
 

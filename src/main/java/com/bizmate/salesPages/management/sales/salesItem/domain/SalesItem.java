@@ -36,7 +36,7 @@ public class SalesItem {
     private Integer lineNum;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "sales_id", nullable = false)
+    @JoinColumn(name = "sales_no", nullable = false)
     @JsonBackReference
     private Sales sales;
 

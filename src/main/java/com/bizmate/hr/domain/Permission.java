@@ -44,5 +44,6 @@ public class Permission {
     // Role 엔티티에서 JoinTable을 통해 매핑되었으므로 mappedBy를 사용합니다.
     @ManyToMany(mappedBy = "permissions", fetch = FetchType.LAZY)
     @JsonIgnore
+    @Builder.Default
     private Set<Role> roles = new HashSet<>();
 }

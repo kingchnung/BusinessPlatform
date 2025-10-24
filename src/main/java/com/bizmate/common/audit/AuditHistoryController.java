@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 @RestController
@@ -83,8 +84,28 @@ public class AuditHistoryController {
     }
 
     @GetMapping("/client/{id}")       public ResponseEntity<List<AuditHistoryDto>> getClientHistory(@PathVariable Long id) { return ResponseEntity.ok(mapRevisionsToDtoList(clientRepository.findRevisions(id))); }
-    @GetMapping("/order/{id}")        public ResponseEntity<List<AuditHistoryDto>> getOrderHistory(@PathVariable String id) { return ResponseEntity.ok(mapRevisionsToDtoList(orderRepository.findRevisions(id))); }
-    @GetMapping("/sales/{id}")        public ResponseEntity<List<AuditHistoryDto>> getSalesHistory(@PathVariable String id) { return ResponseEntity.ok(mapRevisionsToDtoList(salesRepository.findRevisions(id))); }
-    @GetMapping("/collection/{id}")   public ResponseEntity<List<AuditHistoryDto>> getCollectionHistory(@PathVariable String id) { return ResponseEntity.ok(mapRevisionsToDtoList(collectionRepository.findRevisions(id))); }
+
+    // String ID로 Order를 찾아 Long PK(orderNo)를 Renvision에 전달
+    @GetMapping("/order/{id}")
+    public ResponseEntity<List<AuditHistoryDto>> getOrderHistory(@PathVariable String id) {
+        Order order = orderRepository.findByOrderId(id)
+                .orElseThrow(() -> new NoSuchElementException("Order not found with ID: " + id));
+        return ResponseEntity.ok(mapRevisionsToDtoList(orderRepository.findRevisions(order.getOrderNo())));
+    }
+
+    @GetMapping("/sales/{id}")
+    public ResponseEntity<List<AuditHistoryDto>> getSalesHistory(@PathVariable String id) {
+        Sales sales = salesRepository.findBySalesId(id)
+                .orElseThrow(() -> new NoSuchElementException("Sales not found with ID: " + id));
+        return ResponseEntity.ok(mapRevisionsToDtoList(salesRepository.findRevisions(sales.getSalesNo())));
+    }
+
+    @GetMapping("/collection/{id}")
+    public ResponseEntity<List<AuditHistoryDto>> getCollectionHistory(@PathVariable String id) {
+        Collection collection = collectionRepository.findByCollectionId(id)
+                .orElseThrow(() -> new NoSuchElementException("Collection not found with ID: " + id));
+        return ResponseEntity.ok(mapRevisionsToDtoList(collectionRepository.findRevisions(collection.getCollectionNo())));
+    }
+
     @GetMapping("/salesTarget/{id}")  public ResponseEntity<List<AuditHistoryDto>> getSalesTargetHistory(@PathVariable Long id) { return ResponseEntity.ok(mapRevisionsToDtoList(salesTargetRepository.findRevisions(id))); }
 }

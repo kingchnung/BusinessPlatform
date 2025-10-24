@@ -85,7 +85,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public OrderDTO get(String orderId) {
-        Optional<Order> result = orderRepository.findById(orderId);
+        Optional<Order> result = orderRepository.findByOrderId(orderId);
         Order order = result.orElseThrow();
         OrderDTO dto = modelMapper.map(order, OrderDTO.class);
         return dto;
@@ -93,7 +93,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public void modify(OrderDTO orderDTO) {
-        Optional<Order> result = orderRepository.findById(orderDTO.getOrderId());
+        Optional<Order> result = orderRepository.findByOrderId(orderDTO.getOrderId());
         Order order = result.orElseThrow();
 
         order.changeClientId(orderDTO.getClientId());
@@ -142,12 +142,12 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public void remove(String orderId) {
-        orderRepository.deleteById(orderId);
+        orderRepository.deleteByOrderId(orderId);
     }
 
     @Override
     public void removeList(List<String> orderIds) {
-        orderRepository.deleteAllByIdInBatch(orderIds);
+        orderRepository.deleteByOrderIdIn(orderIds);
     }
 
     @Override

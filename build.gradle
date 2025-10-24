@@ -83,6 +83,7 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    testRuntimeOnly 'com.h2database:h2'
 
     // Querydsl JPA
     implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
@@ -110,4 +111,6 @@ clean.doLast {
 
 tasks.named('test') {
     useJUnitPlatform()
+    // ✅ 모든 테스트는 무조건 test 프로파일로 기동
+    systemProperty "spring.profiles.active", "test"
 }
