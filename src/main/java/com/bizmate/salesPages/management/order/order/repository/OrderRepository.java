@@ -31,4 +31,6 @@ public interface OrderRepository extends JpaRepository<Order, Long>, OrderReposi
     @Modifying
     @Query("DELETE FROM Order o WHERE o.orderId IN :orderIds")
     void deleteByOrderIdIn(@Param("orderIds") List<String> orderIds);
+
+    List<Order> findAllByOrderIdIn(List<String> orderIds);
 }

@@ -177,7 +177,9 @@ public class SalesServiceImpl implements SalesService {
 
         String orderId = (sales.getOrder() != null) ? sales.getOrder().getOrderId() : null;
 
-        salesRepository.deleteBySalesId(salesId);
+        // 2. 🔴 변경 지점: 커스텀 쿼리 대신 엔티티 자체를 삭제
+        // salesRepository.deleteBySalesId(salesId);
+        salesRepository.delete(sales);
 
         this.updateOrderStatus(orderId);
     }
