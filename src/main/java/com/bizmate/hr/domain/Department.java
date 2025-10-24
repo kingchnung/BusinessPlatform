@@ -47,14 +47,17 @@ public class Department {
     // 계층 구조 관리를 위한 자식 부서 목록 (편의상)
     @OneToMany(mappedBy = "parentDept", cascade = CascadeType.ALL)
     @JsonManagedReference
+    @Builder.Default
     private List<Department> childDepts = new ArrayList<>();
 
     // 5. 사용여부
     @Column(name = "is_used",  length = 1)
+    @Builder.Default
     private String isUsed = "Y";
 
     // ★ 7. 생성일 (추가)
     @Column(name = "cre_date", nullable = false)
+    @Builder.Default
     private LocalDateTime creDate = LocalDateTime.now();
 
     // ★ 8. 수정일 (추가)

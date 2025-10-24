@@ -57,6 +57,7 @@ public class UserEntity {
 
     // 8. 로그인 실패 횟수
     @Column(name = "failed_count")
+    @Builder.Default
     private Integer failedCount = 0;
 
     // 9. 생성일

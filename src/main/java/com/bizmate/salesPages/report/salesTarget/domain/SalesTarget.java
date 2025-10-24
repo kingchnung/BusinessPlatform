@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.envers.Audited;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -27,6 +28,7 @@ import java.time.LocalDate;
         initialValue = 1,
         allocationSize = 1
 )
+@Audited
 public class SalesTarget {
     @Id
     @GeneratedValue(

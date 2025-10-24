@@ -1,6 +1,7 @@
 package com.bizmate.salesPages.management.order.order.repository;
 
 import com.bizmate.salesPages.management.order.order.domain.Order;
+import org.springframework.data.envers.repository.support.EnversRevisionRepository;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -8,7 +9,7 @@ import org.springframework.data.repository.query.Param;
 import java.time.LocalDate;
 import java.util.Optional;
 
-public interface OrderRepository extends JpaRepository<Order, String>, OrderRepositoryCustom {
+public interface OrderRepository extends JpaRepository<Order, String>, OrderRepositoryCustom, EnversRevisionRepository<Order, String, Integer> {
 
     @Query("SELECT MAX(o.orderId) FROM Order o WHERE o.orderIdDate = :orderIdDate")
     Optional<String> findMaxOrderIdByOrderIdDate(@Param("orderIdDate") LocalDate today);

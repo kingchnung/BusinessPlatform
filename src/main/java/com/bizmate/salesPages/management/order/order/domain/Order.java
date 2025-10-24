@@ -5,6 +5,7 @@ import com.bizmate.salesPages.management.sales.salesItem.domain.SalesItem;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.envers.Audited;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -20,6 +21,7 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@Audited
 public class Order implements Serializable {
 
     @Id

@@ -2,6 +2,7 @@ package com.bizmate.salesPages.management.sales.sales.repository;
 
 import com.bizmate.salesPages.management.sales.sales.domain.Sales;
 import com.bizmate.salesPages.report.salesReport.dto.*;
+import org.springframework.data.envers.repository.support.EnversRevisionRepository;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -11,7 +12,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
-public interface SalesRepository extends JpaRepository<Sales, String>, SalesRepositoryCustom {
+public interface SalesRepository extends JpaRepository<Sales, String>, SalesRepositoryCustom , EnversRevisionRepository<Sales, String, Integer> {
 
     @Query("SELECT MAX(s.salesId) FROM Sales s WHERE s.salesIdDate = :salesIdDate")
     Optional<String> findMaxSalesIdBySalesIdDate(@Param("salesIdDate") LocalDate today);
@@ -90,7 +91,7 @@ public interface SalesRepository extends JpaRepository<Sales, String>, SalesRepo
         """)
     List<ClientSalesSummary> findClientSalesSummaryByYearMonth(@Param("yearMonth") String yearMonth);
 
-    // [신규] 특정 연도의 거래처별 매출 합계 (거래처별 현황 - '월' 전체)
+    // 특정 연도의 거래처별 매출 합계 (거래처별 현황 - '월' 전체)
     @Query("""
         SELECT new com.bizmate.salesPages.report.salesReport.dto.ClientSalesSummary(
             s.clientId, s.clientCompany, SUM(s.salesAmount)
@@ -102,7 +103,7 @@ public interface SalesRepository extends JpaRepository<Sales, String>, SalesRepo
         """)
     List<ClientSalesSummary> findClientSalesSummaryByYear(@Param("year") String year);
 
-    // [신규] 연도별 총 매출 (연도별 요약)
+    // 연도별 총 매출 (연도별 요약)
     @Query("""
         SELECT new com.bizmate.salesPages.report.salesReport.dto.YearlySalesSummary(
             CAST(FUNCTION('TO_CHAR', s.salesDate, 'YYYY') AS integer),

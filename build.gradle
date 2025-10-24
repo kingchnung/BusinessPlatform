@@ -31,6 +31,8 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation "org.hibernate.orm:hibernate-envers"
+    implementation "org.springframework.data:spring-data-envers"
 
     // ✅ JSON 처리
     implementation 'com.google.code.gson:gson:2.10.1'
@@ -74,15 +76,15 @@ dependencies {
 def generated = 'src/main/generated'
 
 sourceSets {
-    main.java.srcDirs += [ generated ]
+    main.java.srcDirs += [ generated ]    // 생성된 소스도 컴파일 소스에 포함
 }
 
 tasks.withType(JavaCompile) {
-    options.getGeneratedSourceOutputDirectory().set(file(generated))
+    options.getGeneratedSourceOutputDirectory().set(file(generated))    // 여기에 생성
 }
 
 clean.doLast {
-    file(generated).deleteDir()
+    file(generated).deleteDir()  // clean 시 해당 폴더 삭제
 }
 
 tasks.named('test') {

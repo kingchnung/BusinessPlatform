@@ -5,6 +5,7 @@ import com.bizmate.salesPages.management.sales.salesItem.domain.SalesItem;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.envers.Audited;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -17,6 +18,7 @@ import java.util.List;
 @Entity
 @Table
 @Builder
+@Audited
 public class Sales {
     @Id
     @Column(length = 20)
