@@ -71,6 +71,7 @@ public class ApprovalDocumentsDto {
     private LocalDateTime updatedAt;
 
     private String currentApproverId;
+    private int currentApproverIndex;
 
     @Builder.Default
     private List<String> viewerIds = new ArrayList<>();
@@ -105,6 +106,7 @@ public class ApprovalDocumentsDto {
                 .viewerIds(entity.getViewerIds() != null ? entity.getViewerIds() : new ArrayList<>()) // ✅ [추가]
                 .createdAt(entity.getCreatedAt())
                 .updatedAt(entity.getUpdatedAt())
+                .currentApproverIndex(entity.getCurrentApproverIndex())
                 .attachments(entity.getAttachments() != null
                         ? entity.getAttachments().stream()
                         .map(ApprovalFileAttachmentDto::fromEntity)
@@ -126,7 +128,9 @@ public class ApprovalDocumentsDto {
                 .finalDocNumber(this.finalDocNumber)
                 .approvalLine(this.approvalLine)
                 .docContent(this.docContent)
-                .currentApproverIndex(0)
+                .currentApproverIndex(
+                        this.approvalLine != null && !this.approvalLine.isEmpty() ? 0 : -1
+                )
                 .viewerIds(this.viewerIds != null ? this.viewerIds : new ArrayList<>()) // ✅ [보완]
                 .build();
     }

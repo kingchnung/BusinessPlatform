@@ -7,6 +7,7 @@ import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -21,13 +22,16 @@ public class ApproverLineJsonConverter implements AttributeConverter<List<Approv
 
     private static final ObjectMapper mapper = new ObjectMapper();
 
+    private static final ObjectMapper objectMapper = new ObjectMapper();
+
     @Override
     public String convertToDatabaseColumn(List<ApproverStep> attribute) {
         try {
-            if (attribute == null || attribute.isEmpty()) return "[]";
-            return mapper.writeValueAsString(attribute);
+            if (attribute == null) return "[]";
+            if (attribute.isEmpty()) return "[]";
+            return objectMapper.writeValueAsString(attribute);
         } catch (Exception e) {
-            log.error("❌ ApproverLineJsonConverter DB 저장 실패: {}", e.getMessage(), e);
+            log.error("❌ ApproverLine 직렬화 오류: {}", e.getMessage());
             return "[]";
         }
     }
@@ -35,13 +39,11 @@ public class ApproverLineJsonConverter implements AttributeConverter<List<Approv
     @Override
     public List<ApproverStep> convertToEntityAttribute(String dbData) {
         try {
-            if (dbData == null || dbData.isBlank() || dbData.equalsIgnoreCase("null")) {
-                return Collections.emptyList();
-            }
-            return mapper.readValue(dbData, new TypeReference<List<ApproverStep>>() {});
+            if (dbData == null || dbData.isBlank()) return new ArrayList<>();
+            return objectMapper.readValue(dbData, new TypeReference<>() {});
         } catch (Exception e) {
-            log.error("❌ ApproverLineJsonConverter 변환 실패: {}", e.getMessage(), e);
-            return Collections.emptyList();
+            log.error("❌ ApproverLine 역직렬화 오류: {}", e.getMessage());
+            return new ArrayList<>();
         }
     }
 }

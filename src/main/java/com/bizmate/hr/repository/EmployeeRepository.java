@@ -95,4 +95,6 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
     Employee findByDepartment_DeptNameAndPosition_PositionName(String deptName, String positionName);
 
     Optional<Employee> findByEmpName(String empName);
+
+    Optional<Employee> findFirstByDepartment_DeptCodeAndPosition_PositionCode(String deptCode, Long positionCode);
 }
