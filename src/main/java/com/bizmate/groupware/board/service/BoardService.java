@@ -12,12 +12,14 @@ import java.util.List;
 
 public interface BoardService {
     BoardDto createBoard(BoardDto dto, UserPrincipal user);
+
     void deleteBoard(Long boardId, UserPrincipal user);
+
     Comment addComment(Long boardId, String content, UserPrincipal user);
 
     List<BoardDto> getBoardsByType(BoardType type);
 
-    BoardDto getBoard(Long id);
+    BoardDto getBoard(Long id , UserPrincipal user);
 
     BoardDto updateBoard(Long id, BoardDto dto, UserPrincipal user);
 

@@ -45,6 +45,7 @@ public class Board extends BaseEntity {
     @Builder.Default
     private boolean isDeleted = false;
 
+
     @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<Comment> comments = new ArrayList<>();
