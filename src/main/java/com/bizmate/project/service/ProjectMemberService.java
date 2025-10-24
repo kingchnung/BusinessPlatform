@@ -1,19 +1,27 @@
 package com.bizmate.project.service;
 
-import com.bizmate.project.dto.request.ProjectMemberRequestDTO;
-import com.bizmate.project.dto.response.ProjectMemberResponseDTO;
+import com.bizmate.project.dto.projectmember.ProjectMemberDTO;
+import com.bizmate.project.dto.projectmember.ProjectMemberRequest;
 
 import java.util.List;
 
 public interface ProjectMemberService {
-    List<ProjectMemberResponseDTO> list(Long projectId);
 
-    void register(ProjectMemberRequestDTO requestDTO);
+    // ✅ 구성원 등록
+    ProjectMemberDTO addMember(ProjectMemberRequest request);
 
-    ProjectMemberResponseDTO get (Long projectId, Long userId);
+    // ✅ 단일 구성원 조회
+    ProjectMemberDTO getMemberById(Long projectMemberId);
 
+    // ✅ 특정 프로젝트의 모든 구성원 조회
+    List<ProjectMemberDTO> getMembersByProject(Long projectId);
 
-    void modify(ProjectMemberRequestDTO requestDTO, Long projectId, Long userId);
+    // ✅ 특정 직원이 참여한 프로젝트 목록 조회
+    List<ProjectMemberDTO> getMembersByEmployee(Long employeeId);
 
-    void remove(Long projectId, Long userId);
+    // ✅ 구성원 정보 수정 (역할 변경 등)
+    ProjectMemberDTO updateMember(Long projectMemberId, ProjectMemberRequest request);
+
+    // ✅ 구성원 삭제
+    void deleteMember(Long projectMemberId);
 }

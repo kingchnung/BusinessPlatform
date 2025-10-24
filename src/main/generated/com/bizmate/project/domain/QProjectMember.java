@@ -22,29 +22,27 @@ public class QProjectMember extends EntityPathBase<ProjectMember> {
 
     public static final QProjectMember projectMember = new QProjectMember("projectMember");
 
-    public final com.bizmate.project.domain.auditings.QBaseTimeEntity _super = new com.bizmate.project.domain.auditings.QBaseTimeEntity(this);
+    public final com.bizmate.common.domain.QBaseEntity _super = new com.bizmate.common.domain.QBaseEntity(this);
 
     //inherited
-    public final DateTimePath<java.time.LocalDateTime> modDate = _super.modDate;
+    public final DateTimePath<java.time.LocalDateTime> createdAt = _super.createdAt;
 
     //inherited
-    public final StringPath modId = _super.modId;
+    public final StringPath createdBy = _super.createdBy;
 
-    public final com.bizmate.project.domain.embeddables.QProjectMemberId pmId;
+    public final com.bizmate.hr.domain.QEmployee employee;
 
-    public final EnumPath<com.bizmate.project.domain.enums.ProjectMemberStatus> pmRoleName = createEnum("pmRoleName", com.bizmate.project.domain.enums.ProjectMemberStatus.class);
+    public final QProject project;
 
-    public final QProject projectId;
+    public final NumberPath<Long> projectMemberId = createNumber("projectMemberId", Long.class);
+
+    public final StringPath projectRole = createString("projectRole");
 
     //inherited
-    public final DateTimePath<java.time.LocalDateTime> regDate = _super.regDate;
+    public final DateTimePath<java.time.LocalDateTime> updatedAt = _super.updatedAt;
 
     //inherited
-    public final StringPath regId = _super.regId;
-
-    public final QTask task;
-
-    public final com.bizmate.hr.domain.QUserEntity userId;
+    public final StringPath updatedBy = _super.updatedBy;
 
     public QProjectMember(String variable) {
         this(ProjectMember.class, forVariable(variable), INITS);
@@ -64,10 +62,8 @@ public class QProjectMember extends EntityPathBase<ProjectMember> {
 
     public QProjectMember(Class<? extends ProjectMember> type, PathMetadata metadata, PathInits inits) {
         super(type, metadata, inits);
-        this.pmId = inits.isInitialized("pmId") ? new com.bizmate.project.domain.embeddables.QProjectMemberId(forProperty("pmId")) : null;
-        this.projectId = inits.isInitialized("projectId") ? new QProject(forProperty("projectId"), inits.get("projectId")) : null;
-        this.task = inits.isInitialized("task") ? new QTask(forProperty("task")) : null;
-        this.userId = inits.isInitialized("userId") ? new com.bizmate.hr.domain.QUserEntity(forProperty("userId"), inits.get("userId")) : null;
+        this.employee = inits.isInitialized("employee") ? new com.bizmate.hr.domain.QEmployee(forProperty("employee"), inits.get("employee")) : null;
+        this.project = inits.isInitialized("project") ? new QProject(forProperty("project"), inits.get("project")) : null;
     }
 
 }

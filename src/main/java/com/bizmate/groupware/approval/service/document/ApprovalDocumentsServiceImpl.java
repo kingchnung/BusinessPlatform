@@ -30,7 +30,7 @@ import com.bizmate.hr.repository.DepartmentRepository;
 import com.bizmate.hr.repository.EmployeeRepository;
 import com.bizmate.hr.repository.UserRepository;
 import com.bizmate.hr.security.UserPrincipal;
-import com.bizmate.project.dto.request.ProjectRequestDTO;
+import com.bizmate.project.dto.project.ProjectRequestDTO;
 import com.bizmate.project.service.ProjectService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
