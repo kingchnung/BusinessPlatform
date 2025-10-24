@@ -30,6 +30,8 @@ public class QCollection extends EntityPathBase<Collection> {
 
     public final NumberPath<java.math.BigDecimal> collectionMoney = createNumber("collectionMoney", java.math.BigDecimal.class);
 
+    public final NumberPath<Long> collectionNo = createNumber("collectionNo", Long.class);
+
     public final StringPath collectionNote = createString("collectionNote");
 
     public final StringPath userId = createString("userId");

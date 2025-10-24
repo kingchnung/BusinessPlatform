@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.envers.Audited;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -17,9 +18,22 @@ import java.time.LocalDate;
 @Builder
 @Entity
 @Table
+@Audited
+@SequenceGenerator(
+        name = "COLLECTION_SEQ_GENERATOR",
+        sequenceName = "COLLECTION_SEQ",
+        initialValue = 1,
+        allocationSize = 1
+)
 public class Collection {
     @Id
-    @Column(length = 20)
+    @GeneratedValue(
+            strategy = GenerationType.SEQUENCE,
+            generator = "COLLECTION_SEQ_GENERATOR"
+    )
+    private Long collectionNo;
+
+    @Column(unique = true, nullable = false, length = 20)
     private String collectionId;
 
     @CreationTimestamp

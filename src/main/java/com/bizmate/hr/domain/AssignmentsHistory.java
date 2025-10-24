@@ -88,6 +88,7 @@ public class AssignmentsHistory {
 
     // 12. 등록일
     @Column(name = "cre_date", updatable = false)
+    @Builder.Default
     private LocalDateTime creDate = LocalDateTime.now(); // 객체 생성 시 현재 시간으로 기본값 설정
 
     @PrePersist

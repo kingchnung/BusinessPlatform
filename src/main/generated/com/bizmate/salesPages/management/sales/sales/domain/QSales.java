@@ -46,6 +46,8 @@ public class QSales extends EntityPathBase<Sales> {
 
     public final ListPath<com.bizmate.salesPages.management.sales.salesItem.domain.SalesItem, com.bizmate.salesPages.management.sales.salesItem.domain.QSalesItem> salesItems = this.<com.bizmate.salesPages.management.sales.salesItem.domain.SalesItem, com.bizmate.salesPages.management.sales.salesItem.domain.QSalesItem>createList("salesItems", com.bizmate.salesPages.management.sales.salesItem.domain.SalesItem.class, com.bizmate.salesPages.management.sales.salesItem.domain.QSalesItem.class, PathInits.DIRECT2);
 
+    public final NumberPath<Long> salesNo = createNumber("salesNo", Long.class);
+
     public final StringPath salesNote = createString("salesNote");
 
     public final NumberPath<java.math.BigDecimal> totalSubAmount = createNumber("totalSubAmount", java.math.BigDecimal.class);

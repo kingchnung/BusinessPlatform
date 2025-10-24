@@ -47,6 +47,7 @@ public class Department {
     // 계층 구조 관리를 위한 자식 부서 목록 (편의상)
     @OneToMany(mappedBy = "parentDept", cascade = CascadeType.ALL)
     @JsonManagedReference
+    @Builder.Default
     private List<Department> childDepts = new ArrayList<>();
 
     // 5. 사용여부

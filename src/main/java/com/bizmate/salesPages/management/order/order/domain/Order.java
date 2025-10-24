@@ -5,6 +5,8 @@ import com.bizmate.salesPages.management.sales.salesItem.domain.SalesItem;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.envers.Audited;
+import org.hibernate.envers.NotAudited;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -20,10 +22,23 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@Audited
+@SequenceGenerator(
+        name = "ORDER_SEQ_GENERATOR",
+        sequenceName = "ORDER_SEQ",
+        initialValue = 1,
+        allocationSize = 1
+)
 public class Order implements Serializable {
 
     @Id
-    @Column(length = 20)
+    @GeneratedValue(
+            strategy = GenerationType.SEQUENCE,
+            generator = "ORDER_SEQ_GENERATOR"
+    )
+    private Long orderNo;
+
+    @Column(unique = true, nullable = false, length = 20)
     private String orderId;
 
     @CreationTimestamp
@@ -51,8 +66,10 @@ public class Order implements Serializable {
     @OneToMany(
             mappedBy = "order",
             cascade = CascadeType.ALL,
-            orphanRemoval = true
+            orphanRemoval = true,
+            fetch = FetchType.LAZY
     )
+    @NotAudited
     private List<OrderItem> orderItems = new ArrayList<>();
 
     public void addOrderItem(OrderItem orderItem){

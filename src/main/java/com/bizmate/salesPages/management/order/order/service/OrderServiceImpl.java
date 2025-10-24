@@ -11,6 +11,7 @@ import com.bizmate.salesPages.management.order.order.repository.OrderRepository;
 import com.bizmate.salesPages.management.order.orderItem.domain.OrderItem;
 import com.bizmate.salesPages.management.order.orderItem.dto.OrderItemDTO;
 
+import com.bizmate.salesPages.management.sales.sales.repository.SalesRepository;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
@@ -27,6 +28,7 @@ import java.time.format.DateTimeFormatter;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -35,6 +37,7 @@ import java.util.stream.Collectors;
 @Transactional
 public class OrderServiceImpl implements OrderService {
     private final OrderRepository orderRepository;
+    private final SalesRepository salesRepository;
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyyMMdd");
     private final ModelMapper modelMapper;
 
@@ -85,7 +88,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public OrderDTO get(String orderId) {
-        Optional<Order> result = orderRepository.findById(orderId);
+        Optional<Order> result = orderRepository.findByOrderId(orderId);
         Order order = result.orElseThrow();
         OrderDTO dto = modelMapper.map(order, OrderDTO.class);
         return dto;
@@ -93,7 +96,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public void modify(OrderDTO orderDTO) {
-        Optional<Order> result = orderRepository.findById(orderDTO.getOrderId());
+        Optional<Order> result = orderRepository.findByOrderId(orderDTO.getOrderId());
         Order order = result.orElseThrow();
 
         order.changeClientId(orderDTO.getClientId());
@@ -142,12 +145,31 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public void remove(String orderId) {
-        orderRepository.deleteById(orderId);
+        Order order = orderRepository.findByOrderId(orderId)
+                .orElseThrow(() -> new NoSuchElementException("Order ID [" + orderId + "]를 찾을 수 없습니다."));
+
+        //  🔴 이 주문을 참조하는 Sales가 있는지 확인합니다.
+        boolean salesExist = salesRepository.existsByOrderOrderId(orderId);
+
+        if (salesExist) {
+            // 🔴 Sales가 존재하면, 예외를 발생시켜 삭제를 중단시킵니다.
+            throw new IllegalStateException("이미 '판매' 데이터가 등록된 주문은 삭제할 수 없습니다. 연결된 판매 데이터를 먼저 삭제하세요.");
+        }
+
+        orderRepository.delete(order);
     }
 
     @Override
     public void removeList(List<String> orderIds) {
-        orderRepository.deleteAllByIdInBatch(orderIds);
+        // 🔴 삭제할 주문 중 하나라도 Sales에 연결되어 있는지 확인합니다.
+        for (String orderId : orderIds) {
+            if (salesRepository.existsByOrderOrderId(orderId)) {
+                throw new IllegalStateException("삭제 목록에 '판매' 데이터가 등록된 주문(" + orderId + ")이 포함되어 있습니다.");
+            }
+        }
+
+        List<Order> ordersToDelete = orderRepository.findAllByOrderIdIn(orderIds);
+        orderRepository.deleteAllInBatch(ordersToDelete);
     }
 
     @Override

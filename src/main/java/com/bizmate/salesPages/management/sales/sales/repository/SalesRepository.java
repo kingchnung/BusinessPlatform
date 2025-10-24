@@ -2,7 +2,9 @@ package com.bizmate.salesPages.management.sales.sales.repository;
 
 import com.bizmate.salesPages.management.sales.sales.domain.Sales;
 import com.bizmate.salesPages.report.salesReport.dto.*;
+import org.springframework.data.envers.repository.support.EnversRevisionRepository;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -11,13 +13,21 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
-public interface SalesRepository extends JpaRepository<Sales, String>, SalesRepositoryCustom {
+public interface SalesRepository extends JpaRepository<Sales, Long>, SalesRepositoryCustom , EnversRevisionRepository<Sales, Long, Integer> {
 
     @Query("SELECT MAX(s.salesId) FROM Sales s WHERE s.salesIdDate = :salesIdDate")
     Optional<String> findMaxSalesIdBySalesIdDate(@Param("salesIdDate") LocalDate today);
 
     @Query("SELECT s.salesId FROM Sales s ORDER BY s.salesId ASC LIMIT 1")
     Optional<String> findMinSalesId();
+
+    // String 타입 salesId로 엔티티를 조회하는 메서드 추가 (Service에서 사용)
+    Optional<Sales> findBySalesId(String salesId);
+
+    // String 타입 salesId로 엔티티를 삭제하는 메서드 추가 (Service에서 사용)
+    @Modifying
+    @Query("DELETE FROM Sales s WHERE s.salesId = :salesId")
+    void deleteBySalesId(@Param("salesId") String salesId);
 
     @Query("""
         SELECT new com.bizmate.salesPages.report.salesReport.dto.ClientSalesSummary(
@@ -90,7 +100,7 @@ public interface SalesRepository extends JpaRepository<Sales, String>, SalesRepo
         """)
     List<ClientSalesSummary> findClientSalesSummaryByYearMonth(@Param("yearMonth") String yearMonth);
 
-    // [신규] 특정 연도의 거래처별 매출 합계 (거래처별 현황 - '월' 전체)
+    // 특정 연도의 거래처별 매출 합계 (거래처별 현황 - '월' 전체)
     @Query("""
         SELECT new com.bizmate.salesPages.report.salesReport.dto.ClientSalesSummary(
             s.clientId, s.clientCompany, SUM(s.salesAmount)
@@ -102,7 +112,7 @@ public interface SalesRepository extends JpaRepository<Sales, String>, SalesRepo
         """)
     List<ClientSalesSummary> findClientSalesSummaryByYear(@Param("year") String year);
 
-    // [신규] 연도별 총 매출 (연도별 요약)
+    // 연도별 총 매출 (연도별 요약)
     @Query("""
         SELECT new com.bizmate.salesPages.report.salesReport.dto.YearlySalesSummary(
             CAST(FUNCTION('TO_CHAR', s.salesDate, 'YYYY') AS integer),

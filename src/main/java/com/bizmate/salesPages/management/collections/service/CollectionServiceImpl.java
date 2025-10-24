@@ -34,9 +34,7 @@ import java.util.stream.Collectors;
 public class CollectionServiceImpl implements CollectionService{
     private final CollectionRepository collectionRepository;
     private final ClientRepository clientRepository;
-    private final SalesRepository salesRepository;
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyyMMdd");
-    private final ModelMapper modelMapper;
 
     /**
      * Entity(Collection)를 DTO(CollectionDTO)로 변환하는 헬퍼 메서드.
@@ -46,6 +44,7 @@ public class CollectionServiceImpl implements CollectionService{
         Client client = collection.getClient();
 
         return CollectionDTO.builder()
+                .collectionNo(collection.getCollectionNo())
                 .collectionId(collection.getCollectionId())
                 .collectionDate(collection.getCollectionDate())
                 .collectionMoney(collection.getCollectionMoney())
@@ -110,7 +109,7 @@ public class CollectionServiceImpl implements CollectionService{
 
     @Override
     public CollectionDTO get(String collectionId) {
-        Optional<Collection> result = collectionRepository.findById(collectionId);
+        Optional<Collection> result = collectionRepository.findByCollectionId(collectionId);
         Collection collection = result.orElseThrow(() -> new NoSuchElementException("Collection not found for ID: " + collectionId));
 
         CollectionDTO dto = convertToDTO(collection);
@@ -119,7 +118,7 @@ public class CollectionServiceImpl implements CollectionService{
 
     @Override
     public void modify(CollectionDTO collectionDTO) {
-        Optional<Collection> result = collectionRepository.findById(collectionDTO.getCollectionId());
+        Optional<Collection> result = collectionRepository.findByCollectionId(collectionDTO.getCollectionId());
         Collection collection = result.orElseThrow(() -> new NoSuchElementException("Collection not found for ID: " + collectionDTO.getCollectionId()));
 
         collection.changeCollectionDate(collectionDTO.getCollectionDate());
@@ -137,7 +136,7 @@ public class CollectionServiceImpl implements CollectionService{
 
     @Override
     public void remove(String collectionId) {
-        collectionRepository.deleteById(collectionId);
+        collectionRepository.deleteByCollectionId(collectionId);
     }
 
     @Override

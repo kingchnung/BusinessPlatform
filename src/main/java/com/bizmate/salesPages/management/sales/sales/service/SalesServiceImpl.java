@@ -66,7 +66,7 @@ public class SalesServiceImpl implements SalesService {
         // 연결할 주문 조회 (있다면 DTO 기본값 보정)
         Order order = null;
         if (salesDTO.getOrderId() != null && !salesDTO.getOrderId().isEmpty()) {
-            order = orderRepository.findById(salesDTO.getOrderId())
+            order = orderRepository.findByOrderId(salesDTO.getOrderId())
                     .orElseThrow(() -> new NoSuchElementException("Order ID [" + salesDTO.getOrderId() + "]를 찾을 수 없습니다."));
 
             salesDTO.setProjectId(Optional.ofNullable(salesDTO.getProjectId()).orElse(order.getProjectId()));
@@ -115,7 +115,7 @@ public class SalesServiceImpl implements SalesService {
     @Override
     @Transactional(readOnly = true)
     public SalesDTO get(String salesId) {
-        Sales sales = salesRepository.findById(salesId).orElseThrow();
+        Sales sales = salesRepository.findBySalesId(salesId).orElseThrow();
         SalesDTO dto = modelMapper.map(sales, SalesDTO.class);
         // 🔴 수동 매핑: order.orderId -> dto.orderId
         dto.setOrderId(sales.getOrder() != null ? sales.getOrder().getOrderId() : null);
@@ -124,7 +124,7 @@ public class SalesServiceImpl implements SalesService {
 
     @Override
     public void modify(SalesDTO salesDTO) {
-        Sales sales = salesRepository.findById(salesDTO.getSalesId())
+        Sales sales = salesRepository.findBySalesId(salesDTO.getSalesId())
                 .orElseThrow(() -> new NoSuchElementException("Sales ID [" + salesDTO.getSalesId() + "]을 찾을 수 없습니다."));
 
         // 상위 필드 변경
@@ -172,12 +172,14 @@ public class SalesServiceImpl implements SalesService {
 
     @Override
     public void remove(String salesId) {
-        Sales sales = salesRepository.findById(salesId)
+        Sales sales = salesRepository.findBySalesId(salesId)
                 .orElseThrow(() -> new NoSuchElementException("Sales ID [" + salesId + "]를 찾을 수 없습니다."));
 
         String orderId = (sales.getOrder() != null) ? sales.getOrder().getOrderId() : null;
 
-        salesRepository.deleteById(salesId);
+        // 2. 🔴 변경 지점: 커스텀 쿼리 대신 엔티티 자체를 삭제
+        // salesRepository.deleteBySalesId(salesId);
+        salesRepository.delete(sales);
 
         this.updateOrderStatus(orderId);
     }
@@ -232,7 +234,7 @@ public class SalesServiceImpl implements SalesService {
             return;
         }
 
-        Order order = orderRepository.findById(orderId).orElse(null);
+        Order order = orderRepository.findByOrderId(orderId).orElse(null);
         if (order == null) {
             return;
         }
