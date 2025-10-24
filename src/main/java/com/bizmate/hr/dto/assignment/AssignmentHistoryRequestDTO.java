@@ -22,9 +22,9 @@ public class AssignmentHistoryRequestDTO {
     @NotNull(message = "발령일자는 필수입니다.")
     private LocalDate assDate;          // 발령일자 (발령이 유효해지는 날)
 
-    private Long prevDeptId;
-    private Long prevPositionCode;
-    private Long prevGradeCode;
+//    private Long prevDeptId;
+//    private Long prevPositionCode;
+//    private Long prevGradeCode;
 
     @NotNull(message = "신규 부서 ID는 필수입니다.")
     private Long newDeptId;             // 신규 부서 ID (DEPARTMENTS의 FK)

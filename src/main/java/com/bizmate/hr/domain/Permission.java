@@ -1,6 +1,7 @@
 package com.bizmate.hr.domain;
 
 import com.bizmate.hr.domain.Role;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -35,9 +36,13 @@ public class Permission {
     @Column(name = "description", length = 255)
     private String description;
 
+    @Column(name = "is_used", length = 1, nullable = false)
+    @Builder.Default
+    private String isUsed = "Y";
+
     // N:M 관계 매핑: 역할 - 권한 (ROLE_PERMISSIONS 테이블)
     // Role 엔티티에서 JoinTable을 통해 매핑되었으므로 mappedBy를 사용합니다.
     @ManyToMany(mappedBy = "permissions", fetch = FetchType.LAZY)
-    @Builder.Default
+    @JsonIgnore
     private Set<Role> roles = new HashSet<>();
 }

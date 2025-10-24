@@ -1,8 +1,8 @@
 package com.bizmate.groupware.approval.repository;
 
-import com.bizmate.groupware.approval.domain.ApprovalDocuments;
-import com.bizmate.groupware.approval.domain.DocumentStatus;
-import com.bizmate.groupware.approval.domain.DocumentType;
+import com.bizmate.groupware.approval.domain.document.ApprovalDocuments;
+import com.bizmate.groupware.approval.domain.document.DocumentStatus;
+import com.bizmate.groupware.approval.domain.document.DocumentType;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.time.LocalDateTime;

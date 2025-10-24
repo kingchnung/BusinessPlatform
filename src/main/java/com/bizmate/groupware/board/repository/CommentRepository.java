@@ -8,5 +8,5 @@ import java.util.List;
 
 public interface CommentRepository extends JpaRepository<Comment, Long> {
 
-    List<Comment> findByBoardAndIsDeletedFalse(Board board);
+    List<Comment> findByBoard_BoardNoAndIsDeletedFalse(Long boardNo);
 }

@@ -1,7 +1,7 @@
 package com.bizmate.salesPages.management.sales.sales.service;
 
-import com.bizmate.common.dto.PageRequestDTO;
-import com.bizmate.common.dto.PageResponseDTO;
+import com.bizmate.common.page.PageRequestDTO;
+import com.bizmate.common.page.PageResponseDTO;
 import com.bizmate.salesPages.management.sales.sales.dto.SalesDTO;
 
 import java.util.List;
@@ -15,3 +15,4 @@ public interface SalesService {
 
     List<SalesDTO> listByClient(String clientId);
 }
+

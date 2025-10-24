@@ -22,11 +22,13 @@ public class QBoard extends EntityPathBase<Board> {
 
     public final com.bizmate.common.domain.QBaseEntity _super = new com.bizmate.common.domain.QBaseEntity(this);
 
-    public final NumberPath<Long> authorId = createNumber("authorId", Long.class);
+    public final StringPath authorId = createString("authorId");
 
     public final StringPath authorName = createString("authorName");
 
     public final NumberPath<Long> boardNo = createNumber("boardNo", Long.class);
+
+    public final EnumPath<BoardType> boardType = createEnum("boardType", BoardType.class);
 
     public final ListPath<Comment, QComment> comments = this.<Comment, QComment>createList("comments", Comment.class, QComment.class, PathInits.DIRECT2);
 
@@ -41,8 +43,6 @@ public class QBoard extends EntityPathBase<Board> {
     public final BooleanPath isDeleted = createBoolean("isDeleted");
 
     public final StringPath title = createString("title");
-
-    public final EnumPath<BoardType> type = createEnum("type", BoardType.class);
 
     //inherited
     public final DateTimePath<java.time.LocalDateTime> updatedAt = _super.updatedAt;

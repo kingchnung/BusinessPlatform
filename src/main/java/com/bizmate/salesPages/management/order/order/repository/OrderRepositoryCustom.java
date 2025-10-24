@@ -1,6 +1,6 @@
 package com.bizmate.salesPages.management.order.order.repository;
 
-import com.bizmate.common.dto.PageRequestDTO;
+import com.bizmate.common.page.PageRequestDTO;
 import com.bizmate.salesPages.management.order.order.domain.Order;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

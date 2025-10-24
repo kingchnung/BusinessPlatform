@@ -1,7 +1,8 @@
 package com.bizmate.salesPages.report.salesTarget.controller;
 
-import com.bizmate.common.dto.PageRequestDTO;
-import com.bizmate.common.dto.PageResponseDTO;
+
+import com.bizmate.common.page.PageRequestDTO;
+import com.bizmate.common.page.PageResponseDTO;
 import com.bizmate.salesPages.report.salesTarget.dto.SalesTargetDTO;
 import com.bizmate.salesPages.report.salesTarget.service.SalesTargetService;
 import lombok.RequiredArgsConstructor;

@@ -20,20 +20,26 @@ import java.util.Map;
 public class EmployeeController {
     private final EmployeeService employeeService;
 
-    // ★ 권한 설정: 'emp:read' 권한이 있는 사용자만 접근 가능
     @GetMapping
-    @PreAuthorize("hasRole('EMPLOYEE')")
-    public List<EmployeeDTO> getAllEmployees(){
-        // ★ 변경: DTO List 반환
-        return employeeService.getAllEmployees();
+    @PreAuthorize("isAuthenticated()") // 진입 보장
+    public List<EmployeeDTO> getAllEmployees(Authentication authentication) {
+        var principal = (UserPrincipal) authentication.getPrincipal();
+        boolean admin = principal.getAuthorities().stream().anyMatch(a ->
+                a.getAuthority().equals("sys:admin")
+                        || a.getAuthority().equals("ROLE_ADMIN")
+                        || a.getAuthority().equals("ROLE_CEO")
+                        || a.getAuthority().equals("data:read:all")
+        );
+
+        return admin ? employeeService.getAllEmployees()
+                : employeeService.getActiveEmployees();
     }
 
-    // ★ 권한 설정: 'emp:read' 권한이 있는 사용자만 접근 가능
-    @GetMapping("/{empId}/summary")
+
+    @GetMapping("/summary")
     @PreAuthorize("hasRole('EMPLOYEE')")
-    public ResponseEntity<EmployeeDTO> getEmployee(@PathVariable Long empId){
-        EmployeeDTO dto = employeeService.getEmployee(empId);
-        return ResponseEntity.ok(dto);
+    public List<EmployeeSummaryDTO> getEmployeeSummaries() {
+        return employeeService.getEmployeeSummaries();
     }
 
     @GetMapping("/{empId}/detail")
@@ -69,6 +75,14 @@ public class EmployeeController {
         return ResponseEntity.ok(updated);
     }
 
+    //관리자용 해당직원의 퇴직처리
+    @PutMapping("/{empId}/retire")
+    @PreAuthorize("hasAnyRole('ROLE_CEO', 'ROLE_MANAGER')")
+    public ResponseEntity<EmployeeDTO> retireEmployee(@PathVariable Long empId) {
+        EmployeeDTO retired = employeeService.retireEmployee(empId);
+        return ResponseEntity.ok(retired);
+    }
+
     // 🔹 [관리자용] 특정 직원 상세 조회
     @GetMapping("/{empId}")
     @PreAuthorize("hasRole('MANAGER')")
@@ -98,10 +112,12 @@ public class EmployeeController {
         return ResponseEntity.ok(employee);
     }
 
-    @GetMapping("/me/test")
-    public ResponseEntity<String> test(){
-        return ResponseEntity.ok("test");
+    @PreAuthorize("hasRole('ROLE_EMPLOYEE')")
+    @GetMapping("/byDepartment/{deptId}")
+    public List<EmployeeDTO> getEmployeesByDepartment(@PathVariable Long deptId) {
+        return employeeService.getEmployeesByDepartment(deptId);
     }
+
 
 
     // ★ 권한 설정: 'emp:delete' 권한이 있는 사용자만 접근 가능

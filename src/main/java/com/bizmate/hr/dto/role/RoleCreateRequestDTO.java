@@ -22,6 +22,8 @@ public class RoleCreateRequestDTO {
     @Size(max = 255, message = "설명은 255자 이하로 입력해야 합니다.")
     private String description; // 역할 설명
 
+    private String isUsed;
+
     // 생성 시 부여할 권한 ID 목록
     private List<Long> permissionIds;
 }

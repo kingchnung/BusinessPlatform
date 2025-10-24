@@ -1,6 +1,6 @@
 package com.bizmate.salesPages.management.collections.repository;
 
-import com.bizmate.common.dto.PageRequestDTO;
+import com.bizmate.common.page.PageRequestDTO;
 import com.bizmate.salesPages.client.domain.QClient;
 import com.bizmate.salesPages.management.collections.domain.Collection;
 import com.bizmate.salesPages.management.collections.domain.QCollection;

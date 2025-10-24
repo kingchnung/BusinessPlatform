@@ -9,4 +9,5 @@ import java.util.Optional;
 @Repository
 public interface GradeRepository extends JpaRepository<Grade, Long> {
     Optional<Grade> findByGradeName(String gradeName);
+
 }

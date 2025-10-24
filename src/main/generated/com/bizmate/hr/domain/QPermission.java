@@ -22,6 +22,8 @@ public class QPermission extends EntityPathBase<Permission> {
 
     public final StringPath description = createString("description");
 
+    public final StringPath isUsed = createString("isUsed");
+
     public final NumberPath<Long> permId = createNumber("permId", Long.class);
 
     public final StringPath permName = createString("permName");

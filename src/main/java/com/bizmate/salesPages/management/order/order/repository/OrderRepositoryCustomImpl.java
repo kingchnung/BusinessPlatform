@@ -1,6 +1,6 @@
 package com.bizmate.salesPages.management.order.order.repository;
 
-import com.bizmate.common.dto.PageRequestDTO;
+import com.bizmate.common.page.PageRequestDTO;
 import com.bizmate.salesPages.management.order.order.domain.Order;
 import com.bizmate.salesPages.management.order.order.domain.QOrder;
 import com.bizmate.salesPages.management.order.orderItem.domain.QOrderItem;

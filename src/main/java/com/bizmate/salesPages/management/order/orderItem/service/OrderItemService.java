@@ -5,8 +5,8 @@ import com.bizmate.salesPages.management.order.orderItem.domain.OrderItem;
 import java.util.List;
 
 public interface OrderItemService {
-    public List<OrderItem> orderItemList(OrderItem orderItem);
-    public OrderItem orderItemInsert(OrderItem orderItem);
-    public OrderItem orderItemUpdate(OrderItem orderItem);
-    public void orderItemDelete(OrderItem orderItem);
+    List<OrderItem> orderItemList(OrderItem orderItem);
+    OrderItem orderItemInsert(OrderItem orderItem);
+    OrderItem orderItemUpdate(OrderItem orderItem);
+    void orderItemDelete(OrderItem orderItem);
 }

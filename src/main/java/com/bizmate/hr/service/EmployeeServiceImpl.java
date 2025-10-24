@@ -10,9 +10,12 @@ import com.bizmate.hr.repository.*;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -33,7 +36,20 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     @Transactional(readOnly = true)
     public List<EmployeeDTO> getAllEmployees() {
-        return employeeRepository.findAllWithDepartmentAndPosition().stream()
+        List<Employee> employees = employeeRepository.findAllWithDepartmentAndPosition();
+        return employees.stream()
+                .map(EmployeeDTO::fromEntity)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<EmployeeDTO> getActiveEmployees() {
+        List<Employee> employees = employeeRepository.findAllWithDepartmentAndPosition()
+                .stream()
+                .filter(emp -> !"RETIRED".equalsIgnoreCase(emp.getStatus()))
+                .collect(Collectors.toList());
+        return employees.stream()
                 .map(EmployeeDTO::fromEntity)
                 .collect(Collectors.toList());
     }
@@ -44,6 +60,11 @@ public class EmployeeServiceImpl implements EmployeeService {
         Employee employee = employeeRepository.findByIdWithDepartmentAndPosition(empId)
                 .orElseThrow(() -> new EntityNotFoundException("사원 ID " + empId + "를 찾을 수 없습니다."));
         return EmployeeDTO.fromEntity(employee);
+    }
+
+    @Override
+    public List<EmployeeSummaryDTO> getEmployeeSummaries() {
+        return employeeRepository.findEmployeeSummaries();
     }
 
     @Override
@@ -106,8 +127,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         // 4. 저장
         Employee updated = employeeRepository.save(employee);
 
-        // 5. User 정보 동기화 로직 (syncUserInfo)도 제거
-        // **[핵심] 전화번호, 이메일, 주소 변경은 사용자 인증 정보와 무관하므로 동기화 불필요**
+        syncUserInfo(updated);
 
         return EmployeeDTO.fromEntity(updated);
     }
@@ -157,6 +177,34 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
+    public EmployeeDTO retireEmployee(Long empId) {
+        Employee employee = employeeRepository.findById(empId)
+                .orElseThrow(() -> new EntityNotFoundException("사원 ID " + empId + "를 찾을 수 없습니다."));
+
+        // 이미 퇴직한 경우 예외 방지
+        if ("RETIRED".equalsIgnoreCase(employee.getStatus())) {
+            throw new IllegalStateException("이미 퇴직 처리된 사원입니다.");
+        }
+
+        // 상태 변경 + 퇴사일 기록
+        employee.setStatus("RETIRED");
+        employee.setLeaveDate(LocalDate.now());
+        employeeRepository.save(employee);
+
+        // 2️⃣ 해당 직원 계정 비활성화 처리
+        userRepository.findByEmployee(employee).ifPresent(user -> {
+            user.setIsActive("N"); // 혹은 user.setIsActive("N");
+            userRepository.save(user);
+        });
+
+        Employee retiredEmployee = employeeRepository.save(employee);
+
+
+        return EmployeeDTO.fromEntity(retiredEmployee);
+    }
+
+
+    @Override
     public List<EmployeeStatisticDTO> getAgeStatistics() {
         List<Object[]> result = employeeRepository.getAgeStatistics();
         return result.stream()
@@ -181,8 +229,15 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
+    @Transactional
     public void deleteEmployee(Long empId) {
-        employeeRepository.deleteById(empId);
+        Employee employee = employeeRepository.findById(empId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 직원을 찾을 수 없습니다."));
+
+        // ✅ 논리 삭제 처리
+        employee.setStatus("DELETED");
+
+        employeeRepository.save(employee);
     }
 
     @Override
@@ -197,16 +252,20 @@ public class EmployeeServiceImpl implements EmployeeService {
      * 🔹 직원 정보 변경 시 UserEntity의 복제 필드를 동기화하는 메서드
      */
     public void syncUserInfo(Employee employee) {
-        UserEntity user = userRepository.findByEmployee(employee)
-                .orElseThrow(() -> new EntityNotFoundException("연결된 사용자 계정을 찾을 수 없습니다."));
-
-        user.setEmpName(employee.getEmpName());
-        user.setEmail(employee.getEmail());
-        user.setPhone(employee.getPhone());
-        user.setDeptName(employee.getDepartment().getDeptName());
-        user.setPositionName(employee.getPosition().getPositionName());
-        user.setDeptCode(employee.getDepartment().getDeptCode());
-        userRepository.save(user);
+        userRepository.findByEmployee(employee)
+                .ifPresent(user -> {
+                    user.setEmpName(employee.getEmpName());
+                    user.setEmail(employee.getEmail());
+                    user.setPhone(employee.getPhone());
+                    if (employee.getDepartment() != null) {
+                        user.setDeptName(employee.getDepartment().getDeptName());
+                        user.setDeptCode(employee.getDepartment().getDeptCode());
+                    }
+                    if (employee.getPosition() != null) {
+                        user.setPositionName(employee.getPosition().getPositionName());
+                    }
+                    userRepository.saveAndFlush(user);
+                });
     }
 
 

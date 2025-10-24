@@ -1,5 +1,7 @@
 package com.bizmate.groupware.board.service;
 
+import com.bizmate.common.page.PageRequestDTO;
+import com.bizmate.common.page.PageResponseDTO;
 import com.bizmate.groupware.board.domain.Board;
 import com.bizmate.groupware.board.domain.BoardType;
 import com.bizmate.groupware.board.domain.Comment;
@@ -18,4 +20,9 @@ public interface BoardService {
     BoardDto getBoard(Long id);
 
     BoardDto updateBoard(Long id, BoardDto dto, UserPrincipal user);
+
+    PageResponseDTO<BoardDto> getBoardPage(PageRequestDTO pageRequestDTO, UserPrincipal user);
+
+    PageResponseDTO<BoardDto> getBoardPageForAdmin(PageRequestDTO pageRequestDTO);
+
 }

@@ -70,10 +70,10 @@ public class CustomSecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
                 // 2️⃣ 세션 사용 안 함 (JWT 기반)
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
                 // 3️⃣ 인가 설정
-        http
                 .authorizeHttpRequests(auth -> auth
                         // 인증 없이 접근 가능한 경로들
                         .requestMatchers(
@@ -82,8 +82,13 @@ public class CustomSecurityConfig {
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
                                 "/swagger-resources/**",
-                                "/h2-console/**"
+                                "/h2-console/**",
+                                "/api/attachments/preview/**",
+                                "/api/attachments/download/**",
+                                "/h2-console/**",
+                                "/api/assignments/**"
                         ).permitAll()
+
 
                         .requestMatchers("/api/employees/me").authenticated()
                         // OPTIONS 메서드 허용 (CORS)
@@ -96,15 +101,6 @@ public class CustomSecurityConfig {
                 // 4️⃣ JWT 필터 등록
                 .addFilterBefore(jwtCheckFilter, UsernamePasswordAuthenticationFilter.class)
 
-//                .formLogin(form -> form
-//                        .loginProcessingUrl("/api/auth/login")
-//                        .successHandler(apiLoginSuccessHandler)
-//                        .failureHandler(apiLoginFailHandler)
-//                )
-                .logout(logout -> logout
-                        .logoutUrl("/api/auth/logout")
-                        .permitAll()
-                )
                 // 5️⃣ 예외 처리 (JWT 인증 예외 대응)
                 .exceptionHandling(exception -> exception
                         // 인증 실패 (토큰 없음/잘못됨)
@@ -137,7 +133,7 @@ public class CustomSecurityConfig {
 
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOriginPatterns(List.of("*"));
-        configuration.setAllowedMethods(Arrays.asList("HEAD", "GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedMethods(Arrays.asList("HEAD", "GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
         configuration.setExposedHeaders(List.of("Authorization"));

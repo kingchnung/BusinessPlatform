@@ -1,7 +1,7 @@
 package com.bizmate.salesPages.management.order.order.service;
 
-import com.bizmate.common.dto.PageRequestDTO;
-import com.bizmate.common.dto.PageResponseDTO;
+import com.bizmate.common.page.PageRequestDTO;
+import com.bizmate.common.page.PageResponseDTO;
 import com.bizmate.salesPages.management.order.order.dto.OrderDTO;
 
 import java.util.List;

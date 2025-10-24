@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 @Component
@@ -76,7 +77,7 @@ public class DataInitializer implements CommandLineRunner {
         Role roleMANAGER = createRole("MANAGER", "팀 관리자 역할",
                 Set.of(permDataReadAll, permDataWriteAll, permDataReadSelf));
         Role roleEMPLOYEE = createRole("EMPLOYEE", "일반 직원 역할",
-                Set.of(permDataReadSelf ));
+                Set.of(permDataReadSelf));
 
         // ---- admin 전용 역할 생성 ----
         Role roleADMIN = createRole("ADMIN", "시스템 관리자",
@@ -149,27 +150,33 @@ public class DataInitializer implements CommandLineRunner {
                 boolean changed = false;
 
                 if (!Objects.equals(user.getEmpName(), emp.getEmpName())) {
-                    user.setEmpName(emp.getEmpName()); changed = true;
+                    user.setEmpName(emp.getEmpName());
+                    changed = true;
                 }
                 if (!Objects.equals(user.getEmail(), emp.getEmail())) {
-                    user.setEmail(emp.getEmail()); changed = true;
+                    user.setEmail(emp.getEmail());
+                    changed = true;
                 }
                 if (!Objects.equals(user.getPhone(), emp.getPhone())) {
-                    user.setPhone(emp.getPhone()); changed = true;
+                    user.setPhone(emp.getPhone());
+                    changed = true;
                 }
                 if (emp.getDepartment() != null && !Objects.equals(user.getDeptName(), emp.getDepartment().getDeptName())) {
-                    user.setDeptName(emp.getDepartment().getDeptName()); changed = true;
+                    user.setDeptName(emp.getDepartment().getDeptName());
+                    changed = true;
                 }
                 if (emp.getPosition() != null && !Objects.equals(user.getPositionName(), emp.getPosition().getPositionName())) {
-                    user.setPositionName(emp.getPosition().getPositionName()); changed = true;
+                    user.setPositionName(emp.getPosition().getPositionName());
+                    changed = true;
                 }
                 if (emp.getDepartment() != null && !Objects.equals(user.getDeptCode(), emp.getDepartment().getDeptCode())) {
-                    user.setDeptCode(emp.getDepartment().getDeptCode()); changed = true;
+                    user.setDeptCode(emp.getDepartment().getDeptCode());
+                    changed = true;
                 }
 
                 if (changed) {
                     user.setUpdDate(LocalDateTime.now());
-                    userRepository.save(user);
+                    userRepository.saveAndFlush(user);
                     updated++;
                 }
             }
@@ -188,6 +195,7 @@ public class DataInitializer implements CommandLineRunner {
                     return permissionRepository.save(Permission.builder()
                             .permName(name)
                             .description(desc)
+
                             .build());
                 });
     }
@@ -200,6 +208,7 @@ public class DataInitializer implements CommandLineRunner {
                             .roleName(name)
                             .description(desc)
                             .permissions(perms)
+
                             .build());
                 });
     }
@@ -209,6 +218,7 @@ public class DataInitializer implements CommandLineRunner {
                 .orElseGet(() -> positionRepository.save(Position.builder()
                         .positionName(name)
                         .description(desc)
+                        .isUsed("Y")
                         .build()));
     }
 
@@ -217,6 +227,7 @@ public class DataInitializer implements CommandLineRunner {
                 .orElseGet(() -> gradeRepository.save(Grade.builder()
                         .gradeName(name)
                         .gradeOrder(order)
+                        .isUsed("Y")
                         .build()));
     }
 
@@ -239,6 +250,16 @@ public class DataInitializer implements CommandLineRunner {
         return COMPANY_CODE + deptCode + String.format("%03d", nextSerial);
     }
 
+    private double calculateCareerYears(LocalDate startDate) {
+        if (startDate == null) return 0.0;
+
+        long months = ChronoUnit.MONTHS.between(startDate, LocalDate.now());
+        double years = months / 12.0;
+
+        // 소수점 1자리 반올림 (예: 7.4년)
+        return Math.round(years * 10) / 10.0;
+    }
+
     private String generateRandomPhone() {
         return String.format("010-%04d-%04d",
                 random.nextInt(9000) + 1000,
@@ -256,13 +277,21 @@ public class DataInitializer implements CommandLineRunner {
         String email = empNo + "@bizmate.com";
         String phone = generateRandomPhone();
         String address = "서울특별시 강남구 테헤란로 100";
-        LocalDate birthDate = LocalDate.of(random.nextInt(26) + 1975, random.nextInt(12) + 1, random.nextInt(28) + 1);
         String gender = random.nextBoolean() ? "M" : "F";
-        final int MIN_AGE = 19;
-        final int MAX_AGE = 25;
+        LocalDate birthDate = LocalDate.of(random.nextInt(14) + 1985, random.nextInt(12) + 1, random.nextInt(28) + 1);
 
-        int yearToHire = random.nextInt(MAX_AGE - MIN_AGE +1 ) + MIN_AGE;
-        LocalDate startDate = birthDate.plusYears(yearToHire);
+        double careerYears = Math.round((random.nextDouble() * 9 + 2) * 10) / 10.0; // 2.0 ~ 11.0
+
+        int totalMonths = (int) Math.round(careerYears * 12);
+
+        LocalDate startDate = LocalDate.now().minusMonths(totalMonths);
+
+        int ageAtHire = startDate.getYear() - birthDate.getYear();
+        if (ageAtHire < 19) {
+            startDate = birthDate.plusYears(19);
+        }
+
+
 
 
         Employee emp = Employee.builder()
@@ -278,6 +307,7 @@ public class DataInitializer implements CommandLineRunner {
                 .birthDate(birthDate)
                 .gender(gender)
                 .startDate(startDate)
+                .careerYears(careerYears)
                 .creDate(LocalDateTime.now())
                 .build();
 
@@ -334,62 +364,184 @@ public class DataInitializer implements CommandLineRunner {
     // 5️⃣ 초기 직원 생성 (환경별 동일 보장)
     // =========================================================
     private void initDefaultEmployees() {
-            log.info("▶ 기본 직원(30명) 자동 생성 시작");
+        log.info("▶ 기본 직원(30명) 자동 생성 시작");
 
-            // ===== 공통 레퍼런스 엔티티 조회 =====
-            Department deptMgmt = departmentRepository.findByDeptCode("10").orElseThrow();
-            Department deptSupport = departmentRepository.findByDeptCode("11").orElseThrow();
-            Department deptAccounting = departmentRepository.findByDeptCode("12").orElseThrow();
-            Department deptSales = departmentRepository.findByDeptCode("21").orElseThrow();
-            Department deptDev1 = departmentRepository.findByDeptCode("31").orElseThrow();
-            Department deptDev2 = departmentRepository.findByDeptCode("32").orElseThrow();
-            Department deptDev3 = departmentRepository.findByDeptCode("33").orElseThrow();
+        // ===== 공통 레퍼런스 엔티티 조회 =====
+        Department deptMgmt = departmentRepository.findByDeptCode("10").orElseThrow();
+        Department deptSupport = departmentRepository.findByDeptCode("11").orElseThrow();
+        Department deptAccounting = departmentRepository.findByDeptCode("12").orElseThrow();
+        Department deptSales = departmentRepository.findByDeptCode("21").orElseThrow();
+        Department deptDev1 = departmentRepository.findByDeptCode("31").orElseThrow();
+        Department deptDev2 = departmentRepository.findByDeptCode("32").orElseThrow();
+        Department deptDev3 = departmentRepository.findByDeptCode("33").orElseThrow();
 
-            Position posCEO = positionRepository.findByPositionName("CEO").orElseThrow();
-            Position posManager = positionRepository.findByPositionName("팀장").orElseThrow();
-            Position posEmployee = positionRepository.findByPositionName("사원").orElseThrow();
+        Position posCEO = positionRepository.findByPositionName("CEO").orElseThrow();
+        Position posManager = positionRepository.findByPositionName("팀장").orElseThrow();
+        Position posEmployee = positionRepository.findByPositionName("사원").orElseThrow();
 
-            Grade gradeExec = gradeRepository.findByGradeName("임원").orElseThrow();
-            Grade gradeManager = gradeRepository.findByGradeName("부장/차장").orElseThrow();
-            Grade gradeStaff = gradeRepository.findByGradeName("사원/대리").orElseThrow();
+        Grade gradeExec = gradeRepository.findByGradeName("임원").orElseThrow();
+        Grade gradeManager = gradeRepository.findByGradeName("부장/차장").orElseThrow();
+        Grade gradeStaff = gradeRepository.findByGradeName("사원/대리").orElseThrow();
 
-            Role roleCEO = roleRepository.findByRoleName("CEO").orElseThrow();
-            Role roleMANAGER = roleRepository.findByRoleName("MANAGER").orElseThrow();
-            Role roleEMPLOYEE = roleRepository.findByRoleName("EMPLOYEE").orElseThrow();
+        Role roleCEO = roleRepository.findByRoleName("CEO").orElseThrow();
+        Role roleMANAGER = roleRepository.findByRoleName("MANAGER").orElseThrow();
+        Role roleEMPLOYEE = roleRepository.findByRoleName("EMPLOYEE").orElseThrow();
 
-            // ===== CEO (1명) =====
-            Employee ceo = createEmployee(generateEmpNo("10"), "홍길동", deptMgmt, posCEO, gradeExec, "ACTIVE");
-            createUserAccount(ceo, roleCEO);  // 🔹 CEO 권한 부여
+        // ===== CEO (1명) =====
+        Employee ceo = createEmployee(generateEmpNo("10"), "홍길동", deptMgmt, posCEO, gradeExec, "ACTIVE");
+        createUserAccount(ceo, roleCEO);  // 🔹 CEO 권한 부여
 
-            // 팀장 6명
-            createUserAccount(createEmployee(generateEmpNo("11"), "김지원", deptSupport, posManager, gradeManager, "ACTIVE"), roleMANAGER);
-            createUserAccount(createEmployee(generateEmpNo("12"), "이회계", deptAccounting, posManager, gradeManager, "ACTIVE"), roleMANAGER);
-            createUserAccount(createEmployee(generateEmpNo("21"), "박영업", deptSales, posManager, gradeManager, "ACTIVE"), roleMANAGER);
-            createUserAccount(createEmployee(generateEmpNo("31"), "최개발", deptDev1, posManager, gradeManager, "ACTIVE"), roleMANAGER);
-            createUserAccount(createEmployee(generateEmpNo("32"), "정개발", deptDev2, posManager, gradeManager, "ACTIVE"), roleMANAGER);
-            createUserAccount(createEmployee(generateEmpNo("33"), "오개발", deptDev3, posManager, gradeManager, "ACTIVE"), roleMANAGER);
+        // 팀장 6명
+        createUserAccount(createEmployee(generateEmpNo("11"), "김지원", deptSupport, posManager, gradeManager, "ACTIVE"), roleMANAGER);
+        createUserAccount(createEmployee(generateEmpNo("12"), "이회계", deptAccounting, posManager, gradeManager, "ACTIVE"), roleMANAGER);
+        createUserAccount(createEmployee(generateEmpNo("21"), "박영업", deptSales, posManager, gradeManager, "ACTIVE"), roleMANAGER);
+        createUserAccount(createEmployee(generateEmpNo("31"), "최개발", deptDev1, posManager, gradeManager, "ACTIVE"), roleMANAGER);
+        createUserAccount(createEmployee(generateEmpNo("32"), "정개발", deptDev2, posManager, gradeManager, "ACTIVE"), roleMANAGER);
+        createUserAccount(createEmployee(generateEmpNo("33"), "오개발", deptDev3, posManager, gradeManager, "ACTIVE"), roleMANAGER);
 
-            // 일반 직원 (모두 EMPLOYEE)
-            for (int i = 1; i <= 5; i++)
-                createUserAccount(createEmployee(generateEmpNo("11"), "경영사원" + i, deptSupport, posEmployee, gradeStaff, "ACTIVE"), roleEMPLOYEE);
+        // 일반 직원 (모두 EMPLOYEE)
+        for (int i = 1; i <= 5; i++)
+            createUserAccount(createEmployee(generateEmpNo("11"), "경영사원" + i, deptSupport, posEmployee, gradeStaff, "ACTIVE"), roleEMPLOYEE);
 
-            for (int i = 1; i <= 3; i++)
-                createUserAccount(createEmployee(generateEmpNo("12"), "회계사원" + i, deptAccounting, posEmployee, gradeStaff, "ACTIVE"), roleEMPLOYEE);
+        for (int i = 1; i <= 3; i++)
+            createUserAccount(createEmployee(generateEmpNo("12"), "회계사원" + i, deptAccounting, posEmployee, gradeStaff, "ACTIVE"), roleEMPLOYEE);
 
-            for (int i = 1; i <= 4; i++)
-                createUserAccount(createEmployee(generateEmpNo("21"), "영업사원" + i, deptSales, posEmployee, gradeStaff, "ACTIVE"), roleEMPLOYEE);
+        for (int i = 1; i <= 4; i++)
+            createUserAccount(createEmployee(generateEmpNo("21"), "영업사원" + i, deptSales, posEmployee, gradeStaff, "ACTIVE"), roleEMPLOYEE);
 
-            for (int i = 1; i <= 4; i++)
-                createUserAccount(createEmployee(generateEmpNo("31"), "개발1팀사원" + i, deptDev1, posEmployee, gradeStaff, "ACTIVE"), roleEMPLOYEE);
+        for (int i = 1; i <= 4; i++)
+            createUserAccount(createEmployee(generateEmpNo("31"), "개발1팀사원" + i, deptDev1, posEmployee, gradeStaff, "ACTIVE"), roleEMPLOYEE);
 
-            for (int i = 1; i <= 3; i++)
-                createUserAccount(createEmployee(generateEmpNo("32"), "개발2팀사원" + i, deptDev2, posEmployee, gradeStaff, "ACTIVE"), roleEMPLOYEE);
+        for (int i = 1; i <= 3; i++)
+            createUserAccount(createEmployee(generateEmpNo("32"), "개발2팀사원" + i, deptDev2, posEmployee, gradeStaff, "ACTIVE"), roleEMPLOYEE);
 
-            for (int i = 1; i <= 4; i++)
-                createUserAccount(createEmployee(generateEmpNo("33"), "개발3팀사원" + i, deptDev3, posEmployee, gradeStaff, "ACTIVE"), roleEMPLOYEE);
+        for (int i = 1; i <= 4; i++)
+            createUserAccount(createEmployee(generateEmpNo("33"), "개발3팀사원" + i, deptDev3, posEmployee, gradeStaff, "ACTIVE"), roleEMPLOYEE);
 
-            log.info("✅ 기본 직원(30명) + 권한 매핑 완료");
+        log.info("✅ 기본 직원(30명) + 권한 매핑 완료");
 
 
     }
+
+//    // =========================================================
+//// 6️⃣ 게시판 & 전자결재 더미 데이터
+//// =========================================================
+//
+//    private BoardRepository boardRepository;
+//    private ApprovalDocumentsRepository approvalDocumentsRepository;
+//
+//    private void initBoardDummy(List<UserEntity> users) {
+//        if (boardRepository.count() > 0) {
+//            log.info("📘 게시판 데이터 이미 존재 — skip");
+//            return;
+//        }
+//
+//        String[] titles = {
+//                "업무 공지", "개발 회의", "사내 공모전", "보안 점검 안내", "팀 프로젝트 공유",
+//                "주간 업무 보고", "사내 이벤트", "제안사항", "시스템 점검 안내", "신입 환영 게시글"
+//        };
+//
+//        String[] contents = {
+//                "이번 주 중으로 처리 예정입니다.",
+//                "회의록을 공유드립니다.",
+//                "검토 후 의견 부탁드립니다.",
+//                "협조 바랍니다.",
+//                "좋은 하루 보내세요!"
+//        };
+//
+//        BoardType[] types = BoardType.values();
+//        List<Board> boards = new ArrayList<>();
+//
+//        for (int i = 1; i <= 32; i++) {
+//            UserEntity author = users.get(random.nextInt(users.size()));
+//            BoardType type = types[random.nextInt(types.length)];
+//
+//            Board board = new Board();
+//            board.setBoardType(type);
+//            board.setTitle(titles[random.nextInt(titles.length)] + " #" + i);
+//            board.setContent(contents[random.nextInt(contents.length)]);
+//            board.setAuthorId(author.getUsername());
+//            board.setAuthorName(type == BoardType.SUGGESTION ? "익명" : author.getEmpName());
+//            board.setDeleted(false);
+//
+//            // 감사정보 (UserDTO 직접 생성)
+//            UserDTO dto = new UserDTO(
+//                    author.getUserId(),
+//                    author.getUsername(),
+//                    author.getEmpName(),
+//                    author.getEmail()
+//            );
+//            board.markCreated(dto);
+//
+//            boards.add(board);
+//        }
+//
+//        boardRepository.saveAll(boards);
+//        log.info("✅ 게시판 더미데이터 32건 생성 완료");
+//    }
+//
+//    // =========================================================
+//    // 2️⃣ 전자결재 더미 데이터 생성
+//    // =========================================================
+//    private void initApprovalDummy(List<UserEntity> users, List<Department> depts) {
+//        if (approvalDocumentsRepository.count() > 0) {
+//            log.info("📄 전자결재 데이터 이미 존재 — skip");
+//            return;
+//        }
+//
+//        String[] docTitles = {
+//                "품의서", "프로젝트 기획안", "견적서/제안서 발송 품의서", "지출결의서", "구매 품의서"
+//                , "휴가 신청서", "퇴직서", "인사발령"
+//        };
+//
+//        List<ApprovalDocuments> docs = new ArrayList<>();
+//
+//        for (int i = 1; i <= 32; i++) {
+//            UserEntity author = users.get(random.nextInt(users.size()));
+//            Department dept = depts.get(random.nextInt(depts.size()));
+//
+//            ApprovalDocuments doc = new ApprovalDocuments();
+//            doc.setDocId(depts.contains(users.));
+//            doc.setDocId("DOC-" + String.format("%03d", i));
+//            doc.setDocType(DocumentType.APPROVAL);
+//            doc.setTitle(docTitles[random.nextInt(docTitles.length)] + " #" + i);
+//            doc.setDepartment(dept);
+//            doc.setAuthorUser(author);
+//            doc.setAuthorEmployee(author.getEmployee());
+//            doc.setAuthorRole(author.getRoles().stream().findFirst().orElse(null));
+//
+//            // 상태는 초안/진행/완료 랜덤
+//            DocumentStatus[] statuses = DocumentStatus.values();
+//            doc.setStatus(statuses[random.nextInt(statuses.length)]);
+//
+//            // 결재선 3단계 생성
+//            List<ApproverStep> approvers = new ArrayList<>();
+//            for (int step = 1; step <= 3; step++) {
+//                UserEntity approver = users.get(random.nextInt(users.size()));
+//                approvers.add(new ApproverStep(
+//                        step,
+//                        approver.getEmpName(),
+//                        approver.getUsername(),
+//                        step == 3 ? Decision.APPROVED : "검토",
+//                        step <= 1 ? "완료" : "대기중"
+//                ));
+//            }
+//            doc.setApprovalLine(approvers);
+//
+//            // 내용 데이터 (JSON)
+//            Map<String, Object> content = new LinkedHashMap<>();
+//            content.put("항목", "테스트 데이터");
+//            content.put("금액", random.nextInt(1000000) + "원");
+//            content.put("비고", "자동생성 더미");
+//            doc.setDocContent(content);
+//
+//            // 감사정보
+//            doc.markCreated(UserDTO.from(author));
+//
+//            docs.add(doc);
+//        }
+//
+//        approvalRepository.saveAll(docs);
+//        log.info("✅ 전자결재 더미데이터 32건 생성 완료");
+//    }
 }
