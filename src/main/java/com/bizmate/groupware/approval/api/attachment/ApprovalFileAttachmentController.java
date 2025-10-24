@@ -111,49 +111,36 @@ public class ApprovalFileAttachmentController {
 
     // ✅ 미리보기
     @GetMapping("/preview/{id}")
-    public void previewFile(@PathVariable Long id, HttpServletResponse response) throws IOException {
+    public ResponseEntity<Resource> previewFile(@PathVariable Long id) {
         ApprovalFileAttachment file = fileAttachmentRepository.findById(id)
-                .orElseThrow(() -> new FileNotFoundException("파일이 존재하지 않습니다."));
+                .orElseThrow(() -> new RuntimeException("파일이 존재하지 않습니다."));
 
         File localFile = new File(file.getFilePath());
         if (!localFile.exists()) {
-            throw new FileNotFoundException("파일이 존재하지 않습니다.");
+            throw new RuntimeException("파일이 존재하지 않습니다.");
         }
 
-        // ✅ Content-Type 설정 (DB 값이 비어있을 때 자동 판별)
-        String contentType = file.getContentType();
-        if (contentType == null || contentType.isBlank()) {
-            String name = file.getOriginalName().toLowerCase();
-            if (name.endsWith(".pdf")) contentType = "application/pdf";
-            else if (name.endsWith(".png")) contentType = "image/png";
-            else if (name.endsWith(".jpg") || name.endsWith(".jpeg")) contentType = "image/jpeg";
-            else contentType = "application/octet-stream";
-        }
-        response.setContentType(contentType);
+        FileSystemResource resource = new FileSystemResource(localFile);
+        String contentType = file.getContentType() != null ? file.getContentType() : "application/octet-stream";
 
-        // ✅ inline 미리보기 지원
-        if (contentType.startsWith("image/") || contentType.equals("application/pdf")) {
-            response.setHeader("Content-Disposition",
-                    "inline; filename=\"" + URLEncoder.encode(file.getOriginalName(), StandardCharsets.UTF_8) + "\"");
-        } else {
-            response.setHeader("Content-Disposition",
-                    "attachment; filename=\"" + URLEncoder.encode(file.getOriginalName(), StandardCharsets.UTF_8) + "\"");
-        }
+        try {
+            String encodedName = URLEncoder.encode(file.getOriginalName(), StandardCharsets.UTF_8)
+                    .replaceAll("\\+", "%20");
 
-        // ✅ 캐시 방지 (안 하면 이전 파일로 미리보기 뜨는 경우 있음)
-        response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
-        response.setHeader("Pragma", "no-cache");
-        response.setHeader("Expires", "0");
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.parseMediaType(contentType));
+            headers.setContentDisposition(
+                    ContentDisposition.inline()
+                            .filename(encodedName, StandardCharsets.UTF_8)
+                            .build()
+            );
+            headers.setCacheControl("no-cache, no-store, must-revalidate");
 
-        // ✅ 스트리밍 전송
-        try (InputStream in = new BufferedInputStream(new FileInputStream(localFile));
-             OutputStream out = response.getOutputStream()) {
-            byte[] buffer = new byte[8192];
-            int bytesRead;
-            while ((bytesRead = in.read(buffer)) != -1) {
-                out.write(buffer, 0, bytesRead);
-            }
-            out.flush();
+            return ResponseEntity.ok()
+                    .headers(headers)
+                    .body(resource);
+        } catch (Exception e) {
+            throw new RuntimeException("미리보기 실패", e);
         }
     }
 

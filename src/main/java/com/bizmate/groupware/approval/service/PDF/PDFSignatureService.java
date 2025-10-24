@@ -1,13 +1,12 @@
 package com.bizmate.groupware.approval.service.PDF;
 
-import com.bizmate.groupware.approval.domain.PDF.EmployeeSignature;
-import com.bizmate.groupware.approval.repository.PDF.EmployeeSignatureRepository;
 import com.bizmate.hr.domain.Employee;
 import com.itextpdf.io.image.ImageData;
 import com.itextpdf.io.image.ImageDataFactory;
 import com.itextpdf.layout.Document;
 import com.itextpdf.layout.element.Cell;
 import com.itextpdf.layout.element.Image;
+import com.itextpdf.layout.element.Paragraph;
 import com.itextpdf.layout.properties.TextAlignment;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,8 +19,7 @@ import java.io.File;
 @Slf4j
 public class PDFSignatureService {
 
-    private static final String SIGNATURE_PATH = "src/main/resources/signatures/";
-    private final EmployeeSignatureRepository employeeSignatureRepository;
+    private final EmployeeSignatureService employeeSignatureService;
 
     /**
      * 지정한 직원의 서명 이미지를 반환
@@ -29,32 +27,26 @@ public class PDFSignatureService {
     /**
      * ✅ 결재란 셀에 서명 이미지 추가
      */
-    public void addSignToCell(Cell cell, EmployeeSignature signature) {
+    public void addSignToCell(Cell cell, Employee employee) {
         try {
-            if (signature == null || signature.getSignImagePath() == null) {
-                cell.add(new com.itextpdf.layout.element.Paragraph("미결재")
-                        .setFontSize(10)
-                        .setTextAlignment(TextAlignment.CENTER));
+            String path = employeeSignatureService.getSignaturePath(employee);
+            if (path == null) {
+                cell.add(new Paragraph("서명 없음").setTextAlignment(TextAlignment.CENTER));
                 return;
             }
 
-            File file = new File(signature.getSignImagePath());
-            if (!file.exists()) {
-                log.warn("⚠️ 서명 파일 없음: {}", signature.getSignImagePath());
-                cell.add(new com.itextpdf.layout.element.Paragraph("서명 없음"));
-                return;
-            }
-
+            File file = new File(path);
             ImageData imageData = ImageDataFactory.create(file.getAbsolutePath());
             Image image = new Image(imageData)
                     .setAutoScale(true)
-                    .scaleToFit(60, 40) // 서명 크기 조정
-                    .setMarginTop(5);
-
+                    .scaleToFit(60, 40)
+                    .setTextAlignment(TextAlignment.CENTER);
             cell.add(image);
+
+            log.info("🖋️ 서명 이미지 삽입 완료: {}", file.getName());
         } catch (Exception e) {
             log.error("❌ 서명 이미지 추가 실패: {}", e.getMessage(), e);
-            cell.add(new com.itextpdf.layout.element.Paragraph("오류"));
+            cell.add(new Paragraph("오류").setTextAlignment(TextAlignment.CENTER));
         }
     }
 
@@ -62,21 +54,23 @@ public class PDFSignatureService {
      * ✅ 문서 객체(Document)에 직접 서명 추가 (예: 좌표 기반)
      */
     public void addSignToDocument(Document document, Employee employee, float x, float y) {
-        employeeSignatureRepository.findByEmployeeEmpNo(employee.getEmpNo())
-                .ifPresent(signature -> {
-                    try {
-                        File file = new File(signature.getSignImagePath());
-                        if (file.exists()) {
-                            ImageData imageData = ImageDataFactory.create(file.getAbsolutePath());
-                            Image image = new Image(imageData)
-                                    .scaleToFit(80, 50)
-                                    .setFixedPosition(x, y);
-                            document.add(image);
-                        }
-                    } catch (Exception e) {
-                        log.error("❌ 문서 내 서명 삽입 실패: {}", e.getMessage());
-                    }
-                });
+        try {
+            String path = employeeSignatureService.getSignaturePath(employee);
+            if (path == null) {
+                log.warn("⚠️ 서명 이미지 없음 (사번={}): PDF에 삽입 생략", employee.getEmpNo());
+                return;
+            }
+
+            ImageData imageData = ImageDataFactory.create(path);
+            Image image = new Image(imageData)
+                    .scaleToFit(80, 50)
+                    .setFixedPosition(x, y);
+            document.add(image);
+
+            log.info("✅ 문서 내 서명 추가 완료: {}", employee.getEmpNo());
+        } catch (Exception e) {
+            log.error("❌ 문서 서명 삽입 실패: {}", e.getMessage(), e);
+        }
     }
 }
 

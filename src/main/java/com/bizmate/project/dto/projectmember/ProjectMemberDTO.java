@@ -4,6 +4,7 @@ package com.bizmate.project.dto.projectmember;
 import com.bizmate.hr.domain.Employee;
 import com.bizmate.project.domain.Project;
 import com.bizmate.project.domain.ProjectMember;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.*;
 
 @Getter
@@ -18,6 +19,16 @@ public class ProjectMemberDTO {
     private Long employeeId;
     private String employeeName;
     private String projectRole;
+
+
+    @JsonCreator
+    public ProjectMemberDTO(String empNo) {
+        try {
+            this.employeeId = Long.parseLong(empNo);
+        } catch (NumberFormatException e) {
+            this.employeeId = null;
+        }
+    }
 
     // ✅ Entity → DTO
     public static ProjectMemberDTO fromEntity(ProjectMember entity) {

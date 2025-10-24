@@ -80,7 +80,7 @@ public class ApprovalDocuments extends BaseEntity {
     @Lob
     @Column(name = "APPROVAL_LINE", nullable = false)
     @Convert(converter = ApproverLineJsonConverter.class)
-    private List<ApproverStep> approvalLine = new ArrayList<>();
+    private List<ApproverStep> approvalLine;
 
     @Lob
     @Column(name = "DOC_DATA")

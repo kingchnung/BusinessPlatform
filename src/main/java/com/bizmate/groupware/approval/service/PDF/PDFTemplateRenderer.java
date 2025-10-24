@@ -6,14 +6,21 @@ import com.bizmate.groupware.approval.repository.PDF.EmployeeSignatureRepository
 import com.itextpdf.kernel.colors.ColorConstants;
 import com.itextpdf.layout.Document;
 import com.itextpdf.layout.borders.SolidBorder;
-import com.itextpdf.layout.element.*;
+import com.itextpdf.layout.element.Cell;
+import com.itextpdf.layout.element.Paragraph;
+import com.itextpdf.layout.element.Table;
 import com.itextpdf.layout.properties.UnitValue;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -57,6 +64,16 @@ public class PDFTemplateRenderer {
         Map<String, Object> orderedData = (data instanceof LinkedHashMap<String, Object>)
                 ? data
                 : new LinkedHashMap<>(data);
+
+        List<String> excludeKeys = List.of(
+                "_initialized", "initialized", "initFlag", "isInitialized"
+        );
+
+        Map<String, Object> filteredData = orderedData.entrySet().stream()
+                .filter(e -> !excludeKeys.contains(e.getKey()))
+                .collect(LinkedHashMap::new,
+                        (m, e) -> m.put(e.getKey(), e.getValue()),
+                        LinkedHashMap::putAll);
 
         Table table = new Table(UnitValue.createPercentArray(new float[]{25, 75}))
                 .useAllAvailableWidth()
@@ -178,6 +195,58 @@ public class PDFTemplateRenderer {
      * ✅ null-safe 문자열 변환
      */
     private String safe(Object value) {
-        return value == null ? "-" : value.toString();
+
+        if (value == null) return "-";
+
+        // 🔹 1️⃣ String
+        if (value instanceof String str) {
+            // 날짜 포맷 자동 감지 (yyyy-MM-dd)
+            if (str.matches("\\d{4}-\\d{2}-\\d{2}")) {
+                try {
+                    LocalDate date = LocalDate.parse(str);
+                    return date.format(DateTimeFormatter.ofPattern("yyyy년 MM월 dd일"));
+                } catch (Exception e) {
+                    return str;
+                }
+            }
+
+            // 금액 문자열 자동 감지
+            if (str.matches("^\\d{1,3}(,\\d{3})*$")) {
+                return "₩" + str;
+            }
+
+            return str;
+        }
+
+        // 🔹 2️⃣ 숫자형 (Long, Integer, Double 등)
+        if (value instanceof Number num) {
+            return "₩" + String.format("%,d", num.longValue());
+        }
+
+        // 🔹 3️⃣ 날짜/시간 객체 자동 포맷
+        if (value instanceof LocalDate date) {
+            return date.format(DateTimeFormatter.ofPattern("yyyy년 MM월 dd일"));
+        }
+        if (value instanceof LocalDateTime dateTime) {
+            return dateTime.format(DateTimeFormatter.ofPattern("yyyy년 MM월 dd일 HH:mm"));
+        }
+
+        // 🔹 4️⃣ 리스트 → 줄바꿈 리스트
+        if (value instanceof List<?> list) {
+            return list.stream()
+                    .map(this::safe)
+                    .map(s -> "• " + s)
+                    .collect(Collectors.joining("\n"));
+        }
+
+        // 🔹 5️⃣ Map → key: value 형태 보기 좋게
+        if (value instanceof Map<?, ?> map) {
+            return map.entrySet().stream()
+                    .map(e -> e.getKey() + ": " + safe(e.getValue()))
+                    .collect(Collectors.joining(", "));
+        }
+
+        // 🔹 6️⃣ 기본 toString()
+        return value.toString();
     }
 }

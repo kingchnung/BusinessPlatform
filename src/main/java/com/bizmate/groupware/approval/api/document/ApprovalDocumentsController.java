@@ -238,15 +238,20 @@ public class ApprovalDocumentsController {
     @PutMapping("/{docId}/reject")
     public ResponseEntity<ApprovalDocumentsDto> rejectDocument(
             @PathVariable String docId,
-            @RequestBody(required = false) Map<String, String> body,
+            @RequestBody(required = false) Map<String, Object> body,
             @AuthenticationPrincipal UserPrincipal principal) {
 
         try {
-            String reason = (body != null) ? body.getOrDefault("reason", "") : "";
+            // ✅ 1️⃣ reason 추출
+            String reason = "";
+
+            if (body != null && body.get("reason") != null) {
+                reason = body.get("reason").toString();
+            }
 
             boolean isAdmin = principal.getAuthorities().stream()
                     .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-            // ✅ UserPrincipal → UserDTO 변환
+
             UserDTO loginUser = new UserDTO(
                     principal.getUserId(),
                     principal.getUsername(),

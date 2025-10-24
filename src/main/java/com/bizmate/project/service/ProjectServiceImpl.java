@@ -73,16 +73,39 @@ public class ProjectServiceImpl implements ProjectService {
 
         if (dto.getParticipants() != null) {
             for (ProjectMemberDTO pDto : dto.getParticipants()) {
-                Employee emp = employeeRepository.findById(pDto.getEmployeeId())
-                        .orElseThrow(() -> new IllegalArgumentException("참여자를 찾을 수 없습니다. ID: " + pDto.getEmployeeId()));
+                Employee employee = null;
 
-                ProjectMember newMember = ProjectMember.builder()
-                        .employee(emp)
-                        .projectRole(pDto.getProjectRole())
+                if (pDto.getEmployeeId() != null) {
+                    Long id = pDto.getEmployeeId();
+                    // 1) 우선 empId(PK)로 시도
+                    employee = employeeRepository.findById(id).orElse(null);
+
+                    // 2) empId가 없을 경우 empNo로 시도 (문자열 형태일 수 있음)
+                    if (employee == null) {
+                        String empNo = String.valueOf(id);
+                        employee = employeeRepository.findByEmpNo(empNo).orElse(null);
+                    }
+                }
+
+                // ✅ 2️⃣ 혹시 employeeId도 null이고 문자열 empNo가 있을 경우 (Jackson이 잘못 매핑)
+                if (employee == null && pDto.getEmployeeName() != null) {
+                    employee = employeeRepository.findByEmpNo(pDto.getEmployeeName()).orElse(null);
+                }
+
+                if (employee == null) {
+                    log.warn("⚠️ 참여자 조회 실패: DTO={}, employeeId={}, employeeName={}",
+                            pDto, pDto.getEmployeeId(), pDto.getEmployeeName());
+                    continue;
+                }
+
+                // ✅ 멤버 생성 (기존 구조 유지)
+                ProjectMember member = ProjectMember.builder()
+                        .employee(employee)
+                        .projectRole(pDto.getProjectRole() != null ? pDto.getProjectRole() : "팀원")
                         .build();
 
-                project.addParticipant(newMember); // Project에 멤버 추가 (연관관계 설정)
-                participantMemberMap.put(emp.getEmpId(), newMember); // Map에 저장하여 Task에서 재사용
+                project.addParticipant(member);
+                participantMemberMap.put(employee.getEmpId(), member);
             }
         }
 

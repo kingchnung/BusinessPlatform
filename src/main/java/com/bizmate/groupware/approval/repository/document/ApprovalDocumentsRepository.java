@@ -75,7 +75,4 @@ public interface ApprovalDocumentsRepository extends JpaRepository<ApprovalDocum
     """)
     Optional<ApprovalDocuments> findWithDetailsByDocId(@Param("docId") String docId);
 
-    @Modifying
-    @Query("UPDATE ApprovalDocuments d SET d.approvalLine = :line WHERE d.docId = :docId")
-    void updateApprovalLine(@Param("docId") String docId, @Param("line") List<ApproverStep> line);
 }

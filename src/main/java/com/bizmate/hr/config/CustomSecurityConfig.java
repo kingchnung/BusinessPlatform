@@ -83,8 +83,8 @@ public class CustomSecurityConfig {
                                 "/v3/api-docs/**",
                                 "/swagger-resources/**",
                                 "/h2-console/**",
-                                "/api/attachments/preview/**",
-                                "/api/attachments/download/**",
+                                "/api/approvals/attachments/preview/**",
+                                "/api/approvals/attachments/download/**",
                                 "/h2-console/**",
                                 "/api/assignments/**"
                         ).permitAll()
