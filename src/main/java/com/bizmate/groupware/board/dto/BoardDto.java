@@ -29,6 +29,9 @@ public class BoardDto {
     private LocalDateTime updatedAt;
 
     private List<CommentDto> comments;
+    // ✅ 추가: 프론트에서 버튼 노출 제어용
+    private boolean canEdit;
+    private boolean canDelete;
 
     public static BoardDto fromEntity(Board entity) {
         return BoardDto.builder()

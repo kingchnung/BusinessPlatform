@@ -29,11 +29,10 @@ public class BoardController {
     // ✅ 사용자 게시판 목록 조회 + 검색(공지사항, 건의사항, 일반)
     @GetMapping
     public ResponseEntity<PageResponseDTO<BoardDto>> getBoardList(
-            PageRequestDTO pageRequestDTO,
+            @ModelAttribute PageRequestDTO requestDTO,
             @AuthenticationPrincipal UserPrincipal user
     ) {
-        PageResponseDTO<BoardDto> response = boardService.getBoardPage(pageRequestDTO, user);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(boardService.getBoardPage(requestDTO, user));
     }
 
     @GetMapping("/admin")
@@ -44,9 +43,18 @@ public class BoardController {
     }
 
     // ✅ 게시글 상세 조회
+//    @GetMapping("/{boardNo}")
+//    public ResponseEntity<BoardDto> getBoard(@PathVariable Long boardNo) {
+//        BoardDto board = boardService.getBoard(boardNo);
+//        return ResponseEntity.ok(board);
+//    }
+    // ✅ 게시글 상세 조회 (권한 포함 응답)
     @GetMapping("/{boardNo}")
-    public ResponseEntity<BoardDto> getBoard(@PathVariable Long boardNo) {
-        BoardDto board = boardService.getBoard(boardNo);
+    public ResponseEntity<BoardDto> getBoard(
+            @PathVariable Long boardNo,
+            @AuthenticationPrincipal UserPrincipal user
+    ) {
+        BoardDto board = boardService.getBoard(boardNo, user); // ✅ user 전달
         return ResponseEntity.ok(board);
     }
 
