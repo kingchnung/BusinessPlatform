@@ -70,7 +70,7 @@ public class UserController {
     @PutMapping("/{userId}/reset-lock")
     @PreAuthorize("hasRole('ROLE_MANAGER') or hasRole('ROLE_CEO')")
     public ResponseEntity<Map<String, Object>> resetUserLock(@PathVariable Long userId) {
-        userService.resetUserLock(userId);
+        userService.adminResetPassword(userId);
         Map<String, Object> response = new HashMap<>();
         response.put("message", "계정이 정상적으로 초기화되었습니다.");
         response.put("userId", userId);
@@ -80,7 +80,7 @@ public class UserController {
     //계정활성화 비활성화
     @PutMapping("/{userId}/active")
     @PreAuthorize("hasRole('ROLE_MANAGER') or hasRole('ROLE_CEO')")
-    public ResponseEntity<Map<String, Object>> updateActiveStatus(
+    public ResponseEntity<Map<String, Object>> setUserActiveStatus(
             @PathVariable Long userId,
             @RequestBody Map<String, Object> body) {
 
@@ -94,7 +94,7 @@ public class UserController {
             activeStatus = ((String) val).equalsIgnoreCase("Y") ? "Y" : "N";
         }
 
-        userService.updateActiveStatus(userId, activeStatus);
+        userService.setUserActiveStatus(userId, activeStatus);
 
         Map<String, Object> response = new HashMap<>();
         response.put("message", "계정이 " + ("Y".equals(activeStatus) ? "활성화" : "비활성화") + "되었습니다.");

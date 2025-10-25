@@ -21,12 +21,12 @@ public interface UserService {
     void deleteUser(Long userId);
 
     void changePw(Long userId, UserPwChangeRequest dto);
-    String resetUserLock(Long userId);
+    String adminResetPassword(Long userId);
 
-    void unlockUser(Long userId);
+    void adminUnlockAccount(Long userId);
     List<UserDTO> getAllUsers();
 
     int processLoginFailure(String username);
     void processLoginSuccess(String username);
-    void updateActiveStatus(Long userId, String activeStatus);
+    void setUserActiveStatus(Long userId, String activeStatus);
 }

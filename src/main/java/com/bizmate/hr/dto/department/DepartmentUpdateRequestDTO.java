@@ -19,4 +19,6 @@ public class DepartmentUpdateRequestDTO {
     private Long parentDeptId;
 
     private String isUsed; // 부서 활성화/비활성화 ('Y'/'N') 수정 가능
+
+
 }

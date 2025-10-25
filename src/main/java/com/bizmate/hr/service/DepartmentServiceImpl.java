@@ -1,8 +1,10 @@
 package com.bizmate.hr.service;
 
 import com.bizmate.hr.domain.Department;
+import com.bizmate.hr.domain.Employee;
 import com.bizmate.hr.dto.department.*;
 import com.bizmate.hr.repository.DepartmentRepository;
+import com.bizmate.hr.repository.EmployeeRepository;
 import com.bizmate.hr.service.DepartmentService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +24,7 @@ import java.util.stream.Collectors;
 public class DepartmentServiceImpl implements DepartmentService {
 
     private final DepartmentRepository departmentRepository;
+    private final EmployeeRepository employeeRepository;
 
     /** 📊 부서현황 조회 */
     @Override
@@ -134,6 +137,25 @@ public class DepartmentServiceImpl implements DepartmentService {
         departmentRepository.save(dept);
         return DepartmentResponseDTO.fromEntity(dept);
     }
+
+    //부서장임명
+    @Override
+    @Transactional
+    public DepartmentDTO assignManager(Long deptId, Long managerId) {
+        Department department = departmentRepository.findById(deptId)
+                .orElseThrow(() -> new EntityNotFoundException("부서를 찾을 수 없습니다. ID=" + deptId));
+
+        Employee manager = employeeRepository.findById(managerId)
+                .orElseThrow(() -> new EntityNotFoundException("직원을 찾을 수 없습니다. ID=" + managerId));
+
+        department.setManager(manager);
+        departmentRepository.save(department);
+
+        log.info("👔 부서 [{}]의 부서장이 [{}]로 임명되었습니다.", department.getDeptName(), manager.getEmpName());
+
+        return DepartmentDTO.fromEntity(department);
+    }
+
 
     /**
      * ✏️ 부서 비활성화 (Soft Delete)

@@ -24,4 +24,5 @@ public interface ProjectMemberService {
 
     // ✅ 구성원 삭제
     void deleteMember(Long projectMemberId);
+    List<ProjectMemberDTO> syncProjectMembers(Long projectId, List<ProjectMemberRequest> memberList);
 }

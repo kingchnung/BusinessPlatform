@@ -5,6 +5,7 @@ import com.bizmate.hr.domain.Employee;
 import com.bizmate.hr.domain.UserEntity;
 import com.bizmate.project.domain.embeddables.ProjectMemberId;
 import com.bizmate.project.domain.enums.ProjectMemberStatus;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -28,6 +29,7 @@ public class ProjectMember extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "EMP_ID")
+    @JsonIgnoreProperties({"projectMembers"})
     private Employee employee;  // HR 모듈 연동
 
     @Column(length = 50)

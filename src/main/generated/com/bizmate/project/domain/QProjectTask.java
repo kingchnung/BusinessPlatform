@@ -22,7 +22,7 @@ public class QProjectTask extends EntityPathBase<ProjectTask> {
 
     public static final QProjectTask projectTask = new QProjectTask("projectTask");
 
-    public final QProjectMember assigneeId;
+    public final QProjectMember assignee;
 
     public final DatePath<java.time.LocalDate> endDate = createDate("endDate", java.time.LocalDate.class);
 
@@ -60,7 +60,7 @@ public class QProjectTask extends EntityPathBase<ProjectTask> {
 
     public QProjectTask(Class<? extends ProjectTask> type, PathMetadata metadata, PathInits inits) {
         super(type, metadata, inits);
-        this.assigneeId = inits.isInitialized("assigneeId") ? new QProjectMember(forProperty("assigneeId"), inits.get("assigneeId")) : null;
+        this.assignee = inits.isInitialized("assignee") ? new QProjectMember(forProperty("assignee"), inits.get("assignee")) : null;
         this.project = inits.isInitialized("project") ? new QProject(forProperty("project"), inits.get("project")) : null;
     }
 

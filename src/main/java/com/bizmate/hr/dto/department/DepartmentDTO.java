@@ -10,6 +10,7 @@ public class DepartmentDTO {
     private Long deptId;
     private String deptName;
     private String deptCode;
+    private Long managerId;
 
 
     public static DepartmentDTO fromEntity(Department dept) {
@@ -17,6 +18,7 @@ public class DepartmentDTO {
                 .deptId(dept.getDeptId())
                 .deptName(dept.getDeptName())
                 .deptCode(dept.getDeptCode())
+                .managerId(dept.getManager().getEmpId())
                 .build();
     }
 }

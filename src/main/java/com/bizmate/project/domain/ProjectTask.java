@@ -2,6 +2,8 @@ package com.bizmate.project.domain;
 
 import com.bizmate.project.domain.enums.task.TaskPriority;
 import com.bizmate.project.domain.enums.task.TaskStatus;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -22,11 +24,13 @@ public class ProjectTask {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "PROJECT_ID", nullable = false)
+    @JsonBackReference
     private Project project;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ASSIGNEE_MEMBER_ID")
-    private ProjectMember assigneeId; // 담당자
+    @JsonIgnoreProperties({"project", "employee"})
+    private ProjectMember assignee; // 담당자
 
     @Column(nullable = false, length = 150)
     private String taskName;
@@ -55,5 +59,8 @@ public class ProjectTask {
         if (progressRate < 0) progressRate = 0;
         if (progressRate > 100) progressRate = 100;
         if (status == null) status = TaskStatus.PLANNED;
+        if (progressRate == 100 && status != TaskStatus.COMPLETED) {
+            status = TaskStatus.COMPLETED;
+        }
     }
 }

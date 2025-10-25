@@ -10,6 +10,6 @@ import lombok.Setter;
 public class ProjectMemberRequest {
 
     private Long projectId;     // 소속 프로젝트
-    private Long employeeId;    // 추가할 직원 ID (Employee)
+    private Long empId;    // 추가할 직원 ID (Employee)
     private String projectRole; // 담당 역할 (예: 백엔드, 디자이너, PM)
 }

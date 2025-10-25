@@ -4,10 +4,12 @@ import com.bizmate.hr.dto.department.*;
 import com.bizmate.hr.service.DepartmentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/departments")
@@ -30,7 +32,7 @@ public class DepartmentController {
     /**
      * 📋 전체 부서 목록 조회
      */
-    @PreAuthorize("hasRole('ROLE_EMPLOYEE')")
+    @PreAuthorize("hasAnyRole('ROLE_EMPLOYEE','ROLE_ADMIN', 'ROLE_MANAGER', 'ROLE_CEO')")
     @GetMapping
     public List<DepartmentResponseDTO> getAllDepartments() {
         log.info("📋 전체 부서 목록 조회");
@@ -68,6 +70,21 @@ public class DepartmentController {
     ) {
         log.info("✏️ 부서 수정 요청: deptId={}, dto={}", deptId, dto);
         return departmentService.updateDepartment(deptId, dto);
+    }
+
+    @PutMapping("/{deptId}/manager")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_MANAGER', 'ROLE_CEO')")
+    public ResponseEntity<?> assignManager(
+            @PathVariable Long deptId,
+            @RequestBody DepartmentManagerDTO dto) {
+
+        DepartmentDTO updatedDept = departmentService.assignManager(deptId, dto.getManagerId());
+        return ResponseEntity.ok(Map.of(
+                "message", "부서장이 성공적으로 임명되었습니다.",
+                "departmentId", deptId,
+                "managerId", dto.getManagerId()
+
+        ));
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
