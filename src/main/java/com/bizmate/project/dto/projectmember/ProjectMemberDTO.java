@@ -30,9 +30,9 @@ public class ProjectMemberDTO {
     @JsonCreator
     public ProjectMemberDTO(String empNo) {
         try {
-            this.employeeId = Long.parseLong(empNo);
+            this.empId = Long.parseLong(empNo);
         } catch (NumberFormatException e) {
-            this.employeeId = null;
+            this.empId = null;
         }
     }
 

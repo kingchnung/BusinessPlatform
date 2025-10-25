@@ -82,8 +82,8 @@ public class ProjectServiceImpl implements ProjectService {
             for (ProjectMemberDTO pDto : dto.getParticipants()) {
                 Employee employee = null;
 
-                if (pDto.getEmployeeId() != null) {
-                    Long id = pDto.getEmployeeId();
+                if (pDto.getEmpId() != null) {
+                    Long id = pDto.getEmpId();
                     // 1) 우선 empId(PK)로 시도
                     employee = employeeRepository.findById(id).orElse(null);
 
@@ -95,13 +95,13 @@ public class ProjectServiceImpl implements ProjectService {
                 }
 
                 // ✅ 2️⃣ 혹시 employeeId도 null이고 문자열 empNo가 있을 경우 (Jackson이 잘못 매핑)
-                if (employee == null && pDto.getEmployeeName() != null) {
-                    employee = employeeRepository.findByEmpNo(pDto.getEmployeeName()).orElse(null);
+                if (employee == null && pDto.getEmpName() != null) {
+                    employee = employeeRepository.findByEmpNo(pDto.getEmpName()).orElse(null);
                 }
 
                 if (employee == null) {
                     log.warn("⚠️ 참여자 조회 실패: DTO={}, employeeId={}, employeeName={}",
-                            pDto, pDto.getEmployeeId(), pDto.getEmployeeName());
+                            pDto, pDto.getEmpId(), pDto.getEmpName());
                     continue;
                 }
 
