@@ -80,6 +80,14 @@ public class ApprovalDocumentsController {
         return ResponseEntity.ok(approvalDocumentsService.get(docId));
     }
 
+    //위젯 조회
+    @GetMapping("/summary")
+    public ResponseEntity<Map<String, Long>> getApprovalSummary(@AuthenticationPrincipal UserPrincipal principal) {
+        String username = principal.getUsername();
+        Map<String, Long> summary = approvalDocumentsService.getApprovalSummary(username);
+        return ResponseEntity.ok(summary);
+    }
+
     /* -------------------------------------------------------------
      ✅ 3️⃣ 문서 임시저장 (Draft)
      ------------------------------------------------------------- */

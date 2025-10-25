@@ -67,12 +67,12 @@ public interface ApprovalDocumentsRepository extends JpaRepository<ApprovalDocum
     List<ApprovalDocuments> findAllWithAuthorAndEmployee();
 
     @Query("""
-        SELECT d FROM ApprovalDocuments d
-        LEFT JOIN FETCH d.department dept
-        LEFT JOIN FETCH d.authorUser user
-        LEFT JOIN FETCH user.employee emp
-        WHERE d.docId = :docId
-    """)
+                SELECT d FROM ApprovalDocuments d
+                LEFT JOIN FETCH d.department dept
+                LEFT JOIN FETCH d.authorUser user
+                LEFT JOIN FETCH user.employee emp
+                WHERE d.docId = :docId
+            """)
     Optional<ApprovalDocuments> findWithDetailsByDocId(@Param("docId") String docId);
 
 }

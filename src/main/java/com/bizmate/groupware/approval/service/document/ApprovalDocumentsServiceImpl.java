@@ -733,13 +733,28 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
                 .build();
     }
 
-    /**
-     * username → empName 변환용 헬퍼
-     */
-    private String getEmpNameByUsername(String username) {
-        return userRepository.findByUsername(username)
-                .map(u -> u.getEmpName() != null ? u.getEmpName() : username)
-                .orElse(username);
+    @Transactional(readOnly = true)
+    @Override
+    public Map<String, Long> getApprovalSummary(String username) {
+        List<ApprovalDocuments> docs = approvalDocumentsRepository.findAllWithAuthorAndEmployee();
+
+        Map<String, Long> counts = docs.stream()
+                .filter(d ->
+                        d.getAuthorUser().getUsername().equals(username)
+                                || (d.getViewerIds() != null && d.getViewerIds().contains(username))
+                                || (d.getApprovalLine() != null && d.getApprovalLine().stream()
+                                .anyMatch(step -> step.approverId().equals(username)))
+                )
+                .collect(Collectors.groupingBy(
+                        d -> d.getStatus().name(),
+                        Collectors.counting()
+                ));
+
+        for (String key : List.of("DRAFT", "IN_PROGRESS", "APPROVED", "REJECTED")) {
+            counts.putIfAbsent(key, 0L);
+        }
+
+        return counts;
     }
 
 
