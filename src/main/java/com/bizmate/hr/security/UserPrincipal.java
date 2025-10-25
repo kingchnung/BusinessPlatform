@@ -55,9 +55,9 @@ public class UserPrincipal implements UserDetails {
 
     // 활성화/잠금에 맞춰 UserDetails 표준값 매핑
     @Override public boolean isAccountNonExpired() { return true; }
-    @Override public boolean isAccountNonLocked() { return !locked; }
+    @Override public boolean isAccountNonLocked() { return true; }
     @Override public boolean isCredentialsNonExpired() { return true; }
-    @Override public boolean isEnabled() { return active; }
+    @Override public boolean isEnabled() { return true; }
 
     /** ✅ 특정 ROLE 보유 여부 확인 */
     public boolean hasRole(String roleName) {

@@ -43,7 +43,7 @@ public class TaskServiceImpl  implements TaskService{
                 .priority(request.getTaskPriority())
                 .status(request.getTaskStatus())
                 .project(project)
-                .assigneeId(assignee)
+                .assignee(assignee)
                 .build();
 
         return ProjectTaskDTO.fromEntity(projectTaskRepository.save(task));
@@ -82,7 +82,7 @@ public class TaskServiceImpl  implements TaskService{
     public List<ProjectTaskDTO> getTasksByAssigneeId(Long assigneeMemberId) {
         ProjectMember assignee = projectMemberRepository.findById(assigneeMemberId)
                 .orElseThrow(() -> new IllegalArgumentException("담당자를 찾을 수 없습니다."));
-        return projectTaskRepository.findByAssigneeId(assignee)
+        return projectTaskRepository.findByAssignee(assignee)
                 .stream()
                 .map(ProjectTaskDTO::fromEntity)
                 .toList();

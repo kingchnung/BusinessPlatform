@@ -30,7 +30,7 @@ public class ProjectMemberServiceImpl implements ProjectMemberService {
     public ProjectMemberDTO addMember(ProjectMemberRequest request) {
         Project project = projectRepository.findById(request.getProjectId())
                 .orElseThrow(() -> new IllegalArgumentException("해당 프로젝트를 찾을 수 없습니다."));
-        Employee employee = employeeRepository.findById(request.getEmployeeId())
+        Employee employee = employeeRepository.findById(request.getEmpId())
                 .orElseThrow(() -> new IllegalArgumentException("해당 직원을 찾을 수 없습니다."));
 
         // 중복 등록 방지
@@ -98,6 +98,11 @@ public class ProjectMemberServiceImpl implements ProjectMemberService {
             throw new IllegalArgumentException("삭제할 구성원을 찾을 수 없습니다.");
         }
         projectMemberRepository.deleteById(projectMemberId);
+    }
+
+    @Override
+    public List<ProjectMemberDTO> syncProjectMembers(Long projectId, List<ProjectMemberRequest> memberList) {
+        return List.of();
     }
 
 }

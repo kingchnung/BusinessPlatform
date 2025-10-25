@@ -9,31 +9,25 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @Builder
-@ToString
 public class ProjectResponseDTO {
 
     private Long projectId;
-
     private String projectNo;
-
     private String projectName;
+    private String status;
 
-    private LocalDateTime projectStartDate;
+    private LocalDateTime startDate;
+    private LocalDateTime endDate;
 
-    private LocalDateTime projectEndDate;
+    private String importance;
+    private String manager;
 
-    private String projectStatus;
-
-    private String projectImportance;
-
-    private String projectManager;
+    private String departmentName;
+    private String authorName;
 
     private String clientCeo;
-
     private String clientCompany;
-
     private String clientEmail;
-
     private String clientContact;
 
 }

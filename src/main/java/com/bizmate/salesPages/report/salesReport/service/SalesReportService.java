@@ -1,7 +1,8 @@
 package com.bizmate.salesPages.report.salesReport.service;
 
-import com.bizmate.common.dto.PageRequestDTO;
-import com.bizmate.common.dto.PageResponseDTO;
+
+import com.bizmate.common.page.PageRequestDTO;
+import com.bizmate.common.page.PageResponseDTO;
 import com.bizmate.salesPages.report.salesReport.dto.*;
 
 import java.util.List;
@@ -14,8 +15,8 @@ public interface SalesReportService {
     List<QuarterlySalesSummary> getQuarterlyTotalSalesSummary();
     List<ClientReceivablesDTO> getClientReceivablesSummary();
 
-    PageResponseDTO<ClientSalesStatusDTO> getClientSalesStatus(
-            PageRequestDTO pageRequestDTO, Integer year, Integer month
+    com.bizmate.common.page.PageResponseDTO<ClientSalesStatusDTO> getClientSalesStatus(
+            com.bizmate.common.page.PageRequestDTO pageRequestDTO, Integer year, Integer month
     );
 
     List<PeriodSalesStatusDTO> getPeriodSalesStatus(Integer year);
