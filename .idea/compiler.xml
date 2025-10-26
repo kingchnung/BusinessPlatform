@@ -43,7 +43,6 @@
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="com.bizmate.webBizMateProject" options="-parameters" />
       <module name="com.bizmate.webBizMateProject.test" options="-parameters" />
-      <module name="webBizMateProject.main" options="-parameters" />
     </option>
   </component>
 </project>
