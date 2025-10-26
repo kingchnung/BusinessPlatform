@@ -76,7 +76,8 @@ public class OrderRepositoryCustomImpl implements OrderRepositoryCustom{
         if (StringUtils.hasText(search) && StringUtils.hasText(keyword)) {
             switch (search) {
                 case "client":
-                    builder.and(order.clientCompany.containsIgnoreCase(keyword));
+                    builder.and(order.client.isNotNull()
+                            .and(order.client.clientCompany.containsIgnoreCase(keyword)));
                     break;
                 case "project":
                     builder.and(order.projectName.containsIgnoreCase(keyword));

@@ -34,6 +34,8 @@ public class QSalesItem extends EntityPathBase<SalesItem> {
 
     public final NumberPath<Long> salesItemId = createNumber("salesItemId", Long.class);
 
+    public final StringPath salesNo = createString("salesNo");
+
     public final NumberPath<java.math.BigDecimal> totalAmount = createNumber("totalAmount", java.math.BigDecimal.class);
 
     public final NumberPath<java.math.BigDecimal> unitPrice = createNumber("unitPrice", java.math.BigDecimal.class);

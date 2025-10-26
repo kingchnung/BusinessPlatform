@@ -39,9 +39,12 @@ public class OrderItem {
     private Integer lineNum;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "order_no", nullable = false)
+    @JoinColumn(name = "ORDER_ID", referencedColumnName = "orderId",  nullable = false)
     @JsonBackReference
     private Order order;
+
+    @Column(name = "ORDER_NO", nullable = false)
+    private String orderNo;
 
     public void setOrder(Order order){
         this.order = order;
