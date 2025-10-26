@@ -51,7 +51,6 @@ public class Role {
             joinColumns = @JoinColumn(name = "role_id"),
             inverseJoinColumns = @JoinColumn(name = "perm_id")
     )
-    @JsonManagedReference
     @Builder.Default
     private Set<Permission> permissions = new HashSet<>();
 }
