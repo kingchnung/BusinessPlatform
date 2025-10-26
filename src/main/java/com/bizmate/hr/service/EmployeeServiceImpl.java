@@ -10,6 +10,7 @@ import com.bizmate.hr.repository.*;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -285,5 +286,13 @@ public class EmployeeServiceImpl implements EmployeeService {
         String sequence = String.format("%03d", count + 1);
 
         return companyCode + Code + sequence; // 예: 5031001
+    }
+
+    @Profile("test")
+    public void updateEmployeeNameForTest(Long empId, String newName) {
+        Employee employee = employeeRepository.findById(empId)
+                .orElseThrow(() -> new EntityNotFoundException("사원 없음"));
+        employee.setEmpName(newName);
+        employeeRepository.save(employee);
     }
 }
