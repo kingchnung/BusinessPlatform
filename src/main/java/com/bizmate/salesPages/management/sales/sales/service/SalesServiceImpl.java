@@ -71,8 +71,8 @@ public class SalesServiceImpl implements SalesService {
 
             salesDTO.setProjectId(Optional.ofNullable(salesDTO.getProjectId()).orElse(order.getProjectId()));
             salesDTO.setProjectName(Optional.ofNullable(salesDTO.getProjectName()).orElse(order.getProjectName()));
-            salesDTO.setClientId(Optional.ofNullable(salesDTO.getClientId()).orElse(order.getClientId()));
-            salesDTO.setClientCompany(Optional.ofNullable(salesDTO.getClientCompany()).orElse(order.getClientCompany()));
+            salesDTO.setClientId(Optional.ofNullable(salesDTO.getClientId()).orElse(order.getClient().getClientId()));
+            salesDTO.setClientCompany(Optional.ofNullable(salesDTO.getClientCompany()).orElse(order.getClient().getClientCompany()));
         }
 
         // DTO → Entity (order는 스킵되므로 수동 세팅)

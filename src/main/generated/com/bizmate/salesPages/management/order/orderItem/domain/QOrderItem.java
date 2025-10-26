@@ -32,6 +32,8 @@ public class QOrderItem extends EntityPathBase<OrderItem> {
 
     public final NumberPath<Long> orderItemId = createNumber("orderItemId", Long.class);
 
+    public final StringPath orderNo = createString("orderNo");
+
     public final NumberPath<Long> quantity = createNumber("quantity", Long.class);
 
     public final NumberPath<java.math.BigDecimal> totalAmount = createNumber("totalAmount", java.math.BigDecimal.class);
@@ -58,7 +60,7 @@ public class QOrderItem extends EntityPathBase<OrderItem> {
 
     public QOrderItem(Class<? extends OrderItem> type, PathMetadata metadata, PathInits inits) {
         super(type, metadata, inits);
-        this.order = inits.isInitialized("order") ? new com.bizmate.salesPages.management.order.order.domain.QOrder(forProperty("order")) : null;
+        this.order = inits.isInitialized("order") ? new com.bizmate.salesPages.management.order.order.domain.QOrder(forProperty("order"), inits.get("order")) : null;
     }
 
 }

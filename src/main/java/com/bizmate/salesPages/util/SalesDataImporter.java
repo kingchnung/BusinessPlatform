@@ -161,6 +161,10 @@ public class SalesDataImporter implements CommandLineRunner {
         log.info("orders.csv rows={}", orders.size());
         if (orders.isEmpty()) { log.warn("⚠️ orders.csv 없음 또는 비어 있음"); return; }
 
+        // ✨ [추가] Client 데이터를 미리 맵으로 만듭니다.
+        Map<String, Client> clientMap = clientRepository.findAll().stream()
+                .collect(Collectors.toMap(Client::getClientId, c -> c));
+
         // itemMap: order_id 기준 묶기 (null 키는 제외)
         Map<String, List<Map<String,String>>> itemMap = items.stream()
                 .filter(m -> s(m,"order_id") != null)
@@ -168,6 +172,12 @@ public class SalesDataImporter implements CommandLineRunner {
 
         List<Order> toSave = new ArrayList<>();
         for (var r : orders) {
+            Client client = clientMap.get(s(r, "client_id"));
+            if (client == null) {
+                log.warn("⚠️ orders.csv의 client_id '{}'에 해당하는 Client 없음. 이 Order는 건너뜁니다.", s(r, "client_id"));
+                continue; // 또는 예외 처리
+            }
+
             Order o = Order.builder()
                     .orderId(s(r,"order_id"))
                     .orderIdDate(d(r,"order_id_date"))
@@ -175,8 +185,7 @@ public class SalesDataImporter implements CommandLineRunner {
                     .orderDueDate(d(r,"order_due_date"))
                     .projectId(s(r,"project_id"))
                     .projectName(s(r,"project_name"))
-                    .clientId(s(r,"client_id"))
-                    .clientCompany(s(r,"client_company"))
+                    .client(client)
                     .orderStatus(Optional.ofNullable(s(r,"order_status")).orElse("시작전"))
                     .orderNote(s(r,"order_note"))
                     .writer(Optional.ofNullable(s(r,"writer")).orElse("SYSTEM"))
@@ -192,6 +201,8 @@ public class SalesDataImporter implements CommandLineRunner {
                         .unitPrice(bd(ir,"unit_price"))
                         .build();
                 oi.calculateAmount();
+                oi.setOrder(o);
+                oi.setOrderNo( s(ir, "order_id") );
                 oiList.add(oi);
             }
 
@@ -250,6 +261,7 @@ public class SalesDataImporter implements CommandLineRunner {
                                 .unitVat(oi.getUnitVat())
                                 .totalAmount(oi.getTotalAmount())
                                 .build();
+                        si.setSalesNo( sObj.getSalesId() ); // 부모 Sales의 ID를 사용 (혹은 oi.getOrderNo())
                         siList.add(si);
                     }
                 }
@@ -263,6 +275,7 @@ public class SalesDataImporter implements CommandLineRunner {
                             .unitVat(bd(ir,"unit_vat"))
                             .totalAmount(bd(ir,"total_amount"))
                             .build();
+                    si.setSalesNo( s(ir, "sales_id") );
                     siList.add(si);
                 }
             }

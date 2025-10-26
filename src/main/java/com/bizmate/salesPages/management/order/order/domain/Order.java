@@ -1,5 +1,6 @@
 package com.bizmate.salesPages.management.order.order.domain;
 
+import com.bizmate.salesPages.client.domain.Client;
 import com.bizmate.salesPages.management.order.orderItem.domain.OrderItem;
 import com.bizmate.salesPages.management.sales.salesItem.domain.SalesItem;
 import jakarta.persistence.*;
@@ -56,8 +57,14 @@ public class Order implements Serializable {
     private BigDecimal totalVatAmount;
     private String userId;
     private String writer;
-    private String clientId;
-    private String clientCompany;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    // Client의 PK가 'clientNo'이므로,
+    // Order 테이블의 외래 키 컬럼 이름도 'CLIENT_NO'일 가능성이 높습니다.
+    @JoinColumn(name = "CLIENT_NO") // <-- DB의 실제 외래 키 컬럼 이름
+    @NotAudited
+    private Client client;
+
     private String orderNote;
 
     private String orderStatus;
@@ -129,8 +136,8 @@ public class Order implements Serializable {
         this.orderDate = orderDate;
     }
 
-    public void changeClientId(String clientId) {
-        this.clientId = clientId;
+    public void changeClientId(Client client) {
+        this.client = client;
     }
 
     public void changeOrderNote(String orderNote) {

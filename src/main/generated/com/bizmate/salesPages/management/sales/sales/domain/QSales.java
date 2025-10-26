@@ -76,7 +76,7 @@ public class QSales extends EntityPathBase<Sales> {
 
     public QSales(Class<? extends Sales> type, PathMetadata metadata, PathInits inits) {
         super(type, metadata, inits);
-        this.order = inits.isInitialized("order") ? new com.bizmate.salesPages.management.order.order.domain.QOrder(forProperty("order")) : null;
+        this.order = inits.isInitialized("order") ? new com.bizmate.salesPages.management.order.order.domain.QOrder(forProperty("order"), inits.get("order")) : null;
     }
 
 }

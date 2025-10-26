@@ -16,7 +16,7 @@ import com.bizmate.hr.dto.user.UserDTO;
 import com.bizmate.hr.repository.EmployeeRepository;
 import com.bizmate.hr.repository.UserRepository;
 
-import com.bizmate.project.dto.request.ProjectRequestDTO;
+import com.bizmate.project.dto.project.ProjectRequestDTO;
 import com.bizmate.project.service.ProjectService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
