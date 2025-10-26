@@ -1,5 +1,6 @@
 package com.bizmate.groupware.board.service;
 
+import com.bizmate.common.exception.ForbiddenOperationException;
 import com.bizmate.common.exception.VerificationFailedException;
 import com.bizmate.common.page.PageRequestDTO;
 import com.bizmate.common.page.PageResponseDTO;
@@ -17,7 +18,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,8 +36,8 @@ public class BoardServiceImpl implements BoardService {
     @Override
     @Transactional
     public BoardDto createBoard(BoardDto dto, UserPrincipal user) {
-        if (!user.isAdmin() && dto.getBoardType().name().equals(BoardType.NOTICE.name())) {
-            throw new AccessDeniedException("공지사항은 관리자만 작성할 수 있습니다.");
+        if (!isAdmin(user) && dto.getBoardType() == BoardType.NOTICE) {
+            throw new ForbiddenOperationException("공지사항은 관리자만 작성할 수 있습니다.");
         }
 
         String displayName = (dto.getBoardType() == BoardType.SUGGESTION)
@@ -64,10 +64,15 @@ public class BoardServiceImpl implements BoardService {
         Board board = boardRepository.findById(boardNo)
                 .orElseThrow(() -> new IllegalArgumentException("게시글 없음"));
 
+        // 공지사항은 관리자만 삭제 가능
+        if (board.getBoardType() == BoardType.NOTICE && !currentUser.isAdmin()) {
+            throw new ForbiddenOperationException("공지사항은 관리자만 삭제할 수 있습니다.");
+        }
+
         // 일반 사용자는 본인 글만 논리삭제 가능
         if (!currentUser.isAdmin()) {
             if (!board.getAuthorId().equals(currentUser.getUsername())) {
-                throw new AccessDeniedException("본인 글만 삭제 가능합니다.");
+                throw new ForbiddenOperationException("본인 글만 삭제 가능합니다.");
             }
             board.setDeleted(true);
             return;
@@ -116,51 +121,94 @@ public class BoardServiceImpl implements BoardService {
                 .toList();
     }
 
+    // 게시물 상세정보
+//    @Override
+//    @Transactional
+//    public BoardDto getBoard(Long id) {
+//        Board board = boardRepository.findById(id)
+//                .orElseThrow(() -> new EntityNotFoundException("게시글을 찾을 수 없습니다."));
+//        return toDto(board);
+//    }
+    // 게시물 상세정보 (권한 포함)
     @Override
     @Transactional
-    public BoardDto getBoard(Long id) {
+    public BoardDto getBoard(Long id, UserPrincipal user) {
         Board board = boardRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("게시글을 찾을 수 없습니다."));
-        return toDto(board);
+        return toDto(board, user); // ✅ 유저 기반 권한 계산
     }
 
+    // 게시물 수정
     @Override
     @Transactional
     public BoardDto updateBoard(Long id, BoardDto dto, UserPrincipal user) {
         Board board = boardRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("게시글을 찾을 수 없습니다."));
 
-//        if (!user.isAdmin() && !board.getAuthorId().equals(user.getUserId())) {
-//            throw new VerificationFailedException("수정 권한이 없습니다.");
-//        }
+        // 직접 권한 검사
+        boolean isAdmin = user.getAuthorities().stream()
+                .map(auth -> auth.getAuthority())
+                .anyMatch(a -> a.equals("ROLE_CEO") || a.equals("ROLE_ADMIN") || a.equals("sys:admin"));
+
+        boolean isAuthor = board.getAuthorId().equals(user.getUsername());
+
+        // 공지사항 수정: 관리자만
+        if (board.getBoardType() == BoardType.NOTICE && !isAdmin) {
+            throw new ForbiddenOperationException("공지사항은 관리자만 수정할 수 있습니다.");
+        }
+
+        // 일반 게시글 수정: 작성자 본인만
+        if (!isAdmin && !isAuthor) {
+            throw new ForbiddenOperationException("본인 글만 수정할 수 있습니다.");
+        }
 
         board.setTitle(dto.getTitle());
         board.setContent(dto.getContent());
         board.markUpdated(user);
+
         return toDto(board);
     }
 
     @Override
-    @Transactional
-    public PageResponseDTO<BoardDto> getBoardPage(PageRequestDTO pageRequestDTO, UserPrincipal user) {
+    @Transactional(readOnly = true)
+    public PageResponseDTO<BoardDto> getBoardPage(PageRequestDTO req, UserPrincipal user) {
         Pageable pageable = PageRequest.of(
-                pageRequestDTO.getPage() - 1,
-                pageRequestDTO.getSize(),
+                Math.max(0, req.getPage() - 1),
+                req.getSize(),
                 Sort.by(Sort.Direction.DESC, "createdAt")
         );
 
-        Page<Board> result = boardRepository.findActiveByKeyword(pageRequestDTO.getKeyword(), pageable);
+        // 🔧 여기서 보정: 프론트는 'type'만 보냄 → Enum으로 변환
+        BoardType bt = req.getBoardType();
+        if (bt == null) {
+            String t = req.getType(); // "ALL" | "NOTICE" | "GENERAL" | "SUGGESTION" or null
+            if (t != null && !t.isBlank() && !"ALL".equalsIgnoreCase(t)) {
+                bt = BoardType.from(t);  // @JsonCreator from(String) 이미 있음
+            } else {
+                bt = null; // ALL 이면 null로 두어 전체 조회
+            }
+        }
+
+        Page<Board> result = boardRepository.findActiveByKeyword(
+                emptyToNull(req.getKeyword()),
+                bt,                                  // ← 보정된 Enum 사용!
+                emptyToAll(req.getSearchType()),
+                pageable
+        );
 
         List<BoardDto> dtoList = result.getContent().stream()
-                .map(board -> toDtoForUser(board, user))
+                .map(b -> toDtoForUser(b, user))
                 .toList();
 
         return PageResponseDTO.<BoardDto>withAll()
                 .dtoList(dtoList)
-                .pageRequestDTO(pageRequestDTO)
+                .pageRequestDTO(req)
                 .totalCount(result.getTotalElements())
                 .build();
     }
+
+    private String emptyToAll(String v) { return (v == null || v.isBlank()) ? "ALL" : v; }
+    private String emptyToNull(String v) { return (v == null || v.isBlank()) ? null : v; }
 
 
     @Override
@@ -185,22 +233,72 @@ public class BoardServiceImpl implements BoardService {
                 .build();
     }
 
+    // 권한/작성자 판단 공통 유틸  (NPE 방지)
+    private boolean isAdmin(UserPrincipal user) {
+        if (user == null || user.getAuthorities() == null) return false;
+        return user.getAuthorities().stream()
+                .map(a -> a.getAuthority())
+                .anyMatch(auth -> "ROLE_ADMIN".equals(auth) || "ROLE_CEO".equals(auth) || "sys:admin".equals(auth));
+    }
+
+    private boolean isAuthor(Board board, UserPrincipal user) {
+        if (user == null) return false;
+        return board.getAuthorId() != null && board.getAuthorId().equals(user.getUsername());
+    }
+
+    private boolean isNotice(Board board) {
+        return board.getBoardType() == BoardType.NOTICE;
+    }
+
+    // 상세 조회 매핑: user를 받아 계산해서 DTO에만 세팅
+    private BoardDto toDto(Board board, UserPrincipal user) {
+        boolean admin = isAdmin(user);
+        boolean author = isAuthor(board, user);
+        boolean notice = isNotice(board);
+
+        return BoardDto.builder()
+                .boardNo(board.getBoardNo())
+                .boardType(board.getBoardType())
+                .title(board.getTitle())
+                .content(board.getContent())
+                .authorId(board.getAuthorId())     // ← 엔티티에 있으니 그대로 넣기
+                .authorName(board.getAuthorName())
+                .createdAt(board.getCreatedAt())
+                .updatedAt(board.getUpdatedAt())
+                .isDeleted(board.isDeleted())
+
+                // ← 엔티티에 없는 계산 필드: DTO에만 넣기
+                .canEdit(admin || (author && !notice))
+                .canDelete(admin || author)
+                .build();
+    }
+
     private BoardDto toDto(Board board) {
         return BoardDto.builder()
                 .boardNo(board.getBoardNo())
                 .boardType(board.getBoardType())
                 .title(board.getTitle())
                 .content(board.getContent())
+                .authorId(board.getAuthorId()) // 반드시 추가
                 .authorName(board.getAuthorName())
+                .isDeleted(board.isDeleted())
                 .createdAt(board.getCreatedAt())
                 .updatedAt(board.getUpdatedAt())
-                .isDeleted(board.isDeleted())
+                .canEdit(false)    // User 정보 없을 땐 false 기본값
+                .canDelete(false)  // User 정보 없을 땐 false 기본값
                 .build();
     }
 
     private BoardDto toDtoForUser(Board board, UserPrincipal user) {
+        boolean isAdmin = user.getAuthorities().stream()
+                .map(a -> a.getAuthority())
+                .anyMatch(a -> a.equals("ROLE_ADMIN") || a.equals("ROLE_CEO") || a.equals("sys:admin"));
+
+        boolean isAuthor = board.getAuthorId().equals(user.getUsername());
+        boolean isNotice = board.getBoardType() == BoardType.NOTICE;
+
         String displayName = board.getBoardType() == BoardType.SUGGESTION
-                ? (user.isAdmin() ? board.getAuthorName() : "익명") // 관리자면 실명
+                ? (isAdmin ? board.getAuthorName() : "익명")
                 : board.getAuthorName();
 
         return BoardDto.builder()
@@ -208,8 +306,16 @@ public class BoardServiceImpl implements BoardService {
                 .title(board.getTitle())
                 .content(board.getContent())
                 .boardType(board.getBoardType())
+                .authorId(board.getAuthorId())
                 .authorName(displayName)
                 .isDeleted(board.isDeleted())
+                .createdAt(board.getCreatedAt())
+                .updatedAt(board.getUpdatedAt())
+
+                // ✅ 수정 / 삭제 권한 설정
+                .canEdit(isAdmin || (isAuthor && !isNotice))
+                .canDelete(isAdmin || isAuthor)
+
                 .build();
     }
 }

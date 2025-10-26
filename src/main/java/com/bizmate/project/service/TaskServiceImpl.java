@@ -6,7 +6,6 @@ import com.bizmate.project.domain.ProjectTask;
 import com.bizmate.project.domain.enums.task.TaskStatus;
 import com.bizmate.project.dto.task.ProjectTaskDTO;
 import com.bizmate.project.dto.task.ProjectTaskRequest;
-import com.bizmate.project.dto.task.TaskResponseDTO;
 import com.bizmate.project.repository.ProjectMemberRepository;
 import com.bizmate.project.repository.ProjectRepository;
 import com.bizmate.project.repository.ProjectTaskRepository;
@@ -43,7 +42,7 @@ public class TaskServiceImpl  implements TaskService{
                 .priority(request.getTaskPriority())
                 .status(request.getTaskStatus())
                 .project(project)
-                .assigneeId(assignee)
+                .assignee(assignee)
                 .build();
 
         return ProjectTaskDTO.fromEntity(projectTaskRepository.save(task));
@@ -82,7 +81,7 @@ public class TaskServiceImpl  implements TaskService{
     public List<ProjectTaskDTO> getTasksByAssigneeId(Long assigneeMemberId) {
         ProjectMember assignee = projectMemberRepository.findById(assigneeMemberId)
                 .orElseThrow(() -> new IllegalArgumentException("담당자를 찾을 수 없습니다."));
-        return projectTaskRepository.findByAssigneeId(assignee)
+        return projectTaskRepository.findByAssignee(assignee)
                 .stream()
                 .map(ProjectTaskDTO::fromEntity)
                 .toList();

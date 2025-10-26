@@ -4,10 +4,11 @@ import com.bizmate.hr.domain.Employee;
 import com.bizmate.project.domain.Project;
 import com.bizmate.project.domain.ProjectMember;
 import com.bizmate.project.domain.embeddables.ProjectMemberId;
+import com.bizmate.project.dto.projectmember.ProjectMemberDTO;
+import com.bizmate.project.dto.projectmember.ProjectMemberRequest;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface ProjectMemberRepository extends JpaRepository<ProjectMember, Long> {
 
@@ -22,5 +23,6 @@ public interface ProjectMemberRepository extends JpaRepository<ProjectMember, Lo
 
     // ✅ 4. 중복 참여 방지를 위한 검증 (특정 프로젝트에 동일 직원 존재 여부)
     boolean existsByProjectAndEmployee(Project project, Employee employee);
+
 }
 

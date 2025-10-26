@@ -2,7 +2,6 @@ package com.bizmate.project.service;
 
 import com.bizmate.project.dto.projectmember.ProjectMemberDTO;
 import com.bizmate.project.dto.projectmember.ProjectMemberRequest;
-import com.bizmate.project.dto.projectmember.ProjectMemberResponseDTO;
 
 import java.util.List;
 
@@ -25,4 +24,5 @@ public interface ProjectMemberService {
 
     // ✅ 구성원 삭제
     void deleteMember(Long projectMemberId);
+    List<ProjectMemberDTO> syncProjectMembers(Long projectId, List<ProjectMemberRequest> memberList);
 }

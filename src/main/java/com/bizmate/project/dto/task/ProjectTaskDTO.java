@@ -23,7 +23,7 @@ public class ProjectTaskDTO {
     private LocalDate endDate;
     private int progressRate;
 
-    private Long assigneeId;
+    private Long assignee;
 
     private TaskPriority taskPriority; // ← enum 직접 사용 (string 변환은 Response에서)
     private TaskStatus taskStatus;
@@ -42,12 +42,12 @@ public class ProjectTaskDTO {
                 .taskPriority(task.getPriority())
                 .taskStatus(task.getStatus())
                 .projectId(task.getProject() != null ? task.getProject().getProjectId() : null)
-                .assigneeId(task.getAssigneeId() != null ? task.getAssigneeId().getProjectMemberId() : null)
+                .assignee(task.getAssignee() != null ? task.getAssignee().getProjectMemberId() : null)
                 .build();
     }
 
     // ✅ DTO → Entity
-    public ProjectTask toEntity(Project project, ProjectMember assigneeId) {
+    public ProjectTask toEntity(Project project, ProjectMember assignee) {
         return ProjectTask.builder()
                 .taskId(this.taskId)
                 .taskName(this.taskName)
@@ -58,7 +58,7 @@ public class ProjectTaskDTO {
                 .priority(this.taskPriority)
                 .status(this.taskStatus)
                 .project(project)
-                .assigneeId(assigneeId)
+                .assignee(assignee)
                 .build();
     }
 }

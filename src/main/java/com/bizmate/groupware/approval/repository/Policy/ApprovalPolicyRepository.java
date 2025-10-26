@@ -8,8 +8,6 @@ import java.util.List;
 import java.util.Optional;
 
 public interface ApprovalPolicyRepository extends JpaRepository<ApprovalPolicy, Long> {
-    Optional<ApprovalPolicy> findByDocType(String docType);
     List<ApprovalPolicy> findAll();
     Optional<ApprovalPolicy> findByDocTypeAndIsActiveTrue(DocumentType docType);
-    Optional<ApprovalPolicy> findByDocTypeAndIsActiveTrue(String docType);
 }

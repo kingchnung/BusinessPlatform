@@ -78,7 +78,7 @@ public class ApprovalDocuments extends BaseEntity {
     /* ----------------------------- 결재 내용 ------------------------------ */
 
     @Lob
-    @Column(name = "APPROVAL_LINE")
+    @Column(name = "APPROVAL_LINE", nullable = false)
     @Convert(converter = ApproverLineJsonConverter.class)
     private List<ApproverStep> approvalLine;
 

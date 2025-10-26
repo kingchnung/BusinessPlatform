@@ -1,12 +1,14 @@
 // ApprovalPolicyService.java
 package com.bizmate.groupware.approval.service.policy;
 
+import com.bizmate.groupware.approval.domain.document.DocumentType;
 import com.bizmate.groupware.approval.domain.policy.ApprovalPolicy;
 import com.bizmate.groupware.approval.domain.policy.ApprovalPolicyStep;
 import com.bizmate.groupware.approval.dto.policy.ApprovalPolicyRequest;
 import com.bizmate.groupware.approval.dto.policy.ApprovalPolicyResponse;
 import com.bizmate.groupware.approval.dto.policy.ApprovalPolicyStepRequest;
 import com.bizmate.groupware.approval.dto.policy.ApprovalPolicyStepResponse;
+import com.bizmate.groupware.approval.infrastructure.ApprovalPolicyMapper;
 import com.bizmate.groupware.approval.repository.Policy.ApprovalPolicyRepository;
 import com.bizmate.hr.domain.Department;
 import com.bizmate.hr.domain.Employee;
@@ -28,9 +30,7 @@ import java.util.stream.Collectors;
 public class ApprovalPolicyService {
 
     private final ApprovalPolicyRepository approvalPolicyRepository;
-    private final EmployeeRepository employeeRepository;
-    private final DepartmentRepository departmentRepository;
-    private final PositionRepository positionRepository;
+    private final ApprovalPolicyMapper approvalPolicyMapper;
 
     /**
      * ✅ 결재 정책 생성
@@ -39,43 +39,24 @@ public class ApprovalPolicyService {
     public ApprovalPolicyResponse createPolicy(ApprovalPolicyRequest request) {
         log.info("📄 결재 정책 등록 요청: {}", request.getPolicyName());
 
+        // 1️⃣ 정책 엔티티 기본 생성
         ApprovalPolicy policy = ApprovalPolicy.builder()
                 .policyName(request.getPolicyName())
-                .docType(request.getDocType())
+                .docType(DocumentType.valueOf(request.getDocType()))
                 .createdBy(request.getCreatedBy())
                 .createdDept(request.getCreatedDept())
                 .isActive(true)
                 .build();
 
-        // ✅ 각 Step 추가
-        for (ApprovalPolicyStepRequest dto : request.getSteps()) {
+        // 2️⃣ 기존 수동 변환 대신 Mapper 사용
+        // - Mapper에서 empId 또는 deptCode+positionCode 기반으로 결재자 조회
+        List<ApprovalPolicyStep> steps = approvalPolicyMapper.toEntities(request.getSteps(), policy);
+        policy.setSteps(steps);
 
-            Department dept = departmentRepository.findByDeptCode(dto.getDeptCode()).orElse(null);
-
-            String positionName = positionRepository.findById(Long.valueOf(dto.getPositionCode()))
-                    .map(Position::getPositionName)
-                    .orElse("미지정");
-
-            // ✅ 결재자 조회 (empId 기반)
-            Employee approver = null;
-            String approverName = null;
-            if (dto.getEmpId() != null) {
-                approver = employeeRepository.findById(dto.getEmpId()).orElse(null);
-                approverName = approver != null ? approver.getEmpName() : null;
-            }
-
-            policy.addStep(ApprovalPolicyStep.builder()
-                    .stepOrder(dto.getStepOrder())
-                    .deptCode(dto.getDeptCode())
-                    .deptName(dept != null ? dept.getDeptName() : dto.getDeptName())
-                    .positionCode(dto.getPositionCode())
-                    .positionName(positionName)
-                    .approver(approver)
-                    .approverName(approver != null ? approver.getEmpName() : null) // ✅ 결재자 이름 저장
-                    .build());
-        }
-
+        // 3️⃣ 저장
         ApprovalPolicy saved = approvalPolicyRepository.save(policy);
+        log.info("✅ 결재 정책 저장 완료: {} (ID={})", saved.getPolicyName(), saved.getId());
+
         return toResponse(saved);
     }
 
@@ -107,38 +88,18 @@ public class ApprovalPolicyService {
 
         log.info("📝 결재 정책 수정 요청: {} (ID={})", request.getPolicyName(), id);
 
-        // ✅ 기본 정보 갱신
+        // 1️⃣ 기본 정보 갱신
         policy.setPolicyName(request.getPolicyName());
-        policy.setDocType(request.getDocType());
+        policy.setDocType(DocumentType.valueOf(request.getDocType()));
 
-        // ✅ 기존 step 모두 삭제 후 새 step 등록 (CascadeType.ALL로 자동 삭제됨)
+        // 2️⃣ 기존 step 전부 제거 (CascadeType.ALL로 삭제됨)
         policy.getSteps().clear();
 
-        for (ApprovalPolicyStepRequest dto : request.getSteps()) {
-            Department dept = departmentRepository.findByDeptCode(dto.getDeptCode()).orElse(null);
+        // 3️⃣ Mapper 통해 새 step 변환 후 추가
+        List<ApprovalPolicyStep> newSteps = approvalPolicyMapper.toEntities(request.getSteps(), policy);
+        policy.setSteps(newSteps);
 
-            String positionName = positionRepository.findById(Long.valueOf(dto.getPositionCode()))
-                    .map(Position::getPositionName)
-                    .orElse("미지정");
-
-            Employee approver = null;
-            String approverName = null;
-            if (dto.getEmpId() != null) {
-                approver = employeeRepository.findById(dto.getEmpId()).orElse(null);
-                approverName = approver != null ? approver.getEmpName() : null;
-            }
-
-            policy.addStep(ApprovalPolicyStep.builder()
-                    .stepOrder(dto.getStepOrder())
-                    .deptCode(dto.getDeptCode())
-                    .deptName(dept != null ? dept.getDeptName() : dto.getDeptName())
-                    .positionCode(dto.getPositionCode())
-                    .positionName(positionName)
-                    .approver(approver)
-                    .approverName(approverName)
-                    .build());
-        }
-
+        // 4️⃣ 저장
         ApprovalPolicy updated = approvalPolicyRepository.save(policy);
         log.info("✅ 결재 정책 수정 완료: {} (ID={})", updated.getPolicyName(), updated.getId());
 
@@ -157,7 +118,6 @@ public class ApprovalPolicyService {
     public void deletePolicy(Long id) {
         ApprovalPolicy policy = approvalPolicyRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("해당 정책이 존재하지 않습니다."));
-
         approvalPolicyRepository.delete(policy);
         log.warn("🗑️ 결재정책 삭제 완료: {} ({})", policy.getPolicyName(), policy.getDocType());
     }
@@ -169,7 +129,7 @@ public class ApprovalPolicyService {
         return ApprovalPolicyResponse.builder()
                 .id(policy.getId())
                 .policyName(policy.getPolicyName())
-                .docType(policy.getDocType())
+                .docType(policy.getDocType().name())
                 .departmentName(policy.getCreatedDept())
                 .isActive(policy.isActive())
                 .steps(policy.getSteps().stream()
@@ -177,7 +137,10 @@ public class ApprovalPolicyService {
                                 s.getStepOrder(),
                                 s.getDeptName(),
                                 s.getPositionName(),
-                                s.getApprover() != null ? s.getApprover().getEmpName() : (s.getApproverName() != null ? s.getApproverName() : "-")
+                                // ✅ approver_name 우선 표시 (null-safe)
+                                s.getApprover() != null
+                                        ? s.getApprover().getEmpName()
+                                        : (s.getApproverName() != null ? s.getApproverName() : "-")
                         ))
                         .collect(Collectors.toList()))
                 .build();

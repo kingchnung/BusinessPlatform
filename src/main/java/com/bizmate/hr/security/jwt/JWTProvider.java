@@ -1,11 +1,13 @@
 package com.bizmate.hr.security.jwt;
 
+import com.bizmate.hr.security.CustomUserDetailsService;
 import com.bizmate.hr.security.UserPrincipal;
 import io.jsonwebtoken.*;
 
 import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -26,12 +28,17 @@ import java.util.stream.Collectors;
  */
 @Component
 @Slf4j
+@RequiredArgsConstructor
 public class JWTProvider {
 
     // ★★★ 1. 설정값 (코드 내장) ★★★
     // 비밀 키: 보안상 32바이트 이상 권장. (테스트용)
     private static final String SECRET_KEY = "1234567890123456789012345678901234567890";
     private static final Key ks = Keys.hmacShaKeyFor(SECRET_KEY.getBytes(StandardCharsets.UTF_8));
+
+    private final CustomUserDetailsService userDetailsService;
+
+
 
     private final long accessTokenValidityMillis = 1000L * 60 * 60;    // 1시간
     private final long refreshTokenValidityMillis = 1000L * 60 * 60 * 24 * 7; // 7일
@@ -199,6 +206,12 @@ public class JWTProvider {
                 .setExpiration(expiry)
                 .signWith(ks, SignatureAlgorithm.HS256)
                 .compact();
+    }
+
+    public UserPrincipal rebuildPrincipal(String username) {
+        // DB조회 대신, username 기반 principal 재생성
+        var userDetails = userDetailsService.loadUserByUsername(username);
+        return (UserPrincipal) userDetails;
     }
 
 

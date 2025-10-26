@@ -1,8 +1,12 @@
 package com.bizmate.project.service;
 
 import com.bizmate.groupware.approval.domain.document.ApprovalDocuments;
+import com.bizmate.hr.domain.Department;
 import com.bizmate.hr.domain.Employee;
+import com.bizmate.hr.domain.UserEntity;
+import com.bizmate.hr.repository.DepartmentRepository;
 import com.bizmate.hr.repository.EmployeeRepository;
+import com.bizmate.hr.repository.UserRepository;
 import com.bizmate.project.domain.Project;
 import com.bizmate.project.domain.ProjectBudgetItem;
 import com.bizmate.project.domain.ProjectMember;
@@ -11,21 +15,22 @@ import com.bizmate.project.domain.enums.project.ProjectStatus;
 
 import com.bizmate.project.domain.enums.task.TaskStatus;
 import com.bizmate.project.dto.budgetitem.ProjectBudgetItemDTO;
-import com.bizmate.project.dto.project.ProjectCreateRequest;
-import com.bizmate.project.dto.project.ProjectDetailResponse;
-import com.bizmate.project.dto.projectmember.ProjectMemberDTO;
+import com.bizmate.project.dto.project.ProjectDetailResponseDTO;
 import com.bizmate.project.dto.project.ProjectRequestDTO;
+import com.bizmate.project.dto.projectmember.ProjectMemberDTO;
 import com.bizmate.project.dto.task.ProjectTaskDTO;
 import com.bizmate.project.dto.task.ProjectTaskRequest;
 import com.bizmate.project.repository.ProjectBudgetItemRepository;
 import com.bizmate.project.repository.ProjectMemberRepository;
 import com.bizmate.project.repository.ProjectRepository;
 import com.bizmate.project.repository.ProjectTaskRepository;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,6 +50,8 @@ public class ProjectServiceImpl implements ProjectService {
     private final ProjectBudgetItemRepository budgetItemRepository;
     private final ProjectTaskRepository taskRepository;
     private final EmployeeRepository employeeRepository;
+    private final UserRepository userRepository;
+    private final DepartmentRepository departmentRepository;
 
 
     /** ✅ 프로젝트 생성 (전자결재 승인 시 자동 호출) */
@@ -73,16 +80,39 @@ public class ProjectServiceImpl implements ProjectService {
 
         if (dto.getParticipants() != null) {
             for (ProjectMemberDTO pDto : dto.getParticipants()) {
-                Employee emp = employeeRepository.findById(pDto.getEmployeeId())
-                        .orElseThrow(() -> new IllegalArgumentException("참여자를 찾을 수 없습니다. ID: " + pDto.getEmployeeId()));
+                Employee employee = null;
 
-                ProjectMember newMember = ProjectMember.builder()
-                        .employee(emp)
-                        .projectRole(pDto.getProjectRole())
+                if (pDto.getEmpId() != null) {
+                    Long id = pDto.getEmpId();
+                    // 1) 우선 empId(PK)로 시도
+                    employee = employeeRepository.findById(id).orElse(null);
+
+                    // 2) empId가 없을 경우 empNo로 시도 (문자열 형태일 수 있음)
+                    if (employee == null) {
+                        String empNo = String.valueOf(id);
+                        employee = employeeRepository.findByEmpNo(empNo).orElse(null);
+                    }
+                }
+
+                // ✅ 2️⃣ 혹시 employeeId도 null이고 문자열 empNo가 있을 경우 (Jackson이 잘못 매핑)
+                if (employee == null && pDto.getEmpName() != null) {
+                    employee = employeeRepository.findByEmpNo(pDto.getEmpName()).orElse(null);
+                }
+
+                if (employee == null) {
+                    log.warn("⚠️ 참여자 조회 실패: DTO={}, employeeId={}, employeeName={}",
+                            pDto, pDto.getEmpId(), pDto.getEmpName());
+                    continue;
+                }
+
+                // ✅ 멤버 생성 (기존 구조 유지)
+                ProjectMember member = ProjectMember.builder()
+                        .employee(employee)
+                        .projectRole(pDto.getProjectRole() != null ? pDto.getProjectRole() : "팀원")
                         .build();
 
-                project.addParticipant(newMember); // Project에 멤버 추가 (연관관계 설정)
-                participantMemberMap.put(emp.getEmpId(), newMember); // Map에 저장하여 Task에서 재사용
+                project.addParticipant(member);
+                participantMemberMap.put(employee.getEmpId(), member);
             }
         }
 
@@ -101,14 +131,14 @@ public class ProjectServiceImpl implements ProjectService {
         if (dto.getTasks() != null) {
             for (ProjectTaskDTO tDto : dto.getTasks()) {
                 ProjectMember assignee = null; // 담당자는 이제 ProjectMember 타입
-                if (tDto.getAssigneeId() != null) {
+                if (tDto.getAssignee() != null) {
                     // Map에서 직원 ID를 키로 하여 ProjectMember 엔티티를 찾습니다.
-                    assignee = participantMemberMap.get(tDto.getAssigneeId());
+                    assignee = participantMemberMap.get(tDto.getAssignee());
 
                     // Map에 해당 직원이 없으면, 프로젝트 참여자가 아니라는 의미
                     if (assignee == null) {
                         throw new IllegalArgumentException(
-                                "Task '" + tDto.getTaskName() + "'의 담당자(ID:" + tDto.getAssigneeId() + ")는 " +
+                                "Task '" + tDto.getTaskName() + "'의 담당자(ID:" + tDto.getAssignee() + ")는 " +
                                         "프로젝트 참여 멤버가 아닙니다. 기안 문서를 확인해주세요."
                         );
                     }
@@ -119,7 +149,7 @@ public class ProjectServiceImpl implements ProjectService {
                         .taskDescription(tDto.getTaskDescription())
                         .startDate(tDto.getStartDate())
                         .endDate(tDto.getEndDate())
-                        .assigneeId(assignee) // 검증된 담당자 또는 null
+                        .assignee(assignee) // 검증된 담당자 또는 null
                         .progressRate(tDto.getProgressRate())
                         .status(TaskStatus.PLANNED)
                         .build());
@@ -130,6 +160,64 @@ public class ProjectServiceImpl implements ProjectService {
         log.info("✅ 프로젝트 생성 완료 (ID: {})", saved.getProjectId());
         return saved;
     }
+
+    @Override
+    @Transactional
+    public ProjectDetailResponseDTO createProject(ProjectRequestDTO dto) {
+        UserEntity author = userRepository.findById(dto.getAuthorId())
+                .orElseThrow(() -> new EntityNotFoundException("작성자 없음"));
+        Department dept = departmentRepository.findById(dto.getDepartmentId())
+                .orElseThrow(() -> new EntityNotFoundException("부서 없음"));
+
+        Project project = dto.toEntity();
+        project.setAuthor(author);
+        project.setDepartment(dept);
+        projectRepository.save(project);
+        return new ProjectDetailResponseDTO(project);
+    }
+
+    // ✅ 2. 상세조회
+    @Transactional
+    public ProjectDetailResponseDTO getProject(Long id) {
+        Project project = projectRepository.findByIdWithMembers(id)
+                .orElseThrow(() -> new EntityNotFoundException("프로젝트를 찾을 수 없습니다."));
+        return new ProjectDetailResponseDTO(project);
+    }
+
+    // ✅ 3. 일반 유저용 목록 조회 (종료되지 않은 프로젝트만)
+    public List<ProjectDetailResponseDTO> getActiveProjects() {
+        return projectRepository.findActiveProjects().stream()
+                .map(ProjectDetailResponseDTO::new)
+                .toList();
+    }
+
+    // ✅ 4. 관리자용 목록 조회 (모든 프로젝트)
+    public List<ProjectDetailResponseDTO> getAllProjectsForAdmin() {
+        return projectRepository.findAllForAdmin().stream()
+                .map(ProjectDetailResponseDTO::new)
+                .toList();
+    }
+    //상태값변경
+    @Override
+    @Transactional
+    public ProjectDetailResponseDTO updateProjectStatus(Long projectId, ProjectStatus status) {
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new EntityNotFoundException("프로젝트 없음"));
+        project.setStatus(status);
+        return new ProjectDetailResponseDTO(project);
+    }
+
+    // ✅ 5. 논리삭제 (endDate 갱신)
+    @Override
+    @Transactional
+    public void closeProject(Long projectId) {
+        int updated = projectRepository.updateEndDate(projectId, LocalDate.now());
+        if (updated == 0) {
+            throw new EntityNotFoundException("프로젝트를 찾을 수 없습니다.");
+        }
+    }
+
+
 
 
 

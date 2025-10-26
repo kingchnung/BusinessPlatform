@@ -1,5 +1,6 @@
 package com.bizmate.groupware.approval.api.policy;
 
+import com.bizmate.groupware.approval.domain.document.DocumentType;
 import com.bizmate.groupware.approval.domain.policy.ApprovalPolicy;
 import com.bizmate.groupware.approval.domain.policy.ApprovalPolicyStep;
 import com.bizmate.groupware.approval.dto.policy.ApprovalPolicyStepResponse;
@@ -35,7 +36,7 @@ public class ApprovalPolicyAutoController {
         log.info("📡 자동결재선 조회 요청: docType={}, deptCode={}", docType, deptCode);
 
         Optional<ApprovalPolicy> optionalPolicy =
-                approvalPolicyRepository.findByDocTypeAndIsActiveTrue(docType);
+                approvalPolicyRepository.findByDocTypeAndIsActiveTrue(DocumentType.valueOf(docType));
 
         if (optionalPolicy.isEmpty()) {
             log.info("❌ 활성화된 결재정책이 없습니다. (문서유형: {})", docType);

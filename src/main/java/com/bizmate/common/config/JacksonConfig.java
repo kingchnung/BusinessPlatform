@@ -12,6 +12,7 @@ public class JacksonConfig {
     private final ObjectMapper objectMapper;
 
     public JacksonConfig(ObjectMapper objectMapper) {
+
         this.objectMapper = objectMapper;
     }
 

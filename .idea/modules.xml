@@ -5,7 +5,6 @@
       <module fileurl="file://$PROJECT_DIR$/.idea/backend.iml" filepath="$PROJECT_DIR$/.idea/backend.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/bizmate.webBizMateProject.test.iml" filepath="$PROJECT_DIR$/.idea/modules/bizmate.webBizMateProject.test.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/com.bizmate.webBizMateProject.test.iml" filepath="$PROJECT_DIR$/.idea/modules/com.bizmate.webBizMateProject.test.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/webBizMateProject.main.iml" filepath="$PROJECT_DIR$/.idea/modules/webBizMateProject.main.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/webBizMateProject.test.iml" filepath="$PROJECT_DIR$/.idea/modules/webBizMateProject.test.iml" />
     </modules>
   </component>

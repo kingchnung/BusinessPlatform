@@ -432,57 +432,55 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
                 .orElseThrow(() -> new VerificationFailedException("문서를 찾을 수 없습니다."));
 
         if (document.getStatus() != DocumentStatus.IN_PROGRESS)
-            throw new VerificationFailedException("진행 중(IN_PROGRESS) 상태의 문서만 승인할 수 있습니다.");
+            throw new VerificationFailedException("진행 중 상태의 문서만 승인할 수 있습니다.");
 
+        // ② 결재선 불러오기
         List<ApproverStep> line = document.getApprovalLine();
         if (line == null || line.isEmpty())
             throw new VerificationFailedException("결재선 정보가 존재하지 않습니다.");
 
-        // 🔹 변경점: 현재 결재자 순서(currentApproverIndex) 기반 승인자 검증
         int idx = document.getCurrentApproverIndex();
         ApproverStep current = line.get(idx);
 
-        if (!current.approverName().equals(loginUser.getEmpName()))
+        // ③ 현재 결재자 검증
+        if (!Objects.equals(current.approverId(), loginUser.getUsername())
+                && !Objects.equals(current.approverName(), loginUser.getEmpName())) {
             throw new VerificationFailedException("현재 결재 차례가 아닙니다.");
+        }
 
+        // ④ 사인 이미지 불러오기
         Employee employee = employeeRepository.findByEmpId(loginUser.getEmpId())
                 .orElseThrow(() -> new VerificationFailedException("결재자(Employee)를 찾을 수 없습니다."));
-
         String signImagePath = employeeSignatureRepository.findByEmployee(employee)
                 .map(EmployeeSignature::getSignImagePath)
                 .orElse(null);
 
-        if (signImagePath != null)
-            log.info("✍️ [서명 이미지 확인] {} → {}", loginUser.getEmpName(), signImagePath);
-        else
-            log.warn("⚠️ [서명 이미지 없음] {}", loginUser.getEmpName());
-
-        // 🔹 변경점: 승인 처리 및 결재선 상태 갱신
-        ApproverStep approved = new ApproverStep(
+        // ⑤ 승인 처리
+        ApproverStep approvedStep = new ApproverStep(
                 current.order(),
                 current.approverId(),
                 current.approverName(),
                 Decision.APPROVED,
-                "",
+                "", // 코멘트 없음
                 LocalDateTime.now(),
                 signImagePath
         );
-        line.set(idx, approved);
 
-        document.setApprovalLine(line);
-        document.setApprovedBy(loginUser.getEmpName());
-        document.setApprovedEmpId(loginUser.getEmpId());
-        document.setApprovedDate(LocalDateTime.now());
 
-        // 🔹 변경점: 다음 결재자 존재 여부에 따라 상태 및 인덱스 이동
+        List<ApproverStep> updatedLine = new ArrayList<>(line);
+        updatedLine.set(idx, approvedStep);
+        document.setApprovalLine(updatedLine);
+
+        // ⑦ 다음 결재자 or 최종 승인 처리
         if (idx + 1 < line.size()) {
-            document.setCurrentApproverIndex(idx + 1);
+            document.moveToNextApprover();
+            ApproverStep next = line.get(document.getCurrentApproverIndex());
 
-            ApproverStep next = line.get(idx + 1);
             userRepository.findByUsername(next.approverId()).ifPresent(nextUser -> {
-                if (nextUser.getEmail() != null && !nextUser.getEmail().isBlank()) {
+                String email = nextUser.getEmail();
+                if (email != null && !email.isBlank()) {
                     notificationService.sendApprovalRequestMail(
-                            nextUser.getEmail(),
+                            email,
                             nextUser.getEmpName(),
                             document.getTitle(),
                             document.getDocId(),
@@ -491,36 +489,38 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
                 }
             });
         } else {
+            // 최종 승인
             document.setStatus(DocumentStatus.APPROVED);
             document.setApprovedBy(loginUser.getEmpName());
             document.setApprovedDate(LocalDateTime.now());
             document.setApprovedEmpId(loginUser.getEmpId());
-            notificationService.sendApprovalCompleteMail(
-                    document.getAuthorUser().getEmail(),
-                    document.getTitle(),
-                    document.getDocId(),
-                    loginUser.getEmpName()
-            );
-            log.info("✅ 모든 결재자 승인 완료 → 문서 최종 승인됨");
+
+            // 프로젝트 자동 생성 (문서유형이 프로젝트 기획서인 경우)
             if (document.getDocType() == DocumentType.PROJECT_PLAN) {
-                log.info("🧩 프로젝트 기획안 결재 승인 → Project 자동 생성 시작");
-
-                ProjectRequestDTO projectDto = objectMapper.convertValue(
-                        document.getDocContent(), ProjectRequestDTO.class);
-
+                ProjectRequestDTO projectDto = objectMapper.convertValue(document.getDocContent(), ProjectRequestDTO.class);
                 projectService.createProjectByApproval(projectDto, document);
+                log.info("🏗️ 프로젝트 자동 생성 완료 (문서ID={})", document.getDocId());
             }
 
+            // 작성자에게 알림
+            if (document.getAuthorUser() != null && document.getAuthorUser().getEmail() != null) {
+                notificationService.sendApprovalCompleteMail(
+                        document.getAuthorUser().getEmail(),
+                        document.getTitle(),
+                        document.getDocId(),
+                        loginUser.getEmpName()
+                );
+            }
         }
 
-        document.setApprovalLine(line);
+        // ⑧ 업데이트 및 저장
         document.markUpdated(loginUser);
-
-        // 🔹 변경점: 즉시 DB 반영 (Dirty Checking 방지)
         approvalDocumentsRepository.saveAndFlush(document);
+        log.info("✅ 승인 완료: 문서ID={}, 현재 단계={}/{}", docId, idx + 1, line.size());
 
         return mapEntityToDto(document);
     }
+
 
     /* -------------------------------------------------------------
        ④ 반려 (REJECT)
@@ -531,12 +531,11 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
     @Override
     @Transactional
     public ApprovalDocumentsDto reject(String docId, UserDTO loginUser, String reason) {
-        log.info("🔴 [반려 처리] 문서ID={}, 반려자={}, 사유={}", docId, loginUser.getEmpName(), reason);
 
         ApprovalDocuments document = approvalDocumentsRepository.findById(docId)
                 .orElseThrow(() -> new VerificationFailedException("문서를 찾을 수 없습니다."));
 
-        if (!document.canReject())
+        if (document.getStatus() != DocumentStatus.IN_PROGRESS)
             throw new VerificationFailedException("진행 중 상태의 문서만 반려할 수 있습니다.");
 
         List<ApproverStep> line = document.getApprovalLine();
@@ -546,36 +545,40 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
         int idx = document.getCurrentApproverIndex();
         ApproverStep current = line.get(idx);
 
-        if (!current.approverId().equals(loginUser.getUsername()))
+        if (!Objects.equals(current.approverId(), loginUser.getUsername())
+                && !Objects.equals(current.approverName(), loginUser.getEmpName())) {
             throw new VerificationFailedException("현재 결재 차례가 아닙니다.");
+        }
 
-        // ✅ 반려 처리
+        // 반려 Step
         ApproverStep rejected = new ApproverStep(
                 current.order(),
                 current.approverId(),
                 current.approverName(),
                 Decision.REJECTED,
-                reason != null ? reason : "",
+                reason,
                 LocalDateTime.now(),
                 null
         );
-        line.set(idx, rejected);
 
-        document.setApprovalLine(line);
+        // 기존 결재선에서 해당 Step 교체
+        List<ApproverStep> updatedLine = new ArrayList<>(line);
+        updatedLine.set(idx, rejected);
+        document.setApprovalLine(updatedLine);
+
+        document.setStatus(DocumentStatus.REJECTED);
         document.setRejectedBy(loginUser.getEmpName());
         document.setRejectedEmpId(loginUser.getEmpId());
         document.setRejectedReason(reason);
         document.setRejectedDate(LocalDateTime.now());
-        document.setStatus(DocumentStatus.REJECTED);
-
         document.markUpdated(loginUser);
+
         approvalDocumentsRepository.saveAndFlush(document);
 
-        // ✅ 반려 메일 발송
-        UserEntity author = document.getAuthorUser();
-        if (author != null && author.getEmail() != null) {
+        // 작성자에게 반려 알림 메일 발송
+        if (document.getAuthorUser() != null && document.getAuthorUser().getEmail() != null) {
             notificationService.sendRejectMail(
-                    author.getEmail(),
+                    document.getAuthorUser().getEmail(),
                     document.getTitle(),
                     document.getDocId(),
                     loginUser.getEmpName(),
@@ -583,7 +586,7 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
             );
         }
 
-        log.info("📩 반려 메일 전송 완료: {}", author != null ? author.getEmail() : "N/A");
+        log.info("✅ 반려 완료: 문서ID={}, 반려자={}", docId, loginUser.getEmpName());
         return mapEntityToDto(document);
     }
 
@@ -730,13 +733,28 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
                 .build();
     }
 
-    /**
-     * username → empName 변환용 헬퍼
-     */
-    private String getEmpNameByUsername(String username) {
-        return userRepository.findByUsername(username)
-                .map(u -> u.getEmpName() != null ? u.getEmpName() : username)
-                .orElse(username);
+    @Transactional(readOnly = true)
+    @Override
+    public Map<String, Long> getApprovalSummary(String username) {
+        List<ApprovalDocuments> docs = approvalDocumentsRepository.findAllWithAuthorAndEmployee();
+
+        Map<String, Long> counts = docs.stream()
+                .filter(d ->
+                        d.getAuthorUser().getUsername().equals(username)
+                                || (d.getViewerIds() != null && d.getViewerIds().contains(username))
+                                || (d.getApprovalLine() != null && d.getApprovalLine().stream()
+                                .anyMatch(step -> step.approverId().equals(username)))
+                )
+                .collect(Collectors.groupingBy(
+                        d -> d.getStatus().name(),
+                        Collectors.counting()
+                ));
+
+        for (String key : List.of("DRAFT", "IN_PROGRESS", "APPROVED", "REJECTED")) {
+            counts.putIfAbsent(key, 0L);
+        }
+
+        return counts;
     }
 
 
@@ -1031,9 +1049,10 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
                 .username(user != null ? user.getUsername() : null)
                 .authorName(authorName) // ✅ 작성자명
                 .docContent(entity.getDocContent())
-                .approvalLine(entity.getApprovalLine())
+                .approvalLine(entity.getApprovalLine() != null ? entity.getApprovalLine() : List.of())
                 .createdAt(entity.getCreatedAt())
                 .updatedAt(entity.getUpdatedAt())
+                .currentApproverIndex(entity.getCurrentApproverIndex())
                 .attachments(attachments)
                 .build();
     }

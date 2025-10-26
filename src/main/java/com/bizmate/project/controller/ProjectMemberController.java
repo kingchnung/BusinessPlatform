@@ -6,6 +6,7 @@ import com.bizmate.project.dto.projectmember.ProjectMemberResponseDTO;
 import com.bizmate.project.service.ProjectMemberService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -57,6 +58,21 @@ public class ProjectMemberController {
     public ResponseEntity<Void> deleteMember(@PathVariable Long memberId) {
         projectMemberService.deleteMember(memberId);
         return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * ✅ 7. 프로젝트 내 구성원 일괄 변경
+     * - 프론트에서 배열 형태로 구성원 목록 전달 시
+     * - 기존 멤버와 비교하여 추가/삭제/수정 자동 처리
+     */
+    @PutMapping("/project/{projectId}/sync")
+    @PreAuthorize("hasAnyRole('ROLE_MANAGER','ROLE_ADMIN','ROLE_CEO')")
+    public ResponseEntity<List<ProjectMemberDTO>> syncProjectMembers(
+            @PathVariable Long projectId,
+            @RequestBody List<ProjectMemberRequest> memberList
+    ) {
+        List<ProjectMemberDTO> updated = projectMemberService.syncProjectMembers(projectId, memberList);
+        return ResponseEntity.ok(updated);
     }
 
 

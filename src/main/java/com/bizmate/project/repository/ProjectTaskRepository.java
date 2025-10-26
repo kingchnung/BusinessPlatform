@@ -20,7 +20,7 @@ public interface ProjectTaskRepository extends JpaRepository<ProjectTask, Long> 
 
     // 2. 특정 담당자(ProjectMember)에게 할당된 모든 Task 조회
     // (지난번에 제안드린 대로 Task의 assignee를 ProjectMember로 변경했다고 가정)
-    List<ProjectTask> findByAssigneeId(ProjectMember assignee);
+    List<ProjectTask> findByAssignee(ProjectMember assignee);
 
     // 3. 특정 프로젝트에 속하면서 특정 상태(Status)인 Task만 조회
     List<ProjectTask> findByProjectAndStatus(Project project, TaskStatus status);
@@ -37,7 +37,7 @@ public interface ProjectTaskRepository extends JpaRepository<ProjectTask, Long> 
     List<ProjectTask> findByStartDateBetween(LocalDate start, LocalDate end);
 
     //상태 + 담당자 복합 필터
-    List<ProjectTask> findByAssigneeIdAndStatus(ProjectMember assignee, TaskStatus status);
+    List<ProjectTask> findByAssigneeAndStatus(ProjectMember assignee, TaskStatus status);
 
     //정렬 조건용 (Spring Data JPA의 Sort 활용)
     List<ProjectTask> findByProject(Project project, Sort sort);

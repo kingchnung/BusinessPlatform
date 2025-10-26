@@ -3,7 +3,6 @@ package com.bizmate.project.service;
 import com.bizmate.project.domain.enums.task.TaskStatus;
 import com.bizmate.project.dto.task.ProjectTaskDTO;
 import com.bizmate.project.dto.task.ProjectTaskRequest;
-import com.bizmate.project.dto.task.TaskResponseDTO;
 
 import java.time.LocalDate;
 import java.util.List;

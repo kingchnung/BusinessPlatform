@@ -2,11 +2,13 @@ package com.bizmate.groupware.approval.repository.document;
 
 import com.bizmate.groupware.approval.domain.document.ApprovalDocuments;
 import com.bizmate.groupware.approval.domain.document.DocumentStatus;
+import com.bizmate.groupware.approval.domain.policy.ApproverStep;
 import com.bizmate.hr.domain.Department;
 import com.bizmate.hr.domain.UserEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -65,11 +67,12 @@ public interface ApprovalDocumentsRepository extends JpaRepository<ApprovalDocum
     List<ApprovalDocuments> findAllWithAuthorAndEmployee();
 
     @Query("""
-        SELECT d FROM ApprovalDocuments d
-        LEFT JOIN FETCH d.department dept
-        LEFT JOIN FETCH d.authorUser user
-        LEFT JOIN FETCH user.employee emp
-        WHERE d.docId = :docId
-    """)
+                SELECT d FROM ApprovalDocuments d
+                LEFT JOIN FETCH d.department dept
+                LEFT JOIN FETCH d.authorUser user
+                LEFT JOIN FETCH user.employee emp
+                WHERE d.docId = :docId
+            """)
     Optional<ApprovalDocuments> findWithDetailsByDocId(@Param("docId") String docId);
+
 }

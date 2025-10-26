@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
 
 public interface ApprovalDocumentsService {
 
@@ -37,6 +38,8 @@ public interface ApprovalDocumentsService {
     PageResponseDTO<ApprovalDocumentsDto> getPagedApprovals(PageRequestDTO pageRequestDTO);
 
     void restoreDocument(String docId);
+
+    Map<String, Long> getApprovalSummary(String username);
 
 
     @Transactional

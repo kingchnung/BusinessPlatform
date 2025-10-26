@@ -29,7 +29,7 @@ public class QApprovalPolicy extends EntityPathBase<ApprovalPolicy> {
 
     public final StringPath createdDept = createString("createdDept");
 
-    public final StringPath docType = createString("docType");
+    public final EnumPath<com.bizmate.groupware.approval.domain.document.DocumentType> docType = createEnum("docType", com.bizmate.groupware.approval.domain.document.DocumentType.class);
 
     public final NumberPath<Long> id = createNumber("id", Long.class);
 

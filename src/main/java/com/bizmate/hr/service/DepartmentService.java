@@ -13,4 +13,5 @@ public interface DepartmentService {
     DepartmentResponseDTO updateDepartment(Long deptId, DepartmentUpdateRequestDTO dto); // 수정
     void deleteDepartment(Long deptId);                   // 삭제
     void permanentlyDeleteDepartment(Long deptId);
+    DepartmentDTO assignManager(Long deptId, Long managerId);
 }
