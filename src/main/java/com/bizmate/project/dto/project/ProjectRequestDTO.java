@@ -7,6 +7,7 @@ import com.bizmate.project.domain.enums.project.ProjectStatus;
 import com.bizmate.project.dto.budgetitem.ProjectBudgetItemDTO;
 import com.bizmate.project.dto.projectmember.ProjectMemberDTO;
 import com.bizmate.project.dto.task.ProjectTaskDTO;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
 import java.time.LocalDate;
@@ -22,6 +23,8 @@ import java.util.List;
 public class ProjectRequestDTO {
     // --- 기본 프로젝트 정보 ---
     private String projectName;
+    @JsonProperty("pmId")
+    private Long pmEmpId;
     private String projectGoal;
     private String projectOverview;
     private String expectedEffect;
@@ -31,6 +34,7 @@ public class ProjectRequestDTO {
     private Long authorId;      // 프로젝트 최초 생성자(직원 ID)
     private Long departmentId;  // 프로젝트 담당 부서 ID
     private Employee managerId;
+
 
     // --- 연관 정보 ---
     private List<ProjectMemberDTO> participants;

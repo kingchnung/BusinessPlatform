@@ -2,6 +2,7 @@ package com.bizmate.project.repository;
 
 import com.bizmate.hr.domain.Department;
 import com.bizmate.project.domain.Project;
+import com.bizmate.project.domain.ProjectMember;
 import com.bizmate.project.domain.enums.project.ProjectStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -55,4 +56,6 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
     WHERE p.projectId = :id
     """)
     Optional<Project> findByIdWithMembers(@Param("id") Long id);
+
+
 }

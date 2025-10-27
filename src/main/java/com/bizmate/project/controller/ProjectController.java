@@ -1,6 +1,8 @@
 package com.bizmate.project.controller;
 
 import com.bizmate.groupware.approval.domain.document.ApprovalDocuments;
+import com.bizmate.hr.dto.user.UserDTO;
+import com.bizmate.hr.security.UserPrincipal;
 import com.bizmate.project.domain.Project;
 import com.bizmate.project.domain.enums.project.ProjectStatus;
 import com.bizmate.project.dto.project.ProjectDetailResponseDTO;
@@ -10,7 +12,9 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -98,6 +102,34 @@ public class ProjectController {
         log.info("🧾 프로젝트 종료 처리 완료 (id={})", id);
         return ResponseEntity.noContent().build();
     }
+
+    /** ✅ 프로젝트 수정: 작성자 또는 관리자(ADMIN/CEO/MANAGER)만 */
+    @PutMapping("/{projectId}")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_MANAGER','ROLE_CEO','ROLE_EMPLOYEE')")
+    public ResponseEntity<?> updateProject(
+            @PathVariable Long projectId,
+            @RequestBody ProjectRequestDTO dto,
+            Authentication authentication
+    ) {
+        try {
+            UserPrincipal principal = (UserPrincipal) authentication.getPrincipal();
+            boolean isPrivileged = principal.isAdmin() || principal.hasRole("ROLE_MANAGER");
+
+            ProjectDetailResponseDTO updated =
+                    projectService.updateProject(projectId, dto, principal.getUserId(), isPrivileged);
+
+            return ResponseEntity.ok(updated);
+        } catch (AccessDeniedException e) {
+            return ResponseEntity.status(403).body(e.getMessage());
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(404).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError()
+                    .body("수정 중 오류: " + e);
+        }
+    }
+
+
 
 
 }

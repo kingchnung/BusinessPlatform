@@ -5,6 +5,7 @@ import com.bizmate.hr.domain.UserEntity;
 import com.bizmate.project.domain.Project;
 import com.bizmate.project.domain.enums.project.ProjectStatus;
 import com.bizmate.project.dto.projectmember.ProjectMemberDTO;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
 import java.time.LocalDate;
@@ -30,15 +31,17 @@ public class ProjectDetailResponseDTO {
     private String projectOverview;
     private String expectedEffect;
     private Long totalBudget;
+    @JsonProperty("pmId")
+    private Long pmEmpId;
+    private String pmName;
+    private SimpleAuthorDTO author;
+    private SimpleDepartmentDTO department;
+    private List<ProjectMemberDTO> participants = new ArrayList<>();
 
     private LocalDate startDate;
     private LocalDate endDate;
     private ProjectStatus status;
 
-    private SimpleAuthorDTO author;
-    private SimpleDepartmentDTO department;
-
-    private List<ProjectMemberDTO> participants = new ArrayList<>();
 
     // ------------------------------------------------------
     // ✅ [1] 엔티티 → DTO 변환 생성자
@@ -59,11 +62,21 @@ public class ProjectDetailResponseDTO {
         this.author = project.getAuthor() != null ? new SimpleAuthorDTO(project.getAuthor()) : null;
         this.department = project.getDepartment() != null ? new SimpleDepartmentDTO(project.getDepartment()) : null;
 
-        // ✅ 구성원 리스트 매핑
         if (project.getParticipants() != null) {
             this.participants = project.getParticipants().stream()
                     .map(ProjectMemberDTO::new)
                     .collect(Collectors.toList());
+
+            // ✅ PM 한 명 추출
+            project.getParticipants().stream()
+                    .filter(m -> "PM".equalsIgnoreCase(m.getProjectRole()))
+                    .findFirst()
+                    .ifPresent(pm -> {
+                        if (pm.getEmployee() != null) {
+                            this.pmEmpId = pm.getEmployee().getEmpId();
+                            this.pmName = pm.getEmployee().getEmpName();
+                        }
+                    });
         }
     }
 
