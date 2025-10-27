@@ -28,6 +28,7 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -54,25 +55,15 @@ public class ProjectServiceImpl implements ProjectService {
     private final DepartmentRepository departmentRepository;
 
 
-    /** ✅ 프로젝트 생성 (전자결재 승인 시 자동 호출) */
+    /**
+     * ✅ 프로젝트 생성 (전자결재 승인 시 자동 호출)
+     */
     @Transactional
     @Override
     public Project createProjectByApproval(ProjectRequestDTO dto, ApprovalDocuments document) {
         log.info("🚀 [프로젝트 자동 생성] 문서ID={}, 프로젝트명={}", document.getDocId(), dto.getProjectName());
 
-        Project project = Project.builder()
-                .projectName(dto.getProjectName())
-                .projectGoal(dto.getProjectGoal())
-                .projectOverview(dto.getProjectOverview())
-                .expectedEffect(dto.getExpectedEffect())
-                .totalBudget(dto.getTotalBudget())
-                .startDate(dto.getStartDate())
-                .endDate(dto.getEndDate())
-                .approvalDocument(document)
-                .department(document.getDepartment())
-                .author(document.getAuthorUser())
-                .status(ProjectStatus.PLANNING)
-                .build();
+        Project project = Project.builder().projectName(dto.getProjectName()).projectGoal(dto.getProjectGoal()).projectOverview(dto.getProjectOverview()).expectedEffect(dto.getExpectedEffect()).totalBudget(dto.getTotalBudget()).startDate(dto.getStartDate()).endDate(dto.getEndDate()).approvalDocument(document).department(document.getDepartment()).author(document.getAuthorUser()).status(ProjectStatus.PLANNING).build();
 
         // 🔹 참여자 처리 및 Task 담당자 조회를 위한 Map 생성
         // Key: Employee ID, Value: ProjectMember Entity
@@ -100,16 +91,12 @@ public class ProjectServiceImpl implements ProjectService {
                 }
 
                 if (employee == null) {
-                    log.warn("⚠️ 참여자 조회 실패: DTO={}, employeeId={}, employeeName={}",
-                            pDto, pDto.getEmpId(), pDto.getEmpName());
+                    log.warn("⚠️ 참여자 조회 실패: DTO={}, employeeId={}, employeeName={}", pDto, pDto.getEmpId(), pDto.getEmpName());
                     continue;
                 }
 
                 // ✅ 멤버 생성 (기존 구조 유지)
-                ProjectMember member = ProjectMember.builder()
-                        .employee(employee)
-                        .projectRole(pDto.getProjectRole() != null ? pDto.getProjectRole() : "팀원")
-                        .build();
+                ProjectMember member = ProjectMember.builder().employee(employee).projectRole(pDto.getProjectRole() != null ? pDto.getProjectRole() : "팀원").build();
 
                 project.addParticipant(member);
                 participantMemberMap.put(employee.getEmpId(), member);
@@ -120,10 +107,7 @@ public class ProjectServiceImpl implements ProjectService {
         // 🔹 예산 항목
         if (dto.getBudgetItems() != null) {
             for (ProjectBudgetItemDTO bDto : dto.getBudgetItems()) {
-                project.addBudgetItem(ProjectBudgetItem.builder()
-                        .itemName(bDto.getItemName())
-                        .amount(bDto.getAmount())
-                        .build());
+                project.addBudgetItem(ProjectBudgetItem.builder().itemName(bDto.getItemName()).amount(bDto.getAmount()).build());
             }
         }
 
@@ -137,22 +121,12 @@ public class ProjectServiceImpl implements ProjectService {
 
                     // Map에 해당 직원이 없으면, 프로젝트 참여자가 아니라는 의미
                     if (assignee == null) {
-                        throw new IllegalArgumentException(
-                                "Task '" + tDto.getTaskName() + "'의 담당자(ID:" + tDto.getAssignee() + ")는 " +
-                                        "프로젝트 참여 멤버가 아닙니다. 기안 문서를 확인해주세요."
-                        );
+                        throw new IllegalArgumentException("Task '" + tDto.getTaskName() + "'의 담당자(ID:" + tDto.getAssignee() + ")는 " + "프로젝트 참여 멤버가 아닙니다. 기안 문서를 확인해주세요.");
                     }
                 }
 
-                project.addTask(ProjectTask.builder()
-                        .taskName(tDto.getTaskName())
-                        .taskDescription(tDto.getTaskDescription())
-                        .startDate(tDto.getStartDate())
-                        .endDate(tDto.getEndDate())
-                        .assignee(assignee) // 검증된 담당자 또는 null
-                        .progressRate(tDto.getProgressRate())
-                        .status(TaskStatus.PLANNED)
-                        .build());
+                project.addTask(ProjectTask.builder().taskName(tDto.getTaskName()).taskDescription(tDto.getTaskDescription()).startDate(tDto.getStartDate()).endDate(tDto.getEndDate()).assignee(assignee) // 검증된 담당자 또는 null
+                        .progressRate(tDto.getProgressRate()).status(TaskStatus.PLANNED).build());
             }
         }
 
@@ -172,39 +146,107 @@ public class ProjectServiceImpl implements ProjectService {
         Project project = dto.toEntity();
         project.setAuthor(author);
         project.setDepartment(dept);
+
+        // ✅ PM 지정이 들어왔으면 ProjectMember로 추가
+        if (dto.getPmEmpId() != null) {
+            Employee pmEmp = employeeRepository.findById(dto.getPmEmpId())
+                    .orElseThrow(() -> new EntityNotFoundException("PM 사원 없음"));
+            ProjectMember pm = ProjectMember.builder()
+                    .employee(pmEmp)
+                    .projectRole("PM")
+                    .build();
+            project.addParticipant(pm); // ✅ 양방향 컬렉션에 반영
+        }
+
         projectRepository.save(project);
+        // ✅ participants가 채워진 상태로 DTO 만들기
         return new ProjectDetailResponseDTO(project);
     }
 
     // ✅ 2. 상세조회
     @Transactional
     public ProjectDetailResponseDTO getProject(Long id) {
-        Project project = projectRepository.findByIdWithMembers(id)
-                .orElseThrow(() -> new EntityNotFoundException("프로젝트를 찾을 수 없습니다."));
+        Project project = projectRepository.findByIdWithMembers(id).orElseThrow(() -> new EntityNotFoundException("프로젝트를 찾을 수 없습니다."));
         return new ProjectDetailResponseDTO(project);
     }
 
     // ✅ 3. 일반 유저용 목록 조회 (종료되지 않은 프로젝트만)
     public List<ProjectDetailResponseDTO> getActiveProjects() {
-        return projectRepository.findActiveProjects().stream()
-                .map(ProjectDetailResponseDTO::new)
-                .toList();
+        return projectRepository.findActiveProjects().stream().map(ProjectDetailResponseDTO::new).toList();
     }
 
     // ✅ 4. 관리자용 목록 조회 (모든 프로젝트)
     public List<ProjectDetailResponseDTO> getAllProjectsForAdmin() {
-        return projectRepository.findAllForAdmin().stream()
-                .map(ProjectDetailResponseDTO::new)
-                .toList();
+        return projectRepository.findAllForAdmin().stream().map(ProjectDetailResponseDTO::new).toList();
     }
+
     //상태값변경
     @Override
     @Transactional
     public ProjectDetailResponseDTO updateProjectStatus(Long projectId, ProjectStatus status) {
-        Project project = projectRepository.findById(projectId)
-                .orElseThrow(() -> new EntityNotFoundException("프로젝트 없음"));
+        Project project = projectRepository.findById(projectId).orElseThrow(() -> new EntityNotFoundException("프로젝트 없음"));
         project.setStatus(status);
         return new ProjectDetailResponseDTO(project);
+    }
+
+    @Override
+    @Transactional
+    public ProjectDetailResponseDTO updateProject(Long projectId, ProjectRequestDTO dto, Long userId, boolean isPrivileged) {
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new EntityNotFoundException("프로젝트 없음"));
+
+        // 권한: 관리자 or 작성자
+        Long authorId = project.getAuthor() != null ? project.getAuthor().getUserId() : null;
+        if (!isPrivileged) {
+            if (authorId == null || !authorId.equals(userId)) {
+                throw new AccessDeniedException("작성자만 수정할 수 있습니다.");
+            }
+        }
+
+        // 기본 필드
+        if (dto.getProjectName() != null) project.setProjectName(dto.getProjectName());
+        if (dto.getProjectGoal() != null) project.setProjectGoal(dto.getProjectGoal());
+        if (dto.getProjectOverview() != null) project.setProjectOverview(dto.getProjectOverview());
+        if (dto.getExpectedEffect() != null) project.setExpectedEffect(dto.getExpectedEffect());
+        if (dto.getTotalBudget() != null) project.setTotalBudget(dto.getTotalBudget());
+        if (dto.getStartDate() != null) project.setStartDate(dto.getStartDate());
+        if (dto.getEndDate() != null) project.setEndDate(dto.getEndDate());
+
+        if (dto.getDepartmentId() != null) {
+            Department dept = departmentRepository.findById(dto.getDepartmentId())
+                    .orElseThrow(() -> new EntityNotFoundException("부서 없음"));
+            project.setDepartment(dept);
+        }
+
+        // ✅ PM 갱신 (Employee 기반, unique 보장은 비즈 규칙으로)
+        if (dto.getPmEmpId() != null) {
+            // 1) 기존 PM 해제
+            projectMemberRepository.clearPmRole(projectId);
+
+            // 2) 새 PM upsert
+            ProjectMember pmMember = projectMemberRepository
+                    .findByProjectIdAndEmpId(projectId, dto.getPmEmpId())
+                    .orElseGet(() -> {
+                        ProjectMember m = new ProjectMember();
+                        m.setProject(project);
+                        Employee emp = employeeRepository.findById(dto.getPmEmpId())
+                                .orElseThrow(() -> new EntityNotFoundException("PM 사원 없음"));
+                        m.setEmployee(emp);
+
+                        // ✅ 컬렉션 동기화 중요!
+                        project.addParticipant(m);
+                        return m;
+                    });
+
+            pmMember.setProjectRole("PM");
+            projectMemberRepository.save(pmMember);
+        }
+
+        // flush
+        projectRepository.save(project);
+        Project refreshed = projectRepository.findByIdWithMembers(projectId)
+                .orElse(project);
+        return new ProjectDetailResponseDTO(refreshed);
     }
 
     // ✅ 5. 논리삭제 (endDate 갱신)
@@ -216,11 +258,6 @@ public class ProjectServiceImpl implements ProjectService {
             throw new EntityNotFoundException("프로젝트를 찾을 수 없습니다.");
         }
     }
-
-
-
-
-
 
 
 }

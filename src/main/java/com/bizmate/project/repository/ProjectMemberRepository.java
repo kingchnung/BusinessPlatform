@@ -7,8 +7,12 @@ import com.bizmate.project.domain.embeddables.ProjectMemberId;
 import com.bizmate.project.dto.projectmember.ProjectMemberDTO;
 import com.bizmate.project.dto.projectmember.ProjectMemberRequest;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface ProjectMemberRepository extends JpaRepository<ProjectMember, Long> {
 
@@ -24,5 +28,14 @@ public interface ProjectMemberRepository extends JpaRepository<ProjectMember, Lo
     // ✅ 4. 중복 참여 방지를 위한 검증 (특정 프로젝트에 동일 직원 존재 여부)
     boolean existsByProjectAndEmployee(Project project, Employee employee);
 
+    @Modifying
+    @Query("update ProjectMember m set m.projectRole = 'MEMBER' " +
+            "where m.project.projectId = :projectId and upper(m.projectRole) = 'PM'")
+    int clearPmRole(@Param("projectId") Long projectId);
+
+    @Query("select m from ProjectMember m " +
+            "where m.project.projectId = :projectId and m.employee.empId = :empId")
+    Optional<ProjectMember> findByProjectIdAndEmpId(@Param("projectId") Long projectId,
+                                                    @Param("empId") Long empId);
 }
 
