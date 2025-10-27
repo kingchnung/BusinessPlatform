@@ -1,5 +1,6 @@
 package com.bizmate.salesPages.management.order.order.dto;
 
+import com.bizmate.salesPages.client.domain.Client;
 import com.bizmate.salesPages.management.order.orderItem.dto.OrderItemDTO;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.Entity;
@@ -32,8 +33,8 @@ public class OrderDTO {
     private BigDecimal totalVatAmount;
     private String userId;
     private String writer;
-    private String clientId;
-    private String clientCompany;
+    private Client clientId;
+    private Client clientCompany;
     private String orderNote;
     private String orderStatus;
 

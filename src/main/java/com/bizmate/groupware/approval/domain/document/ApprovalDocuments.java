@@ -42,7 +42,7 @@ public class ApprovalDocuments extends BaseEntity {
     private String docId;
 
     @Convert(converter = DocumentTypeConverter.class)
-    @Column(name = "DOC_TYPE", nullable = false, length = 255)
+    @Column(name = "DOC_TYPE", nullable = false)
     private DocumentType docType;
 
     @Column(name = "DOC_TITLE", nullable = false, length = 200)

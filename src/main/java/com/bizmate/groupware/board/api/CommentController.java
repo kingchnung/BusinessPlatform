@@ -21,8 +21,8 @@ public class CommentController {
 
     // ✅ 댓글 목록 조회
     @GetMapping
-    public ResponseEntity<List<CommentDto>> getComments(@PathVariable Long boardNo) {
-        List<CommentDto> comments = commentService.getComments(boardNo);
+    public ResponseEntity<List<CommentDto>> getComments(@PathVariable Long boardNo, @AuthenticationPrincipal UserPrincipal user) {
+        List<CommentDto> comments = commentService.getComments(boardNo, user);
         return ResponseEntity.ok(comments);
     }
 

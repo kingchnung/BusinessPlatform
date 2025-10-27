@@ -4,6 +4,7 @@ import com.opencsv.CSVReaderHeaderAware;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 
+import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
@@ -15,12 +16,25 @@ final class Csv {
         try {
             Resource r = loader.getResource(location);
             if (!r.exists()) return List.of();
+
             try (var is = r.getInputStream();
-                 var reader = new CSVReaderHeaderAware(new InputStreamReader(is, StandardCharsets.UTF_8))) {
-                List<Map<String,String>> rows = new ArrayList<>();
-                Map<String,String> row;
-                while ((row = reader.readMap()) != null) rows.add(trim(row));
-                return rows;
+                 var reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))) {
+
+                // ✅ BOM 제거 (가끔 남아 있음)
+                reader.mark(1);
+                if (reader.read() != 0xFEFF) reader.reset();
+
+                // ✅ OpenCSV 파서 시작
+                try (var csv = new CSVReaderHeaderAware(reader)) {
+                    List<Map<String,String>> rows = new ArrayList<>();
+                    Map<String,String> row;
+                    while ((row = csv.readMap()) != null) {
+                        // ✅ 완전히 빈 줄은 스킵
+                        if (row.values().stream().allMatch(v -> v == null || v.isBlank())) continue;
+                        rows.add(trim(row));
+                    }
+                    return rows;
+                }
             }
         } catch (Exception e) {
             throw new RuntimeException("CSV read error: " + location, e);

@@ -7,7 +7,8 @@ import java.util.List;
 
 public interface CommentService {
 
-    List<CommentDto> getComments(Long boardNo);
+    List<CommentDto> getComments(Long boardNo, UserPrincipal user);
+
     CommentDto addComment(Long boardNo, String content, UserPrincipal user);
 
     void deleteComment(Long commentNo, UserPrincipal user);

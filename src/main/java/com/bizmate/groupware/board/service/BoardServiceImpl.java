@@ -40,21 +40,22 @@ public class BoardServiceImpl implements BoardService {
             throw new ForbiddenOperationException("공지사항은 관리자만 작성할 수 있습니다.");
         }
 
-        String displayName = (dto.getBoardType() == BoardType.SUGGESTION)
-                ? "익명" : user.getEmpName();
-
-        Board board = new Board(); // ✅ Builder 대신 new 사용
+        Board board = new Board();
         board.setBoardType(dto.getBoardType());
         board.setTitle(dto.getTitle());
         board.setContent(dto.getContent());
+
+        // ✅ 항상 실명 저장 (DB에는 실제 이름이 남아야 함)
         board.setAuthorId(user.getUsername());
-        board.setAuthorName(displayName);
+        board.setAuthorName(user.getEmpName());
+
         board.setDeleted(false);
-
-
         board.markCreated(user);
+
         Board saved = boardRepository.saveAndFlush(board);
-        return BoardDto.fromEntity(saved);
+
+        // ✅ 응답에서는 사용자 권한에 따라 익명/실명 처리
+        return toDtoForUser(saved, user);
     }
 
     //게시글 삭제
@@ -289,33 +290,33 @@ public class BoardServiceImpl implements BoardService {
                 .build();
     }
 
+    // BoardServiceImpl.java 안에
     private BoardDto toDtoForUser(Board board, UserPrincipal user) {
-        boolean isAdmin = user.getAuthorities().stream()
-                .map(a -> a.getAuthority())
-                .anyMatch(a -> a.equals("ROLE_ADMIN") || a.equals("ROLE_CEO") || a.equals("sys:admin"));
-
-        boolean isAuthor = board.getAuthorId().equals(user.getUsername());
+        boolean admin = isAdmin(user);
+        boolean author = isAuthor(board, user);
+        boolean isSuggestion = board.getBoardType() == BoardType.SUGGESTION;
         boolean isNotice = board.getBoardType() == BoardType.NOTICE;
 
-        String displayName = board.getBoardType() == BoardType.SUGGESTION
-                ? (isAdmin ? board.getAuthorName() : "익명")
+        // ✅ 익명게시판은 일반사용자에게만 "익명"으로 표시
+        String displayName = isSuggestion
+                ? (admin ? board.getAuthorName() : "익명")
                 : board.getAuthorName();
+
+        // ✅ 관리자에게는 authorId 노출, 일반 유저는 null 처리
+        String authorId = admin ? board.getAuthorId() : null;
 
         return BoardDto.builder()
                 .boardNo(board.getBoardNo())
+                .boardType(board.getBoardType())
                 .title(board.getTitle())
                 .content(board.getContent())
-                .boardType(board.getBoardType())
-                .authorId(board.getAuthorId())
                 .authorName(displayName)
+                .authorId(authorId)
                 .isDeleted(board.isDeleted())
                 .createdAt(board.getCreatedAt())
                 .updatedAt(board.getUpdatedAt())
-
-                // ✅ 수정 / 삭제 권한 설정
-                .canEdit(isAdmin || (isAuthor && !isNotice))
-                .canDelete(isAdmin || isAuthor)
-
+                .canEdit(admin || (author && !isNotice))
+                .canDelete(admin || author)
                 .build();
     }
 }

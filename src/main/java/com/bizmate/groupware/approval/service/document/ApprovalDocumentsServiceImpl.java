@@ -472,7 +472,7 @@ public class ApprovalDocumentsServiceImpl implements ApprovalDocumentsService {
         document.setApprovalLine(updatedLine);
 
         // ⑦ 다음 결재자 or 최종 승인 처리
-        if (idx + 1 < line.size()) {
+        if (idx + 1 < updatedLine.size()) {
             document.moveToNextApprover();
             ApproverStep next = line.get(document.getCurrentApproverIndex());
 
