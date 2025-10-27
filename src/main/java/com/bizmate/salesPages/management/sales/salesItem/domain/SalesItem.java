@@ -36,11 +36,11 @@ public class SalesItem {
     private Integer lineNum;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "sales_id", referencedColumnName = "salesId", nullable = false)
+    @JoinColumn(name = "sales_no", referencedColumnName = "salesNo", nullable = false)
     @JsonBackReference
     private Sales sales;
 
-    @Column(name = "SALES_NO") // (NOT NULL일 수 있으니 확인 필요)
+    @Column(name = "SALES_NO", nullable = false, insertable = false, updatable = false) // (NOT NULL일 수 있으니 확인 필요)
     private String salesNo;
 
     public void setSales(Sales sales){

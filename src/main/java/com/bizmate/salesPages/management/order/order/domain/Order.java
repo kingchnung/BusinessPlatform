@@ -59,9 +59,7 @@ public class Order implements Serializable {
     private String writer;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    // Client의 PK가 'clientNo'이므로,
-    // Order 테이블의 외래 키 컬럼 이름도 'CLIENT_NO'일 가능성이 높습니다.
-    @JoinColumn(name = "CLIENT_NO") // <-- DB의 실제 외래 키 컬럼 이름
+    @JoinColumn(name = "CLIENT_ID", referencedColumnName = "clientId")
     @NotAudited
     private Client client;
 
