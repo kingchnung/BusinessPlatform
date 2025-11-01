@@ -1,4 +1,4 @@
-package com.bizmate.hr.controller.code;
+package com.bizmate.hr.controller;
 
 import com.bizmate.hr.dto.code.GradeDTO;
 import com.bizmate.hr.dto.code.GradeRequestDTO;

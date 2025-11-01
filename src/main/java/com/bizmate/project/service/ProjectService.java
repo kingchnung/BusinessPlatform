@@ -19,4 +19,5 @@ public interface ProjectService {
     void closeProject(Long projectId);
     ProjectDetailResponseDTO updateProjectStatus(Long projectId, ProjectStatus status);
 
+    ProjectDetailResponseDTO updateProject(Long projectId, ProjectRequestDTO dto, Long userId, boolean isPrivileged);
 }
