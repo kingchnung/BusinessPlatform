@@ -25,10 +25,18 @@ repositories {
 }
 
 dependencies {
-	implementation 'org.springframework.boot:spring-boot-starter'
-	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-	implementation 'org.springframework.boot:spring-boot-starter-web'
-	implementation 'com.google.code.gson:gson:2.10.1'
+    // ✅ Spring Boot 기본
+    implementation 'org.springframework.boot:spring-boot-starter'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation "org.hibernate.orm:hibernate-envers"
+    implementation "org.springframework.data:spring-data-envers"
+
+    // ✅ JSON 처리
+    implementation 'com.google.code.gson:gson:2.10.1'
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
 
 	implementation 'org.modelmapper:modelmapper:3.2.1'
 	implementation 'org.springframework.boot:spring-boot-starter-security'
@@ -36,6 +44,7 @@ dependencies {
 	compileOnly 'org.projectlombok:lombok'
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 	runtimeOnly 'com.oracle.database.jdbc:ojdbc11'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
 	annotationProcessor 'org.projectlombok:lombok'
 
 	// https://mvnrepository.com/artifact/io.jsonwebtoken/jjwt-api
@@ -44,18 +53,66 @@ dependencies {
 	runtimeOnly("io.jsonwebtoken:jjwt-impl:0.11.5")
 	// https://mvnrepository.com/artifact/io.jsonwebtoken/jjwt-jackson
 	runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.11.5")
-
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-	testCompileOnly 'org.projectlombok:lombok'
-	testAnnotationProcessor 'org.projectlombok:lombok'
-	testImplementation 'org.springframework.security:spring-security-test'
+    // ✅ iText 7 HTML → PDF 변환기 (무료버전 html2pdf)
+    implementation 'com.itextpdf:html2pdf:4.0.4'
+    implementation 'com.itextpdf:itextpdf:5.5.13.3'
 
 
+    // ✅ Lombok
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+    testCompileOnly 'org.projectlombok:lombok'
+    testAnnotationProcessor 'org.projectlombok:lombok'
 
-//	implementation 'nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect:3.4.0'
+    // ✅ DevTools
+    developmentOnly 'org.springframework.boot:spring-boot-devtools'
+
+    // ✅ Oracle DB
+    runtimeOnly 'com.oracle.database.jdbc:ojdbc11'
+
+
+    implementation 'org.apache.commons:commons-lang3:3.12.0'
+	implementation 'org.springframework.boot:spring-boot-starter-mail'
+
+    // ✅ JWT (io.jsonwebtoken)
+    implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
+
+    // ✅ 테스트
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.security:spring-security-test'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    testRuntimeOnly 'com.h2database:h2'
+
+    // Querydsl JPA
+    implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
+
+    // Querydsl Annotation Processor (Java 17+ 및 Jakarta EE 9+)
+    annotationProcessor "com.querydsl:querydsl-apt:5.0.0:jakarta"
+    annotationProcessor "jakarta.annotation:jakarta.annotation-api"
+    annotationProcessor "jakarta.persistence:jakarta.persistence-api"
+
+    implementation 'com.opencsv:opencsv:5.9'   // CSV 파서
+}
+
+// Gradle 빌드 시 Q-Type 클래스 자동 생성을 위한 설정
+def generated = 'src/main/generated'
+
+sourceSets {
+    main.java.srcDirs += [ generated ]    // 생성된 소스도 컴파일 소스에 포함
+}
+
+tasks.withType(JavaCompile) {
+    options.getGeneratedSourceOutputDirectory().set(file(generated))    // 여기에 생성
+}
+
+clean.doLast {
+    file(generated).deleteDir()  // clean 시 해당 폴더 삭제
 }
 
 tasks.named('test') {
-	useJUnitPlatform()
+    useJUnitPlatform()
+    // ✅ 모든 테스트는 무조건 test 프로파일로 기동
+    systemProperty "spring.profiles.active", "test"
 }
