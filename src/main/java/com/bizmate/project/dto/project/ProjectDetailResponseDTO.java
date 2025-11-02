@@ -36,6 +36,7 @@ public class ProjectDetailResponseDTO {
     private String pmName;
     private SimpleAuthorDTO author;
     private SimpleDepartmentDTO department;
+    @Builder.Default
     private List<ProjectMemberDTO> participants = new ArrayList<>();
 
     private LocalDate startDate;

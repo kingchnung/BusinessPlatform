@@ -29,7 +29,7 @@ class EmployeeNameUpdateTest {
         );
 
         long startId = 8L;
-        long endId = 31L;
+        long endId = 30L;
         int nameIndex = 0;
 
         for (long empId = startId; empId <= endId; empId++) {

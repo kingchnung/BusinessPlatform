@@ -15,7 +15,7 @@ public class NotificationServiceTests {
     void sendTestMail() {
         SimpleMailMessage msg = new SimpleMailMessage();
         msg.setFrom("cksdnd1232@gmail.com"); // ✅ spring.mail.username과 동일하게
-        msg.setTo("wotjd6423@gmail.com");
+        msg.setTo("cksdnd1232@gmail.com");
         msg.setSubject("고생이 많구나");
         msg.setText("열심히 하는 모습이 보기 좋아~");
         mailSender.send(msg);

@@ -5,385 +5,72 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="e50ac269-a89e-44c0-959a-2995857842c4" name="변경" comment="">
-      <change afterPath="$PROJECT_DIR$/src/main/generated/com/bizmate/common/audit/QRevInfo.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/generated/com/bizmate/common/domain/QBaseEntity.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/generated/com/bizmate/groupware/approval/domain/PDF/QEmployeeSignature.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/generated/com/bizmate/groupware/approval/domain/attachment/QApprovalFileAttachment.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/generated/com/bizmate/groupware/approval/domain/document/QApprovalDocuments.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/generated/com/bizmate/groupware/approval/domain/document/QApprovalHistory.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/generated/com/bizmate/groupware/approval/domain/policy/QApprovalPolicy.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/generated/com/bizmate/groupware/approval/domain/policy/QApprovalPolicyStep.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/generated/com/bizmate/groupware/board/domain/QBoard.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/generated/com/bizmate/groupware/board/domain/QBoardHistory.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/generated/com/bizmate/groupware/board/domain/QComment.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/generated/com/bizmate/groupware/board/domain/QCommentHistory.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/generated/com/bizmate/hr/domain/QAssignmentsHistory.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/generated/com/bizmate/hr/domain/QDepartment.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/generated/com/bizmate/hr/domain/QEmployee.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/generated/com/bizmate/hr/domain/QPermission.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/generated/com/bizmate/hr/domain/QRole.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/generated/com/bizmate/hr/domain/QUserEntity.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/generated/com/bizmate/hr/domain/code/QGrade.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/generated/com/bizmate/hr/domain/code/QPosition.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/generated/com/bizmate/project/domain/QProject.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/generated/com/bizmate/project/domain/QProjectBudgetItem.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/generated/com/bizmate/project/domain/QProjectMember.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/generated/com/bizmate/project/domain/QProjectTask.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/generated/com/bizmate/project/domain/embeddables/QProjectMemberId.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/generated/com/bizmate/salesPages/client/domain/QClient.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/generated/com/bizmate/salesPages/management/collections/domain/QCollection.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/generated/com/bizmate/salesPages/management/order/order/domain/QOrder.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/generated/com/bizmate/salesPages/management/order/orderItem/domain/QOrderItem.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/generated/com/bizmate/salesPages/management/sales/sales/domain/QSales.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/generated/com/bizmate/salesPages/management/sales/salesItem/domain/QSalesItem.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/generated/com/bizmate/salesPages/report/salesTarget/domain/QSalesTarget.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/common/audit/AuditHistoryController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/common/audit/AuditHistoryDto.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/common/audit/RevInfo.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/common/audit/SecurityRevisionListener.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/common/config/AuditorAwareConfig.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/common/config/JacksonConfig.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/common/config/QuerydslConfig.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/common/config/RestTemplateConfig.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/common/config/RootConfig.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/common/controller/HealthController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/common/controller/advice/CustomControllerAdvice.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/common/controller/formatter/LocalDateFormatter.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/common/exception/ForbiddenOperationException.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/common/exception/GlobalExceptionHandler.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/common/file/FileController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/common/file/FileUtil.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/common/page/PageRequestDTO.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/common/page/PageResponseDTO.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/groupware/approval/api/PDF/ApprovalPDFController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/groupware/approval/api/admin/ApprovalAdminController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/groupware/approval/api/admin/ApprovalPolicyAdminController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/groupware/approval/api/attachment/ApprovalFileAttachmentController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/groupware/approval/api/document/ApprovalDocumentsController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/groupware/approval/api/document/DocumentTypeController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/groupware/approval/api/policy/ApprovalPolicyAutoController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/groupware/approval/domain/PDF/EmployeeSignature.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/groupware/approval/domain/attachment/ApprovalFileAttachment.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/groupware/approval/domain/document/ApprovalDocuments.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/groupware/approval/domain/document/ApprovalHistory.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/groupware/approval/domain/document/Decision.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/groupware/approval/domain/document/DocumentStatus.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/groupware/approval/domain/document/DocumentType.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/groupware/approval/domain/policy/ApprovalPolicy.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/groupware/approval/domain/policy/ApprovalPolicyStep.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/groupware/approval/domain/policy/ApproveRejectRequest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/groupware/approval/domain/policy/ApproverStep.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/groupware/approval/domain/policy/ApproverType.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/groupware/approval/dto/approval/ApprovalDocumentsDto.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/groupware/approval/dto/approval/ApprovalFileAttachmentDto.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/groupware/approval/dto/approval/ApproverDto.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/groupware/approval/dto/approval/DocumentSearchRequestDto.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/groupware/approval/dto/policy/ApprovalPolicyListRecord.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/groupware/approval/dto/policy/ApprovalPolicyRequest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/groupware/approval/dto/policy/ApprovalPolicyResponse.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/groupware/approval/dto/policy/ApprovalPolicyStepRequest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/groupware/approval/dto/policy/ApprovalPolicyStepResponse.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/groupware/approval/infrastructure/ApprovalPolicyMapper.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/groupware/approval/infrastructure/ApproverLineJsonConverter.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/groupware/approval/infrastructure/DocumentTypeConverter.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/groupware/approval/infrastructure/JsonMapConverter.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/groupware/approval/listener/ApprovalDocumentsListener.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/groupware/approval/notification/ConsoleNotificationAdapter.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/groupware/approval/notification/NotificationPort.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/groupware/approval/notification/NotificationService.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/groupware/approval/repository/PDF/EmployeeSignatureRepository.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/groupware/approval/repository/Policy/ApprovalPolicyRepository.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/groupware/approval/repository/Policy/ApprovalPolicyStepRepository.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/groupware/approval/repository/attachment/ApprovalFileAttachmentRepository.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/groupware/approval/repository/document/ApprovalDocumentsRepository.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/groupware/approval/repository/document/ApprovalHistoryRepository.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/groupware/approval/service/PDF/EmployeeSignatureService.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/groupware/approval/service/PDF/PDFGeneratorService.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/groupware/approval/service/PDF/PDFSignatureService.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/groupware/approval/service/PDF/PDFTemplateRenderer.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/groupware/approval/service/attachment/FileStorageService.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/groupware/approval/service/attachment/FileStorageServiceImpl.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/groupware/approval/service/document/ApprovalDocumentsService.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/groupware/approval/service/document/ApprovalDocumentsServiceImpl.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/groupware/approval/service/document/ApprovalHistoryService.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/groupware/approval/service/document/ApprovalHistoryServiceImpl.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/groupware/approval/service/document/ApprovalIdGenerator.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/groupware/approval/service/policy/ApprovalPolicyService.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/groupware/board/api/BoardController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/groupware/board/api/CommentController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/groupware/board/domain/Board.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/groupware/board/domain/BoardHistory.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/groupware/board/domain/BoardType.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/groupware/board/domain/Comment.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/groupware/board/domain/CommentHistory.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/groupware/board/dto/BoardDto.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/groupware/board/dto/CommentDto.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/groupware/board/repository/BoardHistoryRepository.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/groupware/board/repository/BoardRepository.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/groupware/board/repository/CommentHistoryRepository.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/groupware/board/repository/CommentRepository.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/groupware/board/security/JsonAccessDeniedHandler.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/groupware/board/service/BoardHistoryService.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/groupware/board/service/BoardService.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/groupware/board/service/BoardServiceImpl.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/groupware/board/service/CommentHistoryService.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/groupware/board/service/CommentService.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/groupware/board/service/CommentServiceImpl.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/advice/LoginFailedException.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/config/CustomSecurityConfig.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/controller/APIRefreshController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/controller/AssignmentsHistoryController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/controller/CertificateController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/controller/DepartmentController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/controller/EmployeeController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/controller/EmployeeStatisticsController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/controller/GradeController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/controller/MemberController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/controller/PermissionController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/controller/PositionController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/controller/RoleController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/controller/UserAdminController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/controller/UserController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/domain/AssignmentsHistory.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/domain/Department.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/domain/Employee.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/domain/Permission.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/domain/Role.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/domain/UserEntity.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/domain/code/Grade.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/domain/code/Position.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/dto/assignment/AssignmentHistoryDTO.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/dto/assignment/AssignmentHistoryRequestDTO.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/dto/code/GradeCreateRequestDTO.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/dto/code/GradeDTO.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/dto/code/GradeRequestDTO.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/dto/code/GradeUpdateRequestDTO.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/dto/code/PositionCreateRequestDTO.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/dto/code/PositionDTO.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/dto/code/PositionRequestDTO.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/dto/code/PositionUpdateRequestDTO.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/dto/department/DepartmentCreateRequestDTO.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/dto/department/DepartmentDTO.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/dto/department/DepartmentManagerDTO.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/dto/department/DepartmentOverviewDTO.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/dto/department/DepartmentResponseDTO.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/dto/department/DepartmentUpdateRequestDTO.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/dto/employee/EmployeeCreateRequestDTO.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/dto/employee/EmployeeDTO.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/dto/employee/EmployeeDetailDTO.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/dto/employee/EmployeeRequestDTO.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/dto/employee/EmployeeStatisticDTO.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/dto/employee/EmployeeSummaryDTO.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/dto/employee/EmployeeUpdateRequestDTO.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/dto/member/LoginRequestDTO.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/dto/member/LoginResponseDTO.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/dto/member/ResetPasswordRequest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/dto/member/UserResetRequestDTO.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/dto/permission/PermissionCreateRequestDTO.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/dto/permission/PermissionDTO.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/dto/permission/PermissionRequestDTO.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/dto/permission/PermissionResponseDTO.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/dto/permission/PermissionUpdateRequestDTO.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/dto/role/RoleCreateRequestDTO.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/dto/role/RoleDTO.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/dto/role/RoleRequestDTO.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/dto/role/RoleResponseDTO.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/dto/role/RoleUpdateRequestDTO.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/dto/user/UserCreateRequestDTO.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/dto/user/UserDTO.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/dto/user/UserPwChangeRequest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/dto/user/UserResponseDTO.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/dto/user/UserUpdateRequestDTO.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/repository/AssignmentsHistoryRepository.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/repository/DepartmentRepository.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/repository/EmployeeRepository.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/repository/GradeRepository.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/repository/PermissionRepository.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/repository/PositionRepository.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/repository/RoleRepository.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/repository/UserRepository.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/security/CustomUserDetailsService.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/security/UserPrincipal.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/security/filter/JWTCheckFilter.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/security/handler/APILoginFailHandler.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/security/handler/APILoginSuccessHandler.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/security/handler/CustomAccessDeniedHandler.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/security/handler/CustomAuthenticationEntryPoint.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/security/jwt/JWTProvider.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/service/AssignmentsHistoryService.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/service/AssignmentsHistoryServiceImpl.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/service/AuthService.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/service/AuthServiceImpl.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/service/CertificateService.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/service/CertificateServiceImpl.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/service/DepartmentService.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/service/DepartmentServiceImpl.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/service/EmployeeService.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/service/EmployeeServiceImpl.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/service/GradeService.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/service/GradeServiceImpl.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/service/MailService.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/service/PermissionService.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/service/PermissionServiceImpl.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/service/PositionService.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/service/PositionServiceImpl.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/service/RoleService.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/service/RoleServiceImpl.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/service/UserService.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/service/UserServiceImpl.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/util/DataInitializer.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/util/PdfGenerator.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/project/controller/ProjectController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/project/controller/ProjectMemberController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/project/controller/TaskController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/project/domain/Project.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/project/domain/ProjectBudgetItem.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/project/domain/ProjectMember.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/project/domain/ProjectTask.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/project/domain/embeddables/ProjectMemberId.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/project/domain/enums/ProjectMemberStatus.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/project/domain/enums/project/ProjectImportance.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/project/domain/enums/project/ProjectStatus.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/project/domain/enums/task/TaskPriority.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/project/domain/enums/task/TaskStatus.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/project/dto/budgetitem/ProjectBudgetItemDTO.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/project/dto/budgetitem/ProjectBudgetItemResponseDTO.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/project/dto/project/ProjectDetailResponseDTO.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/project/dto/project/ProjectRequestDTO.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/project/dto/project/ProjectResponseDTO.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/project/dto/project/SimpleAuthorDTO.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/project/dto/project/SimpleDepartmentDTO.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/project/dto/projectmember/ProjectMemberDTO.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/project/dto/projectmember/ProjectMemberRequest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/project/dto/projectmember/ProjectMemberResponseDTO.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/project/dto/task/ProjectTaskDTO.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/project/dto/task/ProjectTaskRequest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/project/dto/task/TaskResponseDTO.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/project/exception/FileAttachmentException.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/project/exception/FilePostMemberException.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/project/exception/IssuePostException.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/project/exception/ProjectBoardException.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/project/exception/ProjectMemberException.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/project/exception/ProjectNotFoundException.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/project/exception/TaskException.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/project/repository/ProjectBudgetItemRepository.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/project/repository/ProjectMemberRepository.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/project/repository/ProjectRepository.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/project/repository/ProjectTaskRepository.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/project/service/ProjectMemberService.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/project/service/ProjectMemberServiceImpl.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/project/service/ProjectService.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/project/service/ProjectServiceImpl.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/project/service/TaskService.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/project/service/TaskServiceImpl.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/salesPages/client/controller/ClientController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/salesPages/client/domain/Client.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/salesPages/client/dto/ClientDTO.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/salesPages/client/repository/ClientRepository.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/salesPages/client/service/ClientService.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/salesPages/client/service/ClientServiceImpl.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/salesPages/management/collections/controller/CollectionController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/salesPages/management/collections/domain/Collection.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/salesPages/management/collections/dto/CollectionDTO.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/salesPages/management/collections/repository/CollectionRepository.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/salesPages/management/collections/repository/CollectionRepositoryCustom.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/salesPages/management/collections/repository/CollectionRepositoryImpl.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/salesPages/management/collections/service/CollectionService.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/salesPages/management/collections/service/CollectionServiceImpl.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/salesPages/management/order/order/controller/OrderController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/salesPages/management/order/order/domain/Order.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/salesPages/management/order/order/dto/OrderDTO.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/salesPages/management/order/order/repository/OrderRepository.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/salesPages/management/order/order/repository/OrderRepositoryCustom.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/salesPages/management/order/order/repository/OrderRepositoryCustomImpl.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/salesPages/management/order/order/service/OrderService.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/salesPages/management/order/order/service/OrderServiceImpl.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/salesPages/management/order/orderItem/controller/OrderItemController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/salesPages/management/order/orderItem/domain/OrderItem.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/salesPages/management/order/orderItem/dto/OrderItemDTO.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/salesPages/management/order/orderItem/repository/OrderItemRepository.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/salesPages/management/order/orderItem/service/OrderItemService.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/salesPages/management/order/orderItem/service/OrderItemServiceImpl.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/salesPages/management/sales/sales/controller/SalesController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/salesPages/management/sales/sales/domain/Sales.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/salesPages/management/sales/sales/dto/SalesDTO.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/salesPages/management/sales/sales/repository/SalesRepository.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/salesPages/management/sales/sales/repository/SalesRepositoryCustom.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/salesPages/management/sales/sales/repository/SalesRepositoryCustomImpl.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/salesPages/management/sales/sales/service/SalesService.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/salesPages/management/sales/sales/service/SalesServiceImpl.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/salesPages/management/sales/salesItem/controller/SalesItemController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/salesPages/management/sales/salesItem/domain/SalesItem.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/salesPages/management/sales/salesItem/dto/SalesItemDTO.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/salesPages/management/sales/salesItem/repository/SalesItemRepository.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/salesPages/management/sales/salesItem/service/SalesItemService.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/salesPages/management/sales/salesItem/service/SalesItemServiceImpl.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/salesPages/report/salesReport/controller/SalesReportController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/salesPages/report/salesReport/dto/ClientReceivablesDTO.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/salesPages/report/salesReport/dto/ClientSalesStatusDTO.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/salesPages/report/salesReport/dto/ClientSalesSummary.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/salesPages/report/salesReport/dto/CollectionSummary.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/salesPages/report/salesReport/dto/MonthlySalesSummary.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/salesPages/report/salesReport/dto/PeriodSalesStatusDTO.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/salesPages/report/salesReport/dto/ProjectSalesSummary.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/salesPages/report/salesReport/dto/QuarterlySalesSummary.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/salesPages/report/salesReport/dto/YearlySalesStatusDTO.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/salesPages/report/salesReport/dto/YearlySalesSummary.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/salesPages/report/salesReport/service/SalesReportService.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/salesPages/report/salesReport/service/SalesReportServiceImpl.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/salesPages/report/salesTarget/controller/SalesTargetController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/salesPages/report/salesTarget/domain/SalesTarget.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/salesPages/report/salesTarget/dto/SalesTargetDTO.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/salesPages/report/salesTarget/repository/SalesTargetRepository.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/salesPages/report/salesTarget/service/SalesTargetService.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/salesPages/report/salesTarget/service/SalesTargetServiceImpl.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/salesPages/util/Csv.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/salesPages/util/SalesDataImporter.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/resources/data/clients.csv" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/resources/data/collections.csv" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/resources/data/order_items.csv" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/resources/data/orders.csv" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/resources/data/sales.csv" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/resources/data/sales_items.csv" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/resources/data/sales_targets.csv" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/resources/fonts/NotoSansKR-Bold.ttf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/resources/fonts/NotoSansKR-Regular.ttf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/resources/fonts/NotoSansKR-VariableFont_wght.ttf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/resources/signatures/5010001.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/resources/signatures/5011001.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/resources/signatures/5012001.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/resources/signatures/5021001.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/resources/signatures/5031001.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/resources/signatures/5032001.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/resources/signatures/5033001.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/test/java/com/bizmate/employeeTests/employessTest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/test/java/com/bizmate/groupware/approval/api/ApprovalDocumentsControllerTests.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/test/java/com/bizmate/groupware/approval/notification/NotificationServiceTests.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/test/java/com/bizmate/groupware/approval/service/ApprovalDocumentsServiceImplTests.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/test/java/com/bizmate/groupware/approval/service/PDFGeneratorServiceTest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/test/java/com/bizmate/groupware/board/service/BoardServiceTests.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/test/java/com/bizmate/hr/service/EmployeeNameUpdateTest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/test/java/com/bizmate/project/repository/ProjectTests.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/test/java/com/bizmate/salesPage/client/repository/ClientRepositoryTests.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/test/java/com/bizmate/salesPage/client/service/ClientServiceTests.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/test/java/com/bizmate/salesPage/management/repository/OrderRepositoryTests.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/test/resources/schema.sql_backup" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/uploads/036dcdb6-6138-4683-a780-d64b12e1e2c5_2.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/uploads/29d1b104-8bf9-4581-a907-e2c3254e7476_2.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/uploads/2e753593-16be-413a-9fa7-7a4119ed0ddf_2.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/uploads/3d03d16a-99d8-4614-aec8-23c4be54efc9_2.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/uploads/c194b2a5-d2db-4743-a0b5-9e687c36aac1_2.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/uploads/ed7f4c5f-54ef-4098-8eaf-d8a37cb2c22e_국민취업지원제도 ｢Ⅱ유형 청년층 참여희망자 소득‧재산조사 등 미실시｣동의서.docx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gitattributes" beforeDir="false" afterPath="$PROJECT_DIR$/.gitattributes" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/8.14.3/checksums/checksums.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/8.14.3/checksums/checksums.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/8.14.3/checksums/sha1-checksums.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/8.14.3/checksums/sha1-checksums.bin" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/8.14.3/executionHistory/executionHistory.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/8.14.3/executionHistory/executionHistory.bin" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/8.14.3/executionHistory/executionHistory.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/8.14.3/executionHistory/executionHistory.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/8.14.3/fileHashes/fileHashes.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/8.14.3/fileHashes/fileHashes.bin" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/8.14.3/fileHashes/fileHashes.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/8.14.3/fileHashes/fileHashes.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/8.14.3/fileHashes/resourceHashesCache.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/8.14.3/fileHashes/resourceHashesCache.bin" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/file-system.probe" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/file-system.probe" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/build.gradle" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/bizmate/WebBizMateProjectApplication.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/WebBizMateProjectApplication.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/bizmate/common/domain/BaseEntity.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/common/domain/BaseEntity.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/com/bizmate/WebBizMateProjectApplication.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/com/bizmate/WebBizMateProjectApplication.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/com/bizmate/common/domain/BaseEntity.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/com/bizmate/common/domain/BaseEntity.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/com/bizmate/hr/controller/code/GradeController.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/com/bizmate/hr/domain/code/Grade$GradeBuilder.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/com/bizmate/hr/domain/code/Grade$GradeBuilder.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/com/bizmate/hr/domain/code/Grade.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/com/bizmate/hr/domain/code/Grade.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/com/bizmate/hr/domain/code/Position$PositionBuilder.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/com/bizmate/hr/domain/code/Position$PositionBuilder.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/com/bizmate/hr/domain/code/Position.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/com/bizmate/hr/domain/code/Position.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/com/bizmate/project/controller/ProjectController.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/com/bizmate/project/controller/ProjectController.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/com/bizmate/project/dto/project/ProjectDetailResponseDTO$ProjectDetailResponseDTOBuilder.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/com/bizmate/project/dto/project/ProjectDetailResponseDTO$ProjectDetailResponseDTOBuilder.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/com/bizmate/project/dto/project/ProjectDetailResponseDTO.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/com/bizmate/project/dto/project/ProjectDetailResponseDTO.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/com/bizmate/project/dto/project/ProjectRequestDTO$ProjectRequestDTOBuilder.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/com/bizmate/project/dto/project/ProjectRequestDTO$ProjectRequestDTOBuilder.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/com/bizmate/project/dto/project/ProjectRequestDTO.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/com/bizmate/project/dto/project/ProjectRequestDTO.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/com/bizmate/project/dto/project/SimpleAuthorDTO.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/com/bizmate/project/dto/project/SimpleAuthorDTO.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/com/bizmate/project/dto/project/SimpleDepartmentDTO.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/com/bizmate/project/dto/project/SimpleDepartmentDTO.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/com/bizmate/project/repository/ProjectMemberRepository.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/com/bizmate/project/repository/ProjectMemberRepository.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/com/bizmate/project/service/ProjectService.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/com/bizmate/project/service/ProjectService.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/main/com/bizmate/project/service/ProjectServiceImpl.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/com/bizmate/project/service/ProjectServiceImpl.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/test/com/bizmate/WebBizMateProjectApplicationTests.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/test/com/bizmate/WebBizMateProjectApplicationTests.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/test/com/bizmate/groupware/approval/notification/NotificationServiceTests.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/test/com/bizmate/groupware/approval/notification/NotificationServiceTests.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/classes/java/test/com/bizmate/hr/service/EmployeeNameUpdateTest.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/test/com/bizmate/hr/service/EmployeeNameUpdateTest.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/libs/webBizMateProject-0.0.1-SNAPSHOT-plain.jar" beforeDir="false" afterPath="$PROJECT_DIR$/build/libs/webBizMateProject-0.0.1-SNAPSHOT-plain.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/libs/webBizMateProject-0.0.1-SNAPSHOT.jar" beforeDir="false" afterPath="$PROJECT_DIR$/build/libs/webBizMateProject-0.0.1-SNAPSHOT.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/reports/problems/problems-report.html" beforeDir="false" afterPath="$PROJECT_DIR$/build/reports/problems/problems-report.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/reports/tests/test/classes/com.bizmate.hr.service.EmployeeNameUpdateTest.html" beforeDir="false" afterPath="$PROJECT_DIR$/build/reports/tests/test/classes/com.bizmate.hr.service.EmployeeNameUpdateTest.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/reports/tests/test/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/build/reports/tests/test/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/reports/tests/test/packages/com.bizmate.hr.service.html" beforeDir="false" afterPath="$PROJECT_DIR$/build/reports/tests/test/packages/com.bizmate.hr.service.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/resources/main/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/build/resources/main/application.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/test-results/test/TEST-com.bizmate.hr.service.EmployeeNameUpdateTest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/build/test-results/test/TEST-com.bizmate.hr.service.EmployeeNameUpdateTest.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/test-results/test/binary/output.bin" beforeDir="false" afterPath="$PROJECT_DIR$/build/test-results/test/binary/output.bin" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/test-results/test/binary/output.bin.idx" beforeDir="false" afterPath="$PROJECT_DIR$/build/test-results/test/binary/output.bin.idx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/test-results/test/binary/results.bin" beforeDir="false" afterPath="$PROJECT_DIR$/build/test-results/test/binary/results.bin" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/tmp/compileJava/compileTransaction/stash-dir/BoardServiceImpl.class.uniqueId0" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/tmp/compileJava/compileTransaction/stash-dir/CommentController.class.uniqueId1" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/tmp/compileJava/compileTransaction/stash-dir/CommentService.class.uniqueId3" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/tmp/compileJava/compileTransaction/stash-dir/CommentServiceImpl.class.uniqueId2" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/tmp/compileJava/previous-compilation-data.bin" beforeDir="false" afterPath="$PROJECT_DIR$/build/tmp/compileJava/previous-compilation-data.bin" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/tmp/compileTestJava/compileTransaction/stash-dir/ApprovalDocumentsServiceImplTests.class.uniqueId2" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/tmp/compileTestJava/compileTransaction/stash-dir/EmployeeNameUpdateTest.class.uniqueId1" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/tmp/compileTestJava/compileTransaction/stash-dir/ProjectTests.class.uniqueId0" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/tmp/compileTestJava/previous-compilation-data.bin" beforeDir="false" afterPath="$PROJECT_DIR$/build/tmp/compileTestJava/previous-compilation-data.bin" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/bizmate/groupware/config/TestAuditingConfig.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/bizmate/groupware/domain/ApprovalDocuments.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/bizmate/groupware/domain/UserRoles.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/bizmate/groupware/dto/ApprovalDocumentsDto.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/bizmate/groupware/dto/ApproverDto.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/bizmate/groupware/repository/ApprovalDocumentsRepository.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/bizmate/groupware/service/ApprovalDocumentsService.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/bizmate/groupware/service/ApprovalDocumentsServiceImpl.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/bizmate/groupware/service/ApprovalIdGenerator.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/domain/code/Grade.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/domain/code/Grade.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/domain/code/Position.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/hr/domain/code/Position.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/bizmate/project/dto/project/ProjectDetailResponseDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/bizmate/project/dto/project/ProjectDetailResponseDTO.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/application.properties" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/test/java/com/bizmate/WebBizMateProjectApplicationTests.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/com/bizmate/WebBizMateProjectApplicationTests.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/java/com/bizmate/groupware/repository/ApprovalDocumentsRepositoryTests.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/com/bizmate/groupware/repository/ApprovalDocumentsRepositoryTests.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/com/bizmate/groupware/approval/notification/NotificationServiceTests.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/com/bizmate/groupware/approval/notification/NotificationServiceTests.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/com/bizmate/hr/service/EmployeeNameUpdateTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/com/bizmate/hr/service/EmployeeNameUpdateTest.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -457,35 +144,35 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Gradle.BoardServiceImplTests.createBoardTest.executor": "Run",
-    "Gradle.BoardServiceTests.executor": "Run",
-    "Gradle.EmployeeNameUpdateTest.executor": "Run",
-    "Gradle.NotificationServiceTests.sendTestMail.executor": "Run",
-    "Gradle.PDFGeneratorServiceTest.generateRealDocumentPdf.executor": "Run",
-    "Gradle.PDFGeneratorServiceTest.testGeneratePdf.executor": "Run",
-    "Gradle.WebBizMateProjectApplicationTests.contextLoads.executor": "Run",
-    "Gradle.back [:com.bizmate.WebBizMateProjectApplication.main()].executor": "Run",
-    "Gradle.back [build].executor": "Run",
-    "Gradle.back [clean].executor": "Run",
-    "Gradle.back 빌드.executor": "Run",
-    "Gradle.소스 다운로드.executor": "Run",
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "main 병합 중",
-    "ignore.virus.scanning.warn.message": "true",
-    "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "C:/Users/chanung/Desktop/Bizmate/back/src/main/java/com/bizmate/project/service",
-    "project.structure.last.edited": "모듈",
-    "project.structure.proportion": "0.15",
-    "project.structure.side.proportion": "0.2",
-    "settings.editor.selected.configurable": "File.Encoding",
-    "애플리케이션.WebBizMateProjectApplication.executor": "Run"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Gradle.BoardServiceImplTests.createBoardTest.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.BoardServiceTests.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.EmployeeNameUpdateTest.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.NotificationServiceTests.sendTestMail.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.PDFGeneratorServiceTest.generateRealDocumentPdf.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.PDFGeneratorServiceTest.testGeneratePdf.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.WebBizMateProjectApplicationTests.contextLoads.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.back [:com.bizmate.WebBizMateProjectApplication.main()].executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.back [build].executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.back [clean].executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.back 빌드.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.소스 다운로드.executor&quot;: &quot;Run&quot;,
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/chanung/Desktop/Bizmate/back/src/main/java/com/bizmate/project/service&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;모듈&quot;,
+    &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
+    &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;File.Encoding&quot;,
+    &quot;애플리케이션.WebBizMateProjectApplication.executor&quot;: &quot;Run&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="C:\Users\chanung\Desktop\Bizmate\back\src\main\java\com\bizmate\project\service" />
@@ -619,8 +306,8 @@
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Gradle.EmployeeNameUpdateTest" />
         <item itemvalue="Gradle.back [clean]" />
+        <item itemvalue="Gradle.EmployeeNameUpdateTest" />
         <item itemvalue="Gradle.back [build]" />
         <item itemvalue="애플리케이션.WebBizMateProjectApplication" />
         <item itemvalue="Gradle.ApprovalDocumentsServiceIntegrationTests.createNewDocument_withAutoGeneratedId" />
